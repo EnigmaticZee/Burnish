@@ -75,7 +75,13 @@ struct FolderTrash: Trashing {
     func trash(_ url: URL) throws -> URL? {
         if let fail { throw fail }
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let target = folder.appendingPathComponent(url.lastPathComponent)
+        // Like the real Trash, a name that's taken gets a number.
+        var target = folder.appendingPathComponent(url.lastPathComponent)
+        var n = 2
+        while FileManager.default.fileExists(atPath: target.path) {
+            target = folder.appendingPathComponent("\(url.deletingPathExtension().lastPathComponent) \(n).\(url.pathExtension)")
+            n += 1
+        }
         try FileManager.default.moveItem(at: url, to: target)
         return target
     }
@@ -543,6 +549,100 @@ final class Harness {
         #expect(refusal.rule == .appManagement)
         #expect(refusal.message.contains("App Management"))
         #expect(h.installedVersion() == "1.0")
+    }
+}
+
+// MARK: Putting an earlier version back
+
+@Suite struct RestorePutsBackTheEarlierVersion {
+    /// Updates 1.0 to 1.1 the normal way, so the Trash holds 1.0 just as it would for real.
+    func updated(_ h: Harness) async throws -> (current: InstalledApp, previous: URL) {
+        let app = try h.installed()
+        let data = try h.serveZip()
+        guard case let .installed(oldCopy?, _) = await h.install(app, try h.sparkleRelease(signing: data)) else {
+            throw CocoaError(.featureUnsupported)
+        }
+        let current = try #require(AppInventory(signatureReader: h.signatures, caskrooms: []).readApp(at: app.url))
+        return (current, oldCopy)
+    }
+
+    func version(of bundle: URL) -> String? {
+        let plist = bundle.appendingPathComponent("Contents/Info.plist")
+        guard let data = try? Data(contentsOf: plist) else { return nil }
+        return (try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])?["CFBundleShortVersionString"] as? String
+    }
+
+    func expectRefused(_ outcome: InstallOutcome, _ rule: InstallRefusal.Rule, _ h: Harness, previous: URL,
+                       sourceLocation: SourceLocation = #_sourceLocation) {
+        guard case let .refused(refusal) = outcome else {
+            Issue.record("expected refusal (\(rule)), got \(outcome)", sourceLocation: sourceLocation)
+            return
+        }
+        #expect(refusal.rule == rule, sourceLocation: sourceLocation)
+        #expect(h.installedVersion() == "1.1", "the current version stays", sourceLocation: sourceLocation)
+    }
+
+    @Test func swapsBackAndKeepsTheNewerCopyInTheTrash() async throws {
+        let h = try Harness()
+        let (current, previous) = try await updated(h)
+        let outcome = await h.installer().restore(RestoreRequest(app: current, previousCopy: previous))
+        guard case let .installed(newerCopy?, relaunched) = outcome else { Issue.record("got \(outcome)"); return }
+        #expect(h.installedVersion() == "1.0")
+        #expect(!relaunched)
+        #expect(!FileManager.default.fileExists(atPath: previous.path), "the earlier copy came out of the Trash")
+        #expect(version(of: newerCopy) == "1.1", "and 1.1 went in, so there's still a way back")
+    }
+
+    @Test func quitsPolitelyAndRelaunches() async throws {
+        let h = try Harness()
+        let (current, previous) = try await updated(h)
+        h.apps.runningPIDs = [42]
+        let outcome = await h.installer().restore(RestoreRequest(app: current, previousCopy: previous))
+        guard case .installed(_, let relaunched) = outcome else { Issue.record("got \(outcome)"); return }
+        #expect(relaunched)
+        #expect(h.installedVersion() == "1.0")
+    }
+
+    @Test func refusesWhenTheCopyIsGone() async throws {
+        let h = try Harness()
+        let (current, previous) = try await updated(h)
+        try FileManager.default.removeItem(at: previous)
+        expectRefused(await h.installer().restore(RestoreRequest(app: current, previousCopy: previous)), .previousCopy, h, previous: previous)
+    }
+
+    @Test func refusesADifferentApp() async throws {
+        let h = try Harness()
+        let (current, previous) = try await updated(h)
+        let impostor = try makeBundle(in: h.build, name: "Impostor", id: "com.example.other", short: "1.0", build: "100")
+        expectRefused(await h.installer().restore(RestoreRequest(app: current, previousCopy: impostor)), .previousCopy, h, previous: previous)
+    }
+
+    @Test func refusesTheSameVersion() async throws {
+        let h = try Harness()
+        let (current, previous) = try await updated(h)
+        let twin = try makeBundle(in: h.build, short: "1.1", build: "110")
+        expectRefused(await h.installer().restore(RestoreRequest(app: current, previousCopy: twin)), .previousCopy, h, previous: previous)
+    }
+
+    @Test func refusesAnotherDevelopersCopy() async throws {
+        let h = try Harness()
+        let (current, previous) = try await updated(h)
+        try teamB.write(to: previous.appendingPathComponent("Contents/Resources/fake-team"), atomically: true, encoding: .utf8)
+        expectRefused(await h.installer().restore(RestoreRequest(app: current, previousCopy: previous)), .sameDeveloper, h, previous: previous)
+    }
+
+    @Test func refusesATamperedCopy() async throws {
+        let h = try Harness()
+        let (current, previous) = try await updated(h)
+        try "BROKEN".write(to: previous.appendingPathComponent("Contents/Resources/fake-team"), atomically: true, encoding: .utf8)
+        expectRefused(await h.installer().restore(RestoreRequest(app: current, previousCopy: previous)), .sameDeveloper, h, previous: previous)
+    }
+
+    @Test func refusesWhenGatekeeperSaysNo() async throws {
+        let h = try Harness()
+        let (current, previous) = try await updated(h)
+        h.gatekeeper.accept = false
+        expectRefused(await h.installer().restore(RestoreRequest(app: current, previousCopy: previous)), .sameDeveloper, h, previous: previous)
     }
 }
 

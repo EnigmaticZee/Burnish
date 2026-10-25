@@ -8,6 +8,8 @@ import UpdateSources
 // burnish inventory            Every app found, with bundle ID, versions, Team ID and source hints
 // burnish check [--csv|--json] Detection report: app, installed, latest, source, confidence
 // burnish update <app>         One verified install, with the same checks as the app
+// burnish history <app>        What Burnish has done with one app
+// burnish restore <app>        Put back the version Burnish's latest update replaced
 
 func pad(_ s: String, _ width: Int) -> String {
     s.count >= width ? String(s.prefix(width - 1)) + "…" : s + String(repeating: " ", count: width - s.count)
@@ -143,6 +145,42 @@ struct BurnishCLI {
                 print("Cancelled. Nothing was changed.")
             }
 
+        case "history", "restore":
+            guard let query = arguments.dropFirst().first(where: { !$0.hasPrefix("--") }) else {
+                print("Usage: burnish \(command) <app name or bundle ID>")
+                return
+            }
+            let settings = await engine.store.load(.settings, default: Settings())
+            guard let app = engine.scan(settings: settings).apps.first(where: {
+                $0.bundleID == query || $0.name.caseInsensitiveCompare(query) == .orderedSame
+            }) else {
+                print("No app called \(query) in the app folders.")
+                return
+            }
+            if command == "history" {
+                let events = await engine.history().events(for: app.bundleID)
+                if events.isEmpty { print("Nothing yet for \(app.name).") }
+                for event in events {
+                    print("\(event.date.formatted(date: .numeric, time: .shortened))  \(describe(event.kind))")
+                }
+                return
+            }
+            print("Putting back \(app.name)'s earlier version…")
+            let printer = PhasePrinter()
+            let outcome = await engine.restore(AppCheckResult(app: app, status: .upToDate(note: nil)),
+                                               progress: { printer.show($0) }, askToQuit: { name in
+                print("\(name) didn't quit within 10 seconds (it may have unsaved work). Quit it yourself and run this again.")
+                return .cancel
+            })
+            switch outcome {
+            case .installed(let newerCopy, let relaunched):
+                print("Done. \(app.version.display) is in the Trash\(newerCopy.map { " (\($0.lastPathComponent))" } ?? "") and will be skipped\(relaunched ? "; \(app.name) was relaunched" : "").")
+            case .refused(let refusal):
+                print("Refused (\(refusal.rule.rawValue)): \(refusal.message)")
+            case .cancelled, .openedInInstaller:
+                print("Cancelled. Nothing was changed.")
+            }
+
         default:
             print("""
             Usage:
@@ -151,8 +189,20 @@ struct BurnishCLI {
               burnish check --csv            Same, as CSV
               burnish check --json           Same, as JSON
               burnish update <app>           Download, verify and install one app's update
+              burnish history <app>          What Burnish has done with one app
+              burnish restore <app>          Put back the version Burnish's latest update replaced
             """)
         }
+    }
+}
+
+func describe(_ kind: HistoryEvent.Kind) -> String {
+    switch kind {
+    case let .found(version, source): "found \(version) (\(source))"
+    case let .updated(from, to, copy): "updated \(from) → \(to)\(copy.map { "; earlier version in the Trash at \($0)" } ?? "")"
+    case let .restored(to, from, _): "put back \(to); \(from) is skipped"
+    case let .handedOff(version, to): "\(version) handed to \(to)"
+    case let .refused(version, reason): "refused \(version): \(reason)"
     }
 }
 

@@ -56,7 +56,18 @@ public final class BurnishEngine: Sendable {
             userOverrides: await store.load(.userOverrides, default: MatchOverrides()),
             communityOverrides: settings.communityOverrides ? await community.load() : .none
         )
-        return await checker.check(apps, options: options, onResult: onResult)
+        let report = await checker.check(apps, options: options, onResult: onResult)
+        let found = report.results.filter(\.status.isOutdated).compactMap { result in
+            result.status.candidate.map { (result.app.bundleID, $0) }
+        }
+        if !found.isEmpty {
+            await store.update(.history, default: UpdateHistory()) { history in
+                for (bundleID, candidate) in found {
+                    history.noteFound(version: candidate.displayVersion, source: candidate.source.rawValue, for: bundleID)
+                }
+            }
+        }
+        return report
     }
 
     public func lastReport() async -> CheckReport? {
@@ -100,14 +111,58 @@ public final class BurnishEngine: Sendable {
         if release.downloadPage == nil { release.downloadPage = result.downloadPage }
         let expected = await catalog()?.cask(result.match?.token ?? "")?.appNames ?? []
         let installer = AppInstaller(environment: .live(client: client, workDirectory: downloadsDirectory))
-        return await installer.install(
+        let outcome = await installer.install(
             InstallRequest(app: result.app, release: release, expectedAppNames: expected),
             progress: progress, askToQuit: askToQuit
         )
+        let version = candidate.displayVersion
+        switch outcome {
+        case .installed(let oldCopy, _):
+            await record(.updated(from: result.app.version.display, to: version, previousCopy: oldCopy?.path), for: result)
+        case .openedInInstaller:
+            await record(.handedOff(version: version, to: "installer"), for: result)
+        case .refused(let refusal):
+            await record(.refused(version: version, reason: refusal.message), for: result)
+        case .cancelled:
+            break
+        }
+        return outcome
     }
 
-    public func brewUpgrade(token: String) async throws(BrewUpgrader.Failure) {
+    /// Puts back the version Burnish replaced in its latest update of this app, then skips the
+    /// version it rolled back from, so Update All doesn't put it straight back.
+    public func restore(
+        _ result: AppCheckResult,
+        progress: @escaping @Sendable (InstallPhase) -> Void,
+        askToQuit: @escaping @Sendable (String) async -> QuitDecision
+    ) async -> InstallOutcome {
+        let history = await store.load(.history, default: UpdateHistory())
+        guard case let .updated(from, to, previousCopy?)? = history.latestUpdate(for: result.app.bundleID)?.kind else {
+            return .refused(InstallRefusal(.previousCopy, String(localized: "There's no earlier version to put back"), downloadPage: nil))
+        }
+        let installer = AppInstaller(environment: .live(client: client, workDirectory: downloadsDirectory))
+        let outcome = await installer.restore(RestoreRequest(app: result.app, previousCopy: URL(fileURLWithPath: previousCopy)),
+                                              progress: progress, askToQuit: askToQuit)
+        if case .installed(let newerCopy, _) = outcome {
+            await record(.restored(to: from, from: to, replacedCopy: newerCopy?.path), for: result)
+            await store.update(.ignoreRules, default: IgnoreRules()) { $0.versions[result.app.bundleID] = to }
+        }
+        return outcome
+    }
+
+    public func brewUpgrade(_ result: AppCheckResult, token: String) async throws(BrewUpgrader.Failure) {
         try await BrewUpgrader().upgrade(token: token)
+        if let version = result.status.candidate?.displayVersion {
+            await record(.handedOff(version: version, to: "homebrew"), for: result)
+        }
+    }
+
+    public func history() async -> UpdateHistory {
+        await store.load(.history, default: UpdateHistory())
+    }
+
+    private func record(_ kind: HistoryEvent.Kind, for result: AppCheckResult) async {
+        await store.update(.history, default: UpdateHistory()) { $0.record(kind, for: result.app.bundleID) }
     }
 
     /// Fetches a Sparkle `releaseNotesLink` (the app's own feed host) and sanitises it.

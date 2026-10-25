@@ -71,6 +71,8 @@ public struct InstallRefusal: Error, Sendable, Equatable, LocalizedError {
         case notNewer
         /// The app on disk isn't the one Burnish checked.
         case changedSinceCheck
+        /// The earlier version to put back is missing or isn't the same app.
+        case previousCopy
     }
 
     public let rule: Rule
@@ -150,4 +152,15 @@ public protocol PackageOpening: Sendable {
 public enum QuitDecision: Sendable {
     case tryAgain
     case cancel
+}
+
+/// Put an earlier version back: the copy Burnish left in the Trash when it updated the app.
+public struct RestoreRequest: Sendable {
+    public var app: InstalledApp
+    public var previousCopy: URL
+
+    public init(app: InstalledApp, previousCopy: URL) {
+        self.app = app
+        self.previousCopy = previousCopy
+    }
 }

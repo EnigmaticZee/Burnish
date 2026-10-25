@@ -53,7 +53,7 @@ Burnish replaces other apps on your Mac, so every install keeps all eight of the
 4. **The same developer.** The new copy must pass Gatekeeper and be signed by an Apple-issued certificate for the same team as the copy you have, with the same bundle ID. Apps without a developer signature are never replaced.
 5. **No installer packages run on their own.** A verified `.pkg` opens in Apple's Installer, so you see every step.
 6. **No force-quitting.** Burnish asks an app to quit and waits. If it has unsaved work, you decide.
-7. **Nothing deleted.** The old version goes to the Trash; the new one takes its place and reopens if it was running.
+7. **Nothing deleted.** The old version goes to the Trash; the new one takes its place and reopens if it was running. Changed your mind? **Put Back** returns the earlier version, after checking it the same way.
 8. **Your password stays yours.** When a folder needs admin rights, macOS asks you itself.
 
 Major upgrades (5.x → 6.x) are marked *May be paid* and never included in **Update All**.
@@ -134,6 +134,8 @@ The `burnish` tool uses the same engine:
 ```sh
 burnish check            # every app's status; add --csv or --json
 burnish update Firefox   # one verified install
+burnish restore Firefox  # put back the version that update replaced
+burnish history Firefox  # what Burnish has done with an app
 burnish inventory        # every app with bundle ID, versions, Team ID and update hints
 ```
 
@@ -146,6 +148,7 @@ Build it with `swift build -c release --product burnish`.
 ✅ Updates from the App Store, Sparkle, Electron, Homebrew and GitHub<br>
 ✅ Safe one-click and Update All installs, with the old version kept in the Trash<br>
 ✅ Ignore a version or an app, and correct a match<br>
+✅ Put back the version an update replaced, and a history for every app<br>
 ✅ Daily check with at most one notification a day<br>
 ✅ Burnish updates itself
 

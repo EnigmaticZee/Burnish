@@ -1,6 +1,7 @@
 import AppKit
 import BurnishCore
 import CaskIndex
+import Store
 import SwiftUI
 import UpdateSources
 
@@ -9,6 +10,7 @@ struct DetailView: View {
     @Environment(AppModel.self) private var model
     let result: AppCheckResult
     @State private var showingPicker = false
+    @State private var confirmingPutBack = false
 
     var body: some View {
         ScrollView {
@@ -18,9 +20,16 @@ struct DetailView: View {
                 facts
                 notes
                 ReleaseNotesSection(result: result)
+                HistorySection(result: result, putBack: model.restorableVersion(result).map { _ in { confirmingPutBack = true } })
             }
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .alert(putBackTitle, isPresented: $confirmingPutBack) {
+            Button("Put Back") { Task { await model.restore(result) } }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("\(result.app.version.display) goes to the Trash, and Burnish skips that version until a newer one comes out.")
         }
         .sheet(isPresented: $showingPicker) {
             CaskPicker(result: result) { token in
@@ -57,6 +66,9 @@ struct DetailView: View {
                 }
                 Button("Ignore App") { Task { await model.ignoreApp(result) } }
             }
+            if let version = model.restorableVersion(result) {
+                Button("Put Back \(version)…") { confirmingPutBack = true }
+            }
             Divider()
             Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([result.app.url]) }
             if let homepage = result.homepage {
@@ -75,6 +87,10 @@ struct DetailView: View {
             }
         }
         .fixedSize()
+    }
+
+    private var putBackTitle: String {
+        String(localized: "Put back \(result.app.name) \(model.restorableVersion(result) ?? "")?")
     }
 
     @ViewBuilder
@@ -367,4 +383,64 @@ struct CaskPicker: View {
     }
 
     private var matches: [Cask] { catalog?.search(query) ?? [] }
+}
+
+/// What Burnish has done with this app, newest first. Kept on this Mac.
+struct HistorySection: View {
+    @Environment(AppModel.self) private var model
+    let result: AppCheckResult
+    /// Offered when the latest update's earlier version can still be put back.
+    let putBack: (() -> Void)?
+
+    var body: some View {
+        let events = model.history.events(for: result.app.bundleID)
+        if !events.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("History").font(.headline)
+                    Spacer()
+                    if let putBack, let version = model.restorableVersion(result) {
+                        Button("Put Back \(version)…", action: putBack).controlSize(.small)
+                    }
+                }
+                ForEach(events.prefix(12)) { event in
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Image(systemName: Self.symbol(event.kind)).foregroundStyle(.secondary).frame(width: 16)
+                        Text(Self.text(event.kind)).fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 8)
+                        Text(event.date.formatted(.dateTime.day().month(.abbreviated).hour().minute()))
+                            .foregroundStyle(.secondary).monospacedDigit()
+                    }
+                    .font(.callout)
+                }
+            }
+        }
+    }
+
+    static func text(_ kind: HistoryEvent.Kind) -> String {
+        switch kind {
+        case let .found(version, source):
+            String(localized: "Found \(version) (\(SourceKind(rawValue: source)?.label ?? source))")
+        case let .updated(from, to, _):
+            String(localized: "Updated \(from) → \(to). The earlier version went to the Trash.")
+        case let .restored(to, from, _):
+            String(localized: "Put back \(to). \(from) went to the Trash and is skipped.")
+        case let .handedOff(version, "homebrew"):
+            String(localized: "Updated to \(version) with Homebrew")
+        case let .handedOff(version, _):
+            String(localized: "Opened the \(version) installer package in Installer")
+        case let .refused(version, reason):
+            String(localized: "Didn't install \(version): \(reason)")
+        }
+    }
+
+    static func symbol(_ kind: HistoryEvent.Kind) -> String {
+        switch kind {
+        case .found: "bell"
+        case .updated: "arrow.down.circle"
+        case .restored: "arrow.uturn.backward.circle"
+        case .handedOff: "shippingbox"
+        case .refused: "exclamationmark.shield"
+        }
+    }
 }

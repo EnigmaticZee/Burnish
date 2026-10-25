@@ -128,7 +128,7 @@ public struct AppInstaller: Sendable {
                 progress(.downloading(received: received, total: total ?? release.length))
             }
         } catch {
-            return refuse(.download, "The download failed (\((error as? LocalizedError)?.errorDescription ?? error.localizedDescription))")
+            return refuse(.download, String(localized: "The download failed (\((error as? LocalizedError)?.errorDescription ?? error.localizedDescription))"))
         }
 
         // MARK: Verify the file (rules 2 and 3)
@@ -196,9 +196,72 @@ public struct AppInstaller: Sendable {
             return refuse(.notNewer, String(localized: "The download isn't newer than the installed version"))
         }
         guard env.system.satisfies(minimum: newInfo.minimumSystemVersion) else {
-            return refuse(.notNewer, "The new version needs macOS \(newInfo.minimumSystemVersion ?? "") or later")
+            return refuse(.notNewer, String(localized: "The new version needs macOS \(newInfo.minimumSystemVersion ?? "") or later"))
         }
 
+        let outcome = await swap(app, with: newApp, teamID: teamID, progress: progress, askToQuit: askToQuit, refuse: refuse)
+        if case .installed = outcome {
+            log.info("Updated \(app.bundleID, privacy: .public) to \(newInfo.version.display, privacy: .public)")
+        }
+        return outcome
+    }
+
+    /// Puts back the version Burnish replaced, from the copy it left in the Trash. The copy sat in
+    /// a folder anyone can write to, so it's checked like a download: same bundle ID, a valid
+    /// signature from the same team, and Gatekeeper. The current version goes to the Trash in turn.
+    public func restore(
+        _ request: RestoreRequest,
+        progress: @escaping @Sendable (InstallPhase) -> Void = { _ in },
+        askToQuit: @escaping @Sendable (String) async -> QuitDecision = { _ in .cancel }
+    ) async -> InstallOutcome {
+        let snapshot = request.app
+        let previous = request.previousCopy
+        func refuse(_ rule: InstallRefusal.Rule, _ message: String) -> InstallOutcome {
+            log.notice("Refused restore of \(snapshot.bundleID, privacy: .public) [\(rule.rawValue, privacy: .public)]: \(message, privacy: .public)")
+            return .refused(InstallRefusal(rule, message, downloadPage: nil))
+        }
+        let reader = AppInventory(signatureReader: env.signatures, caskrooms: [])
+        guard let app = reader.readApp(at: snapshot.url), app.bundleID == snapshot.bundleID else {
+            return refuse(.changedSinceCheck, String(localized: "\(snapshot.name) has moved or changed since Burnish checked it. Check again."))
+        }
+        guard app.signature.canBeAutoUpdated, let teamID = app.teamID, Self.isTeamID(teamID) else {
+            return refuse(.unsignedInstalledApp, String(localized: "Burnish only replaces apps signed by their developer, and this copy isn't"))
+        }
+        guard FileManager.default.fileExists(atPath: previous.path), let earlier = reader.readApp(at: previous) else {
+            return refuse(.previousCopy, String(localized: "The earlier version is no longer in the Trash"))
+        }
+        guard earlier.bundleID == app.bundleID else {
+            return refuse(.previousCopy, String(localized: "The copy in the Trash is a different app (\(earlier.bundleID))"))
+        }
+        guard earlier.version != app.version else {
+            return refuse(.previousCopy, String(localized: "The copy in the Trash is the version you already have"))
+        }
+        do {
+            try env.validator.validate(previous, teamID: teamID)
+        } catch {
+            return refuse(.sameDeveloper, (error as? LocalizedError)?.errorDescription ?? String(localized: "The earlier version's signature isn't valid"))
+        }
+        guard env.signatures.signature(of: previous).teamID == teamID else {
+            return refuse(.sameDeveloper, String(localized: "Signature didn't match the installed app"))
+        }
+        guard await env.gatekeeper.assess(previous) else {
+            return refuse(.sameDeveloper, String(localized: "macOS Gatekeeper didn't accept the earlier version"))
+        }
+        let outcome = await swap(app, with: previous, teamID: teamID, progress: progress, askToQuit: askToQuit, refuse: refuse)
+        if case .installed = outcome {
+            log.info("Restored \(app.bundleID, privacy: .public) to \(earlier.version.display, privacy: .public)")
+        }
+        return outcome
+    }
+
+    /// Rules 6 to 8: quit politely, move the installed copy to the Trash, put `replacement` in its
+    /// place (through the administrator prompt when the folder needs it), relaunch if it was running.
+    private func swap(
+        _ app: InstalledApp, with replacement: URL, teamID: String,
+        progress: @escaping @Sendable (InstallPhase) -> Void,
+        askToQuit: @escaping @Sendable (String) async -> QuitDecision,
+        refuse: (InstallRefusal.Rule, String) -> InstallOutcome
+    ) async -> InstallOutcome {
         // MARK: Quit politely (rule 6)
         let pids = await env.apps.running(app.url)
         let wasRunning = !pids.isEmpty
@@ -233,7 +296,7 @@ public struct AppInstaller: Sendable {
                 return refuse(.replace, String(localized: "The old version couldn't be moved to the Trash (\(error.localizedDescription))"))
             }
             do {
-                try env.files.move(newApp, to: app.url)
+                try env.files.move(replacement, to: app.url)
             } catch {
                 // A half-copied new version goes to the Trash too, then the old one comes back.
                 if FileManager.default.fileExists(atPath: app.url.path) { _ = try? env.trash.trash(app.url) }
@@ -249,7 +312,7 @@ public struct AppInstaller: Sendable {
         } else {
             let target = Self.uniqueTrashURL(for: app, in: env.userTrash)
             do {
-                try await env.files.privilegedReplace(old: app.url, new: newApp, trashTarget: target,
+                try await env.files.privilegedReplace(old: app.url, new: replacement, trashTarget: target,
                                                       requirement: Self.requirement(teamID: teamID), appName: app.name)
                 oldCopy = target
             } catch let error as CocoaError where error.code == .userCancelled {
@@ -265,7 +328,6 @@ public struct AppInstaller: Sendable {
             progress(.relaunching)
             await env.apps.relaunch(app.url)
         }
-        log.info("Updated \(app.bundleID, privacy: .public) to \(newInfo.version.display, privacy: .public)")
         return .installed(oldCopy: oldCopy, relaunched: wasRunning)
     }
 

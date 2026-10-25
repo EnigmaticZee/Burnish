@@ -50,6 +50,8 @@ final class AppModel {
     /// Loading saved settings must not count as the person changing them.
     private var isLoading = false
     private(set) var state = AppState()
+    /// What Burnish has done with each app, for the detail pane.
+    private(set) var history = UpdateHistory()
     private var animationTimer: Timer?
     var animationFrame = 0
 
@@ -76,8 +78,9 @@ final class AppModel {
 
     #if DEBUG
     /// Sample results for README art (see PreviewRenderer).
-    func loadDemo(_ demo: [AppCheckResult], lastCheck: Date) {
+    func loadDemo(_ demo: [AppCheckResult], history: UpdateHistory, lastCheck: Date) {
         results = demo
+        self.history = history
         self.lastCheck = lastCheck
         caskDataDate = lastCheck
         caskDataOffline = false
@@ -92,6 +95,7 @@ final class AppModel {
         isLoading = false
         state = await engine.store.load(.appState, default: AppState())
         if let report = await engine.lastReport() { apply(report) }
+        history = await engine.history()
         lastCheck = state.lastCheck ?? results.first?.checkedAt
     }
 
@@ -143,6 +147,7 @@ final class AppModel {
         await engine.store.save(report, BurnishEngine.lastReportKey)
         state = await engine.store.update(.appState, default: AppState()) { $0.lastCheck = report.finishedAt }
         lastCheck = report.finishedAt
+        history = await engine.history()
         isChecking = false
         stopAnimation()
         await engine.releaseCaches()
@@ -230,12 +235,13 @@ final class AppModel {
         case .brewUpgrade(let token):
             installStates[result.id] = .running(.replacing)
             do {
-                try await engine.brewUpgrade(token: token)
+                try await engine.brewUpgrade(result, token: token)
                 installStates[result.id] = .done(relaunched: false)
                 await recheck(result)
             } catch {
                 installStates[result.id] = .failed(error.errorDescription ?? String(localized: "brew upgrade failed"))
             }
+            history = await engine.history()
         case .managedByHomebrew, .none:
             break
         }
@@ -262,15 +268,40 @@ final class AppModel {
         guard isOnline else { return }
         let id = result.id
         installStates[id] = .running(.downloading(received: 0, total: nil))
-        let outcome = await engine.install(result, progress: { [weak self] phase in
+        let outcome = await engine.install(result, progress: progressHandler(id), askToQuit: Self.askToQuitHandler)
+        await finish(result, outcome)
+    }
+
+    /// The version Burnish can put back: the one its latest update of this app replaced, while
+    /// that copy is still in the Trash and the app is still on the version Burnish installed.
+    func restorableVersion(_ result: AppCheckResult) -> String? {
+        guard case let .updated(from, to, copy?)? = history.latestUpdate(for: result.app.bundleID)?.kind,
+              result.app.version.display == to, FileManager.default.fileExists(atPath: copy) else { return nil }
+        return from
+    }
+
+    func restore(_ result: AppCheckResult) async {
+        let id = result.id
+        installStates[id] = .running(.replacing)
+        let outcome = await engine.restore(result, progress: progressHandler(id), askToQuit: Self.askToQuitHandler)
+        await finish(result, outcome)
+    }
+
+    private func progressHandler(_ id: String) -> @Sendable (InstallPhase) -> Void {
+        { [weak self] phase in
             Task { @MainActor in
                 guard let self, case .running = self.installStates[id] else { return }
                 self.installStates[id] = .running(phase)
             }
-        }, askToQuit: { name in
-            await MainActor.run { Self.askToQuit(name) }
-        })
+        }
+    }
 
+    private static let askToQuitHandler: @Sendable (String) async -> QuitDecision = { name in
+        await MainActor.run { askToQuit(name) }
+    }
+
+    private func finish(_ result: AppCheckResult, _ outcome: InstallOutcome) async {
+        let id = result.id
         switch outcome {
         case .installed(_, let relaunched):
             installStates[id] = .done(relaunched: relaunched)
@@ -284,6 +315,7 @@ final class AppModel {
         case .cancelled:
             installStates[id] = nil
         }
+        history = await engine.history()
     }
 
     /// Rule 6: the app didn't quit within 10 seconds, so the person decides. Never force-quit.

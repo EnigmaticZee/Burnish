@@ -3,9 +3,10 @@ import AppKit
 import BurnishCore
 import CaskIndex
 import Inventory
+import Store
+import SwiftUI
 import UpdateSources
 import Versions
-import SwiftUI
 
 /// Debug builds only: `Burnish --render-previews <folder>` draws each screen offscreen to PNG
 /// (light and dark) from the last saved report, then quits. Used to check layout without
@@ -20,7 +21,7 @@ enum PreviewRenderer {
         let demo = args.contains("--demo")
         Task {
             if demo {
-                model.loadDemo(DemoData.results(), lastCheck: Date().addingTimeInterval(-7 * 60))
+                model.loadDemo(DemoData.results(), history: DemoData.history(), lastCheck: Date().addingTimeInterval(-7 * 60))
             } else {
                 await model.loadSnapshot()
             }
@@ -109,6 +110,21 @@ enum DemoData {
         var result = AppCheckResult(app: app, status: .outdated(UpdateCandidate(release: release, isMajorUpgrade: major)), decidedBy: source)
         if let token { result.match = CaskMatch(token: token, confidence: .high, evidence: [.bundleIDQuit, .fileName, .displayName]) }
         return result
+    }
+
+    /// Brave was updated last week and its earlier copy is still "in the Trash" (a temporary
+    /// folder), so its detail pane offers Put Back; Discord shows a find and a refusal.
+    static func history() -> UpdateHistory {
+        let trash = FileManager.default.temporaryDirectory.appendingPathComponent("burnish-demo-trash", isDirectory: true)
+        let earlier = trash.appendingPathComponent("Brave Browser 1.97.124 (replaced).app")
+        try? FileManager.default.createDirectory(at: earlier, withIntermediateDirectories: true)
+        let day: TimeInterval = 86400
+        var history = UpdateHistory()
+        history.record(.found(version: "1.98.60", source: "homebrew"), for: "com.brave.Browser", at: Date().addingTimeInterval(-6 * day))
+        history.record(.updated(from: "1.97.124", to: "1.98.60", previousCopy: earlier.path), for: "com.brave.Browser",
+                       at: Date().addingTimeInterval(-6 * day + 3600))
+        history.record(.found(version: "0.0.419", source: "homebrew"), for: "com.hnc.Discord", at: Date().addingTimeInterval(-2 * day))
+        return history
     }
 
     static func results() -> [AppCheckResult] {

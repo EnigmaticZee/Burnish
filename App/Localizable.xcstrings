@@ -14,6 +14,9 @@
     "%@ didn't quit" : {
 
     },
+    "%@ goes to the Trash, and Burnish skips that version until a newer one comes out." : {
+
+    },
     "%@ has moved or changed since Burnish checked it. Check again." : {
 
     },
@@ -338,6 +341,16 @@
     "Development certificate (not distributed)" : {
 
     },
+    "Didn't install %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Didn't install %1$@: %2$@"
+          }
+        }
+      }
+    },
     "Done" : {
 
     },
@@ -383,6 +396,16 @@
     "Feed not reachable (%@)" : {
 
     },
+    "Found %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Found %1$@ (%2$@)"
+          }
+        }
+      }
+    },
     "GitHub" : {
 
     },
@@ -396,6 +419,9 @@
 
     },
     "Hide" : {
+
+    },
+    "History" : {
 
     },
     "Homebrew" : {
@@ -591,11 +617,40 @@
     "Opened in Installer" : {
 
     },
+    "Opened the %@ installer package in Installer" : {
+
+    },
     "Other…" : {
 
     },
     "Privacy" : {
 
+    },
+    "Put Back" : {
+
+    },
+    "Put Back %@…" : {
+
+    },
+    "Put back %@ %@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Put back %1$@ %2$@?"
+          }
+        }
+      }
+    },
+    "Put back %@. %@ went to the Trash and is skipped." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Put back %1$@. %2$@ went to the Trash and is skipped."
+          }
+        }
+      }
     },
     "Quit Burnish" : {
 
@@ -691,6 +746,12 @@
     "The copy failed. The old version is in the Trash as %@" : {
 
     },
+    "The copy in the Trash is a different app (%@)" : {
+
+    },
+    "The copy in the Trash is the version you already have" : {
+
+    },
     "The developer asks for this upgrade to be downloaded by hand" : {
 
     },
@@ -712,7 +773,16 @@
     "The download doesn't match its published checksum" : {
 
     },
+    "The download failed (%@)" : {
+
+    },
     "The download isn't newer than the installed version" : {
+
+    },
+    "The earlier version is no longer in the Trash" : {
+
+    },
+    "The earlier version's signature isn't valid" : {
 
     },
     "The feed gave no version" : {
@@ -761,6 +831,9 @@
     "The new version couldn't be moved into place. The old version is in the Trash; drag it back to %@." : {
 
     },
+    "The new version needs macOS %@ or later" : {
+
+    },
     "The old version couldn't be moved to the Trash (%@)" : {
 
     },
@@ -795,6 +868,9 @@
 
     },
     "The update's signature doesn't match the developer's key" : {
+
+    },
+    "There's no earlier version to put back" : {
 
     },
     "There's no update to install" : {
@@ -857,7 +933,20 @@
     "Update with brew upgrade" : {
 
     },
+    "Updated %@ → %@. The earlier version went to the Trash." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updated %1$@ → %2$@. The earlier version went to the Trash."
+          }
+        }
+      }
+    },
     "Updated by Apple through Software Update" : {
+
+    },
+    "Updated to %@ with Homebrew" : {
 
     },
     "Updates" : {
@@ -966,6 +1055,9 @@
 
     },
     "macOS %@ or later" : {
+
+    },
+    "macOS Gatekeeper didn't accept the earlier version" : {
 
     },
     "macOS Gatekeeper didn't accept the new copy (it may not be notarised)" : {
