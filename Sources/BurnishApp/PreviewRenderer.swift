@@ -128,10 +128,15 @@ enum DemoData {
                      modificationDate: Date().addingTimeInterval(-86400 * 20))
     }
 
+    /// Where each sample app's download would come from, so the Hallmarks read naturally.
+    static let hosts = ["Google Chrome": "dl.google.com", "Firefox": "download-installer.cdn.mozilla.net",
+                        "Discord": "dl.discordapp.net", "Adguard": "static.adtidy.org", "Figma": "desktop.figma.com"]
+
     static func outdated(_ app: InstalledApp, _ latest: String, _ source: SourceKind, token: String? = nil, major: Bool = false,
                          notes: ReleaseNotes? = nil, daysAgo: Double = 2) -> AppCheckResult {
+        let host = hosts[app.name] ?? "example.com"
         let release = Release(source: source, version: VersionPair(short: latest), basis: .shortVersion,
-                              downloadURL: source == .appStore ? nil : URL(string: "https://example.com/\(app.name).dmg"),
+                              downloadURL: source == .appStore ? nil : URL(string: "https://\(host)/\(app.name.replacingOccurrences(of: " ", with: "")).dmg"),
                               downloadPage: URL(string: "https://example.com"), releaseNotes: notes,
                               date: Date().addingTimeInterval(-86400 * daysAgo))
         var result = AppCheckResult(app: app, status: .outdated(UpdateCandidate(release: release, isMajorUpgrade: major)), decidedBy: source)

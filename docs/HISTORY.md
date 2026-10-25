@@ -1,5 +1,55 @@
 # Version history
 
+## 0.3.0-beta — 2026-10-25
+Burnish now shows its working.
+
++ Every update lists where it comes from and the checks it has to pass before it goes in.
++ Minor updates can install themselves, after a wait you choose.
++ Release notes get a quick read up top, plus what you missed if you skipped a few versions.
++ Apps that only run on Intel get flagged while there's still time.
++ Each app can have its own rules: stay on version 5, try the betas, or just let me know.
+
+- **Every update shows its hallmarks.** An app's details now list where the download comes from
+  and each check it has to pass before Burnish installs it: the developer's signature, the
+  published checksum, the same developer as your copy, Gatekeeper. A check the source can't offer
+  says so instead of quietly passing, and the app's history records which ones ran. Like the marks
+  stamped on silver, only for apps.
+- **Updates can install themselves, but only the boring ones.** Turn on automatic updates in
+  Settings and Burnish installs minor updates for apps that aren't open, once they've been out as
+  long as you choose: three days unless you say otherwise. Security updates skip the wait. Major
+  upgrades, anything Burnish can't install with every check, and anything at all on Low Data Mode
+  still wait for you.
+- **Rules for each app.** In an app's details you can have its updates installed automatically or
+  only announced, stay on the major version you have, or include beta releases where the
+  developer publishes them.
+- **A quick read of the release notes.** Burnish sorts the developer's notes into security fixes,
+  new things, fixes and improvements, and shows the first few, clearly marked as a summary. It
+  only ever repeats what the developer wrote, and the full notes sit folded underneath. Skipped a
+  few versions? It lists what each one brought.
+- **Intel-only apps get flagged.** Apps built only for Intel chips run through Rosetta, which Apple
+  is retiring for most apps after macOS 27. Burnish marks them and says how many you have, so
+  there's time to find a newer build or a replacement.
+- **The community can point Burnish at feeds apps forget to mention.** A line in this repository's
+  community file lets Burnish check an app that names no update feed and isn't in Homebrew. It
+  shows the new version and its notes, then leaves the install to you, because the app never named
+  that feed itself.
+- **A longer way back.** Turn on *Keep earlier versions* and the version an update replaces waits
+  in Burnish's own folder for 30 days, so emptying the Trash doesn't take Put Back with it. After
+  that it goes to the Trash.
+- **Shortcuts and links.** `burnish://check`, `burnish://update-all` and `burnish://open` work from
+  Shortcuts' Open URL, the `burnish` command-line tool now ships inside the app with a new `count`
+  command, and the daily notification has an Update All button.
+- **IT can set Burnish up once.** Settings delivered in a configuration profile are applied and
+  shown as set by your organisation. [The admin guide](https://github.com/EnigmaticZee/Burnish/blob/main/docs/ADMINS.md) lists every key.
+- **Details open when you ask for them.** The list gets the whole window until you pick an app,
+  and Escape puts the details away again. Right-click any app, in the window or the menu bar, to
+  update it, ignore it or show it in Finder.
+- **Fixed:** notices about being offline or needing App Management no longer sit on top of the
+  sidebar's search field.
+
+Nothing to do: Burnish updates itself as usual, and automatic updates stay off until you turn them
+on.
+
 ## 0.2.0-beta — 2026-10-25
 Now accepting returns.
 

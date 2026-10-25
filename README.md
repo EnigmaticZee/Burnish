@@ -29,6 +29,7 @@ Most Macs collect apps from everywhere: direct downloads, the App Store, Homebre
 - **It finds updates for apps from anywhere.** Each app is checked against the best source it has: its developer's own update feed first, the App Store for App Store apps, and Homebrew's public app list for everything else, however the app was installed.
 - **It never guesses.** When Burnish isn't sure which app is which, it asks under *Needs confirmation* instead of raising a false alarm. Anything it can't check says why.
 - **It updates like a careful person would.** Every download is checked before anything changes, apps are asked politely to quit, and the old version goes to the Trash, so nothing is ever lost.
+- **It shows its working.** Every update lists where it comes from and the checks it has to pass, and the release notes come with a quick read up top.
 
 ## What it checks
 
@@ -47,6 +48,19 @@ Some apps are meant to be updated by their developer's own tool: Microsoft AutoU
 
 Apps you installed with `brew install --cask` show as **Managed by Homebrew**; Burnish leaves them to `brew upgrade` unless you turn on Homebrew updates in Settings, so the two never fight.
 
+## Before you click Update
+
+Pick an app and its details slide in beside the list:
+
+- **Hallmarks.** Where the download comes from and each check it must pass: the developer's signature, the published checksum, the same developer as your copy, Gatekeeper. A check the source can't offer says so instead of quietly passing.
+- **A quick read.** The developer's notes sorted into security fixes, new things, fixes and improvements, marked as a summary and built only from what the developer wrote. The full notes sit folded underneath, and if you skipped versions, so do theirs.
+- **Its own rules.** Install this app's updates automatically or only announce them, stay on the major version you have, or include betas where the developer publishes them.
+- **Intel only?** Apps built only for Intel chips are flagged, since Rosetta is going away for most apps after macOS 27.
+
+## Automatic updates
+
+Off until you turn them on. Then Burnish installs minor updates by itself for apps that aren't open, once each update has been out as long as you choose (three days unless you say otherwise), so a bad release has time to be pulled. Security updates skip the wait. Major upgrades, anything Burnish can't install with all eight promises, and everything on Low Data Mode wait for you.
+
 ## Eight promises
 
 Burnish replaces other apps on your Mac, so every install keeps all eight of these, or it doesn't happen and you get the developer's download page instead:
@@ -57,7 +71,7 @@ Burnish replaces other apps on your Mac, so every install keeps all eight of the
 4. **The same developer.** The new copy must pass Gatekeeper and be signed by an Apple-issued certificate for the same team as the copy you have, with the same bundle ID. Apps without a developer signature are never replaced.
 5. **No installer packages run on their own.** A verified `.pkg` opens in Apple's Installer, so you see every step.
 6. **No force-quitting.** Burnish asks an app to quit and waits. If it has unsaved work, you decide.
-7. **Nothing deleted.** The old version goes to the Trash; the new one takes its place and reopens if it was running. Changed your mind? **Put Back** returns the earlier version, after checking it the same way.
+7. **Nothing deleted.** The old version goes to the Trash; the new one takes its place and reopens if it was running. Changed your mind? **Put Back** returns the earlier version, after checking it the same way. Turn on **Keep earlier versions** and it waits in Burnish's own folder for 30 days instead, safe from an emptied Trash.
 8. **Your password stays yours.** When a folder needs admin rights, macOS asks you itself.
 
 Major upgrades (5.x → 6.x) are marked *May be paid* and never included in **Update All**.
@@ -70,9 +84,9 @@ No account, no analytics, no crash reports. Logs stay on your Mac. These are the
 | --- | --- | --- |
 | Homebrew's app list (`formulae.brew.sh`) | At most once a day | Nothing about your apps |
 | Apple's App Store lookup (`itunes.apple.com`) | Each check, if you have App Store apps | Their bundle IDs (you can turn this off) |
-| Each app's own update feed, and release-notes links in it | Each check | Nothing beyond the request |
-| GitHub's releases API, for apps whose download lives on GitHub | Each check, cached | Nothing beyond the request |
-| Community match fixes (this repository) | At most once a day (you can turn this off) | Nothing |
+| Each app's own update feed, or the one the community file lists for it, and release-notes links in it | Each check | Nothing beyond the request |
+| GitHub's releases API, for apps whose download lives on GitHub or that the community file points there | Each check, cached | Nothing beyond the request |
+| Community match fixes and update feeds (this repository) | At most once a day (you can turn this off) | Nothing |
 | The update download itself | When you update | Nothing beyond the request |
 | Burnish's own update feed (this repository's releases) | About once a day | Nothing beyond the request |
 
@@ -166,7 +180,10 @@ JSON and CSV reports. [docs/ADMINS.md](docs/ADMINS.md) has every key and an exam
 ✅ Safe one-click and Update All installs, with the old version kept in the Trash<br>
 ✅ Ignore a version or an app, and correct a match<br>
 ✅ Put back the version an update replaced, and a history for every app<br>
-✅ A desktop widget with the update count and the first three apps<br>
+✅ Hallmarks and a quick read of the release notes for every update<br>
+✅ Automatic updates after a wait you choose, and rules for each app<br>
+✅ Intel-only apps flagged before Rosetta goes<br>
+✅ A desktop widget, Shortcuts links and configuration profiles for IT<br>
 ✅ Daily check with at most one notification a day<br>
 ✅ Burnish updates itself
 
