@@ -31,6 +31,7 @@ struct BurnishApp: App {
                     .keyboardShortcut("r")
                 Button("Update All") { Task { await delegate.model.updateAll() } }
                     .keyboardShortcut("u", modifiers: [.command, .shift])
+                    .disabled(!delegate.model.canUpdateAll)
             }
         }
 

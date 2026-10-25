@@ -52,8 +52,8 @@ struct MainWindow: View {
                 } label: {
                     Label("Update All", systemImage: "square.and.arrow.down.on.square")
                 }
-                .disabled(model.updateAllCandidates.isEmpty || !model.isOnline)
-                .help("Updates everything Burnish can install itself, except major upgrades that may be paid")
+                .disabled(!model.canUpdateAll)
+                .help(UpdateAllHelp.text)
             }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
@@ -62,6 +62,7 @@ struct MainWindow: View {
                 if model.needsAppManagement {
                     Banner(text: "Burnish needs App Management to replace apps.", symbol: "lock", action: ("Open Settings", Permissions.openAppManagement))
                 }
+                AppStoreBanner()
                 if model.isChecking {
                     Banner(text: "Checked \(model.checkedCount) of \(model.totalCount) apps", symbol: "arrow.clockwise")
                 }

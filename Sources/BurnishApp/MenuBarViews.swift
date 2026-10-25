@@ -118,7 +118,7 @@ struct PopoverView: View {
     @ViewBuilder
     private var banners: some View {
         if let version = model.justUpdatedTo {
-            Banner(text: "Burnish updated itself to \(version).", symbol: "sparkles", action: ("What's New", {
+            Banner(text: "Burnish updated itself to \(version).", symbol: "bell", action: ("What's New", {
                 NSWorkspace.shared.open(URL(string: "https://github.com/EnigmaticZee/Burnish/releases")!)
                 model.justUpdatedTo = nil
             }))
@@ -129,6 +129,7 @@ struct PopoverView: View {
         if model.needsAppManagement {
             Banner(text: "Burnish needs App Management to replace apps.", symbol: "lock", action: ("Open Settings", Permissions.openAppManagement))
         }
+        AppStoreBanner()
         if model.isChecking, model.totalCount > 0 {
             ProgressView(value: Double(model.checkedCount), total: Double(max(model.totalCount, 1)))
                 .progressViewStyle(.linear)
@@ -168,8 +169,8 @@ struct PopoverView: View {
     private var footer: some View {
         HStack {
             Button("Update All") { Task { await model.updateAll() } }
-                .disabled(model.updateAllCandidates.isEmpty || !model.isOnline)
-                .help("Updates everything Burnish can install itself, except major upgrades that may be paid")
+                .disabled(!model.canUpdateAll)
+                .help(UpdateAllHelp.text)
             Spacer()
             Button("Open Burnish") {
                 NSApp.activate(ignoringOtherApps: true)
@@ -241,6 +242,23 @@ struct Banner: View {
         .padding(.vertical, 6)
         .background(.quaternary.opacity(0.4))
     }
+}
+
+/// Several App Store updates waiting: one trip to the App Store's Updates page instead of one per app.
+struct AppStoreBanner: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let count = model.appStoreUpdates.count
+        if count >= 2 {
+            Banner(text: "\(count) updates are waiting in the App Store.", symbol: "bag",
+                   action: ("Open App Store", model.openAppStoreUpdates))
+        }
+    }
+}
+
+enum UpdateAllHelp {
+    static let text = "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store for App Store apps"
 }
 
 enum Permissions {

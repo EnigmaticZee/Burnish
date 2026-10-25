@@ -195,6 +195,14 @@ final class AppModel {
 
     func action(for result: AppCheckResult) -> UpdateAction { result.action(homebrew: settings.homebrewHandling) }
 
+    /// Updates Apple installs. Burnish hands them over in one trip rather than one per app.
+    var appStoreUpdates: [AppCheckResult] {
+        outdated.filter { if case .openAppStore = action(for: $0) { true } else { false } }
+    }
+
+    /// Update All has something to do: an install Burnish can run, or App Store updates to hand over.
+    var canUpdateAll: Bool { isOnline && (!updateAllCandidates.isEmpty || !appStoreUpdates.isEmpty) }
+
     func isInstalling(_ result: AppCheckResult) -> Bool {
         if case .running = installStates[result.id] { return true }
         return false
@@ -233,8 +241,21 @@ final class AppModel {
         }
     }
 
+    /// Installs everything Burnish can, then sends any App Store updates to the App Store.
     func updateAll() async {
         for result in updateAllCandidates { await update(result) }
+        if !appStoreUpdates.isEmpty { openAppStoreUpdates() }
+    }
+
+    /// One App Store update opens its own page; several open the Updates page, where Apple's Update
+    /// All installs them together.
+    func openAppStoreUpdates() {
+        let pending = appStoreUpdates
+        if pending.count == 1, case .openAppStore(let url?) = action(for: pending[0]) {
+            NSWorkspace.shared.open(url)
+        } else if !pending.isEmpty {
+            NSWorkspace.shared.open(AppStoreSource.updatesPage)
+        }
     }
 
     private func install(_ result: AppCheckResult) async {

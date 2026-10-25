@@ -112,7 +112,7 @@ No. Apps installed with Homebrew are shown but left to <code>brew upgrade</code>
 <details>
 <summary><b>What about App Store apps?</b></summary>
 <br>
-Burnish shows their updates and opens the App Store to install them. It doesn't use private Apple APIs.
+Burnish finds their updates and hands them to the App Store, which installs them: one update opens its page, and several open the App Store's Updates page so Apple's <b>Update All</b> does them in one go. Burnish's own <b>Update All</b> does that hand-off for you after its own installs. It doesn't use private Apple APIs.
 </details>
 
 <details>
