@@ -19,7 +19,7 @@
 </p>
 
 > [!NOTE]
-> **Burnish is an alpha.** Detection has been tested on a handful of Macs, not hundreds. It's careful by design (it would rather say "can't check" than guess), but if it ever matches an app to the wrong thing, **Wrong match? → Report** in the app opens a ready-made issue.
+> **Burnish is an alpha.** Detection has been tested on a handful of Macs, not hundreds. It's careful by design (it would rather say "can't check" than guess), but if it ever matches an app to the wrong thing, **Wrong Match? → Report a Wrong Match on GitHub** in the app opens a ready-made issue.
 
 ## Why Burnish
 
@@ -77,7 +77,7 @@ macOS may also contact Apple when Burnish asks Gatekeeper to check a downloaded 
 ## Install
 
 1. **[Download Burnish.dmg](https://github.com/EnigmaticZee/Burnish/releases/latest/download/Burnish.dmg)**, open it and drag Burnish into Applications.
-2. **Open it once.** Burnish isn't notarized by Apple yet (that needs a paid developer account), so macOS blocks it the first time. Click **Done**.
+2. **Open it once.** Burnish isn't notarised by Apple yet (that needs a paid developer account), so macOS blocks it the first time. Click **Done**.
 3. **Allow it.** In **System Settings → Privacy & Security**, next to *"Burnish" was blocked*, click **Open Anyway**.
 4. **Let it update apps.** Burnish asks for **App Management** (System Settings → Privacy & Security), which macOS requires before one app can replace another. Finding updates works without it.
 
@@ -118,7 +118,7 @@ Burnish finds their updates and hands them to the App Store, which installs them
 <details>
 <summary><b>Why does it say "Can't check" for some apps?</b></summary>
 <br>
-Some apps have no public update source Burnish can read, or set their update feed only while running. Burnish says so rather than guessing. If an app is in Homebrew under a different name, <b>Wrong match? → Choose a different Homebrew app</b> fixes it for you, and <a href="overrides/README.md">community match fixes</a> fix it for everyone.
+Some apps have no public update source Burnish can read, or set their update feed only while running. Burnish says so rather than guessing. If an app is in Homebrew under a different name, <b>Wrong Match? → Choose a Different Homebrew App</b> fixes it for you, and <a href="overrides/README.md">community match fixes</a> fix it for everyone.
 </details>
 
 <details>
@@ -151,7 +151,7 @@ Build it with `swift build -c release --product burnish`.
 
 **Next**
 
-⬜ Signed and notarized builds, so there's no first-launch prompt<br>
+⬜ Signed and notarised builds, so there's no first-launch prompt<br>
 ⬜ A Homebrew cask for Burnish<br>
 ⬜ More apps matched out of the box
 

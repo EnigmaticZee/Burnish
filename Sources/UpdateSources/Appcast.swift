@@ -2,7 +2,6 @@ import Foundation
 
 /// One `<item>` of a Sparkle appcast.
 public struct AppcastItem: Sendable, Hashable {
-    public var title: String?
     public var link: URL?
     public var pubDate: Date?
     /// `sparkle:version`: compared with `CFBundleVersion`.
@@ -24,7 +23,6 @@ public struct AppcastItem: Sendable, Hashable {
     public struct Enclosure: Sendable, Hashable {
         public var url: URL?
         public var length: Int64?
-        public var type: String?
         public var version: String?
         public var shortVersion: String?
         public var edSignature: String?
@@ -48,7 +46,6 @@ public struct AppcastItem: Sendable, Hashable {
 /// Parses appcast XML, including old Sparkle 1 feeds that keep versions on the enclosure.
 public final class AppcastParser: NSObject, XMLParserDelegate {
     static let sparkleNS = "http://www.andymatuschak.org/xml-namespaces/sparkle"
-    static let xmlNS = "http://www.w3.org/XML/1998/namespace"
 
     private var items: [AppcastItem] = []
     private var current: AppcastItem?
@@ -92,7 +89,6 @@ public final class AppcastParser: NSObject, XMLParserDelegate {
             current?.enclosure = AppcastItem.Enclosure(
                 url: attributes["url"].flatMap(URL.init(string:)),
                 length: attributes["length"].flatMap { Int64($0) },
-                type: attributes["type"],
                 version: attr("version"),
                 shortVersion: attr("shortVersionString"),
                 edSignature: attr("edSignature"),
@@ -128,7 +124,6 @@ public final class AppcastParser: NSObject, XMLParserDelegate {
         }
         guard parent == "item" else { return }
         switch name {
-        case "title": current?.title = value.nilIfEmpty
         case "link": current?.link = URL(string: value)
         case "pubDate": current?.pubDate = Self.parseDate(value)
         case "description": if !value.isEmpty { current?.descriptions[lang] = value }

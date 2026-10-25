@@ -2,6 +2,7 @@ import CryptoKit
 import Foundation
 import Inventory
 import Net
+import NetTesting
 import Testing
 import UpdateSources
 import Versions

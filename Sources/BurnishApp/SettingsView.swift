@@ -3,7 +3,7 @@ import BurnishCore
 import Store
 import SwiftUI
 
-/// One pane, under ten controls (F14).
+/// One pane, kept to ten controls or fewer.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
 
@@ -66,7 +66,7 @@ struct OnboardingView: View {
             }
         }
         .padding(28)
-        .frame(width: 480, height: 400, alignment: .topLeading)
+        .frame(width: 480, height: 460, alignment: .topLeading)
     }
 
     private var privacy: some View {
@@ -74,13 +74,18 @@ struct OnboardingView: View {
             Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 64, height: 64)
             Text("Burnish keeps your apps up to date").font(.title2.weight(.semibold))
             Text("It checks the apps in /Applications and ~/Applications against each app's own update feed, the App Store and Homebrew's public app list.")
+                .fixedSize(horizontal: false, vertical: true)
             Text("No account, no analytics, nothing about your apps leaves this Mac except what it takes to ask for updates:")
+                .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: 4) {
                 Label("Homebrew's app list, once a day", systemImage: "shippingbox")
                 Label("Apple's App Store lookup, with your App Store apps' bundle IDs", systemImage: "bag")
-                Label("Each app's own update feed, and the download itself", systemImage: "arrow.down.circle")
+                Label("Each app's own update feed, its release notes, and the download itself", systemImage: "arrow.down.circle")
+                Label("GitHub, for apps whose downloads live there, and for community match fixes", systemImage: "chevron.left.forwardslash.chevron.right")
+                Label("Burnish's own update feed, about once a day", systemImage: "bell")
             }
             .font(.callout).foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
             Spacer()
             HStack {
                 Spacer()

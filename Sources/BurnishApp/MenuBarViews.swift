@@ -1,5 +1,6 @@
 import AppKit
 import BurnishCore
+import Net
 import SwiftUI
 
 /// The menu bar item: an outline icon, the count beside it in the normal text colour (never red),
@@ -115,7 +116,7 @@ struct PopoverView: View {
     private var banners: some View {
         if let version = model.justUpdatedTo {
             Banner(text: String(localized: "Burnish updated itself to \(version)."), symbol: "bell", action: (String(localized: "What's New"), {
-                NSWorkspace.shared.open(URL(string: "https://github.com/EnigmaticZee/Burnish/releases")!)
+                NSWorkspace.shared.open(Net.repository.appendingPathComponent("releases"))
                 model.justUpdatedTo = nil
             }))
         }

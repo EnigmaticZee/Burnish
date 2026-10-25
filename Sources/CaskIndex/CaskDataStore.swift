@@ -3,12 +3,12 @@ import Net
 import os
 
 /// Downloads Homebrew's bulk cask list, revalidates it with its ETag at most once every
-/// 24 hours, keeps it on disk and works offline from the last copy (F4).
+/// 24 hours, keeps it on disk and works offline from the last copy.
 public actor CaskDataStore {
     public static let sourceURL = URL(string: "https://formulae.brew.sh/api/cask.json")!
     public static let refreshInterval: TimeInterval = 24 * 60 * 60
     /// Bump when `Cask` changes shape so the compact index is rebuilt from the raw file.
-    static let indexSchema = 3
+    static let indexSchema = 4
 
     public struct Loaded: Sendable {
         public let catalog: CaskCatalog
@@ -85,7 +85,7 @@ public actor CaskDataStore {
             writeIndex(casks)
             writeMeta(Meta(etag: response.header("ETag"), fetchedAt: fetchedAt, indexSchema: Self.indexSchema, platform: platform.variationKey))
             log.info("Fetched \(casks.count) casks")
-            return remember(Loaded(catalog: CaskCatalog(casks: casks, dataDate: fetchedAt, platform: platform), dataDate: fetchedAt, isOffline: false))
+            return remember(Loaded(catalog: CaskCatalog(casks: casks), dataDate: fetchedAt, isOffline: false))
         } catch {
             log.error("Cask list refresh failed: \(error.localizedDescription, privacy: .public)")
             if let cached { return remember(Loaded(catalog: cached.catalog, dataDate: cached.dataDate, isOffline: true)) }
@@ -110,7 +110,7 @@ public actor CaskDataStore {
         if meta.indexSchema == Self.indexSchema, meta.platform == platform.variationKey,
            let data = try? Data(contentsOf: indexURL),
            let casks = try? JSONDecoder().decode([Cask].self, from: data) {
-            return CaskCatalog(casks: casks, dataDate: meta.fetchedAt, platform: platform)
+            return CaskCatalog(casks: casks)
         }
         guard let raw = try? Data(contentsOf: rawURL), let casks = try? Self.parse(raw, platform: platform) else { return nil }
         writeIndex(casks)
@@ -118,7 +118,7 @@ public actor CaskDataStore {
         updated.indexSchema = Self.indexSchema
         updated.platform = platform.variationKey
         writeMeta(updated)
-        return CaskCatalog(casks: casks, dataDate: meta.fetchedAt, platform: platform)
+        return CaskCatalog(casks: casks)
     }
 
     private func readMeta() -> Meta? {

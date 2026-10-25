@@ -1,13 +1,13 @@
 import BurnishCore
-import Installer
 import Foundation
+import Installer
 import Inventory
 import Store
 import UpdateSources
 
-// burnish inventory            Every app found, with bundle ID, versions, Team ID and source hints (M1)
-// burnish check [--csv|--json] Detection report: app, installed, latest, source, confidence (M2, F20)
-
+// burnish inventory            Every app found, with bundle ID, versions, Team ID and source hints
+// burnish check [--csv|--json] Detection report: app, installed, latest, source, confidence
+// burnish update <app>         One verified install, with the same checks as the app
 
 func pad(_ s: String, _ width: Int) -> String {
     s.count >= width ? String(s.prefix(width - 1)) + "…" : s + String(repeating: " ", count: width - s.count)
@@ -148,7 +148,7 @@ struct BurnishCLI {
             Usage:
               burnish inventory              List every app with bundle ID, versions, Team ID and update hints
               burnish check                  Check every app for updates (table)
-              burnish check --csv            Same, as CSV (the M2 detection report)
+              burnish check --csv            Same, as CSV
               burnish check --json           Same, as JSON
               burnish update <app>           Download, verify and install one app's update
             """)

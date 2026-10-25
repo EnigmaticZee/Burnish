@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Cut a small test fixture out of Homebrew's full cask list.
+"""Cut the test fixtures out of Homebrew's full cask list.
 
-Usage: scripts/make-cask-fixture.py cask.json Tests/CaskIndexTests/Fixtures/casks.json
+Usage: scripts/make-cask-fixture.py cask.json
 
-Keeps the casks the matcher tests name, plus the first cask of each tricky kind
-(version "latest", no checksum, .pkg, nested container, vendor installer,
-deprecated, disabled, font) so the parser sees every shape.
+Writes Tests/CaskIndexTests/Fixtures/casks.json: the casks the matcher tests name, plus the first
+cask of each tricky kind (version "latest", no checksum, .pkg, nested container, vendor installer,
+deprecated, disabled, font) so the parser sees every shape. Also writes the much smaller
+Tests/BurnishCoreTests/Fixtures/casks.json with just the apps the end-to-end checker test uses.
 """
 import json
 import sys
@@ -20,9 +21,19 @@ NAMED = [
     "qbittorrent", "qbittorrent@lt20", "c0re100-qbittorrent", "stremio", "stremio@beta",
     "wondershare-uniconverter", "mailbutler", "obsidian", "zoom", "spotify", "vlc", "telegram",
 ]
+# The end-to-end checker test: Chrome, Firefox, AdGuard and Discord with their channels, and PasteNow.
+CORE = [t for t in NAMED if t.split("@")[0] in ("google-chrome", "firefox", "adguard", "discord", "pastenow")]
+MATCHER_FIXTURE = "Tests/CaskIndexTests/Fixtures/casks.json"
+CORE_FIXTURE = "Tests/BurnishCoreTests/Fixtures/casks.json"
 
 
-def main(src, dst):
+def write(casks, dst):
+    with open(dst, "w") as out:
+        json.dump(casks, out, indent=1, sort_keys=True)
+    print(f"{len(casks)} casks -> {dst}")
+
+
+def main(src):
     casks = json.load(open(src))
     by_token = {c["token"]: c for c in casks}
     keep = [by_token[t] for t in NAMED if t in by_token]
@@ -39,10 +50,9 @@ def main(src, dst):
         match = next((c for c in casks if check(c) and c not in keep), None)
         if match:
             keep.append(match)
-    with open(dst, "w") as out:
-        json.dump(keep, out, indent=1, sort_keys=True)
-    print(f"{len(keep)} casks -> {dst}")
+    write(keep, MATCHER_FIXTURE)
+    write([by_token[t] for t in CORE if t in by_token], CORE_FIXTURE)
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:3])
+    main(sys.argv[1])

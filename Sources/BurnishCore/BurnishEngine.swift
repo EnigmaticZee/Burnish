@@ -16,11 +16,9 @@ public final class BurnishEngine: Sendable {
     public let caskStore: CaskDataStore
     public let checker: UpdateChecker
     public let community: CommunityOverrides
-    public let system: SystemVersion
 
     public init(directory: URL = StateStore.defaultDirectory, client: HTTPClient = URLSessionHTTPClient(), system: SystemVersion = .current) {
         self.client = client
-        self.system = system
         store = StateStore(directory: directory)
         caskStore = CaskDataStore(directory: directory.appendingPathComponent("Homebrew", isDirectory: true), client: client)
         checker = UpdateChecker(client: client, caskStore: caskStore, system: system)
@@ -35,7 +33,7 @@ public final class BurnishEngine: Sendable {
         return roots
     }
 
-    /// F1: scan the app folders. Burnish updates itself with Sparkle, so it leaves itself out.
+    /// Scans the app folders. Burnish updates itself with Sparkle, so it leaves itself out.
     public func scan(settings: Settings) -> InventoryResult {
         AppInventory(excludedBundleIDs: [Self.bundleID]).scan(roots: roots(for: settings))
     }

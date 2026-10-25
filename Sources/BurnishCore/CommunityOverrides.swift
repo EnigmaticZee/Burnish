@@ -4,7 +4,7 @@ import Net
 import Store
 
 /// Match fixes contributed by pull request to `overrides/community-overrides.json` in the
-/// repository. Fetched at most once a day; the last copy is used offline (F17).
+/// repository. Fetched at most once a day; the last copy is used offline.
 public actor CommunityOverrides {
     public static let sourceURL = URL(string: "https://raw.githubusercontent.com/EnigmaticZee/Burnish/main/overrides/community-overrides.json")!
 

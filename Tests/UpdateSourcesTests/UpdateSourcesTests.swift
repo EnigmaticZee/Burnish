@@ -2,6 +2,7 @@ import CaskIndex
 import Foundation
 import Inventory
 import Net
+import NetTesting
 import Testing
 import Versions
 @testable import UpdateSources
@@ -86,7 +87,7 @@ func fixture(_ name: String) throws -> Data {
             try await source().check(feed: URL(string: "https://example.com/garbage.xml")!)
         }
         client.respond(to: "https://example.com/slow.xml") { _, _ in throw HTTPError.timedOut }
-        await #expect(throws: SparkleSource.Failure.unreachable("Feed not reachable (timed out)")) {
+        await #expect(throws: SparkleSource.Failure.unreachable("Timed out")) {
             try await source().check(feed: URL(string: "https://example.com/slow.xml")!)
         }
     }
@@ -245,8 +246,8 @@ func fixture(_ name: String) throws -> Data {
         let body = try fixture("github-release.json")
         client.respond(to: api) { url, headers in
             headers["If-None-Match"] == "\"abc\""
-                ? HTTPResponse(status: 304, url: url)
-                : HTTPResponse(status: 200, headers: ["ETag": "\"abc\""], body: body, url: url)
+                ? HTTPResponse(status: 304)
+                : HTTPResponse(status: 200, headers: ["ETag": "\"abc\""], body: body)
         }
         let source = GitHubSource(client: client)
         _ = try await source.latestRelease(of: repo)
@@ -339,7 +340,7 @@ func fixture(_ name: String) throws -> Data {
     }
 
     func release(tag: String, assets: [String] = []) -> GitHubRelease {
-        GitHubRelease(tag: tag, name: nil, body: "notes", page: URL(string: "https://github.com/o/r/releases/tag/\(tag)"), publishedAt: nil,
+        GitHubRelease(tag: tag, body: "notes", page: URL(string: "https://github.com/o/r/releases/tag/\(tag)"), publishedAt: nil,
                       assets: assets.map { .init(name: $0, url: URL(string: "https://github.com/o/r/releases/download/\(tag)/\($0)")!, size: 1, digest: nil) })
     }
 

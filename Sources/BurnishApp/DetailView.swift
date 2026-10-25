@@ -4,7 +4,7 @@ import CaskIndex
 import SwiftUI
 import UpdateSources
 
-/// Versions, source and match confidence, release notes, and every action for one app (F9).
+/// Versions, source and match confidence, release notes, and every action for one app.
 struct DetailView: View {
     @Environment(AppModel.self) private var model
     let result: AppCheckResult
@@ -196,7 +196,7 @@ struct DetailView: View {
         switch result.status {
         case .outdated: String(localized: "Update available")
         case .upToDate(let note): note.map { String(localized: "Up to date. \($0)") } ?? String(localized: "Up to date")
-        case .needsConfirmation: String(localized: "Needs your confirmation")
+        case .needsConfirmation: String(localized: "Needs confirmation")
         case .cantCheck(let reason): String(localized: "Can't check: \(reason)")
         case .ignored(.app, _): String(localized: "Ignored")
         case .ignored(.version(let v), _): String(localized: "Ignoring version \(v)")

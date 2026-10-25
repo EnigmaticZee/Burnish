@@ -8,7 +8,7 @@ enum SortOrder: String, CaseIterable, Identifiable {
     var label: String { self == .name ? String(localized: "Name") : String(localized: "Date") }
 }
 
-/// Sidebar with the five tabs and counts, a sortable list, and the detail pane (F8).
+/// Sidebar with the five tabs and counts, a sortable list, and the detail pane.
 struct MainWindow: View {
     @Environment(AppModel.self) private var model
     @State private var search = ""

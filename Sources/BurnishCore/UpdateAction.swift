@@ -10,11 +10,11 @@ import Versions
 public enum UpdateAction: Sendable, Equatable {
     /// Burnish downloads, verifies and replaces the app.
     case install
-    /// App Store apps update in the App Store (F2).
+    /// App Store apps update in the App Store.
     case openAppStore(URL?)
     /// The source has nothing Burnish can install safely; open the developer's page.
     case openDownloadPage(URL?, reason: String)
-    /// F18, when turned on in Settings.
+    /// `brew upgrade --cask`, when turned on in Settings.
     case brewUpgrade(token: String)
     /// Shown, but left to `brew upgrade --cask`.
     case managedByHomebrew(token: String)
@@ -53,8 +53,7 @@ extension AppCheckResult {
         if release.isInformational || release.needsManualInstall || release.downloadURL == nil {
             return .openDownloadPage(downloadPage, reason: String(localized: "This update comes from the developer's page"))
         }
-        if let minimum = release.minimumAutoupdateVersion.flatMap(Version.init),
-           let installed = (app.version.build ?? app.version.short).flatMap(Version.init), installed < minimum {
+        if release.wantsManualUpgrade(from: app.version) {
             return .openDownloadPage(downloadPage, reason: String(localized: "The developer asks for this upgrade to be downloaded by hand"))
         }
         return .install
@@ -67,7 +66,7 @@ extension AppCheckResult {
     }
 }
 
-/// F19: a prefilled GitHub issue with the bundle ID, versions and chosen cask, and nothing else.
+/// A prefilled GitHub issue with the bundle ID, versions and chosen cask, and nothing else.
 public enum WrongMatchReport {
     public static func url(for result: AppCheckResult) -> URL {
         var body = """

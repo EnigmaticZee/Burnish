@@ -18,4 +18,5 @@ First light. Burnish is ready for people who like to try things early.
 - **Keeps itself up to date**, quietly, the same careful way.
 
 This is an alpha: detection has been tested on a handful of Macs, not hundreds. If Burnish matches
-an app to the wrong thing, use **Wrong match? → Report** in the app and it opens a ready-made issue.
+an app to the wrong thing, use **Wrong Match? → Report a Wrong Match on GitHub** in the app and it
+opens a ready-made issue.

@@ -58,8 +58,6 @@ public struct InstallRefusal: Error, Sendable, Equatable, LocalizedError {
         case unsignedInstalledApp
         /// Rule 5: installer packages only open in Apple's Installer.
         case package
-        /// Rule 6: the app didn't quit.
-        case quit
         /// Rule 7/8: moving files failed or needed a permission.
         case replace
         /// An administrator was needed and the prompt didn't succeed.

@@ -101,7 +101,7 @@ jobs:
             echo
             echo "Download **[Burnish.dmg]($REPO/releases/download/${GITHUB_REF_NAME}/Burnish.dmg)** (macOS 14 or later, Apple silicon and Intel), open it and drag Burnish into Applications."
             echo
-            echo "Burnish isn't notarized by Apple yet, so the first time you open it macOS asks you to confirm: open it once, click **Done**, then **System Settings → Privacy & Security → Open Anyway**. After that it updates itself."
+            echo "Burnish isn't notarised by Apple yet, so the first time you open it macOS asks you to confirm: open it once, click **Done**, then **System Settings → Privacy & Security → Open Anyway**. After that it updates itself."
             echo
             echo "## Checksum (SHA-256)"
             echo

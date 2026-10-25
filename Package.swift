@@ -17,6 +17,8 @@ let package = Package(
         .target(name: "Versions"),
         // HTTP client with Burnish's User-Agent, timeouts and an in-flight limit.
         .target(name: "Net"),
+        // A canned-response HTTP client for tests; nothing that ships depends on it.
+        .target(name: "NetTesting", dependencies: ["Net"]),
         // Find installed apps and read what they say about themselves.
         .target(name: "Inventory", dependencies: ["Versions"]),
         // Homebrew's cask list: download, cache, index and match.
@@ -32,11 +34,11 @@ let package = Package(
         // Ties the modules together; shared by the app and the CLI.
         .target(
             name: "BurnishCore",
-            dependencies: ["Versions", "Net", "Inventory", "CaskIndex", "UpdateSources", "Store", "Installer", "Scheduler"]
+            dependencies: ["Versions", "Net", "Inventory", "CaskIndex", "UpdateSources", "Store", "Installer"]
         ),
         .executableTarget(
             name: "BurnishApp",
-            dependencies: ["BurnishCore", .product(name: "Sparkle", package: "Sparkle")],
+            dependencies: ["BurnishCore", "Scheduler", .product(name: "Sparkle", package: "Sparkle")],
             swiftSettings: [.unsafeFlags(["-parse-as-library"])],
             linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
         ),
@@ -44,10 +46,11 @@ let package = Package(
 
         .testTarget(name: "VersionsTests", dependencies: ["Versions"]),
         .testTarget(name: "InventoryTests", dependencies: ["Inventory"]),
-        .testTarget(name: "CaskIndexTests", dependencies: ["CaskIndex"], resources: [.copy("Fixtures")]),
-        .testTarget(name: "UpdateSourcesTests", dependencies: ["UpdateSources"], resources: [.copy("Fixtures")]),
+        .testTarget(name: "CaskIndexTests", dependencies: ["CaskIndex", "NetTesting"], resources: [.copy("Fixtures")]),
+        .testTarget(name: "UpdateSourcesTests", dependencies: ["UpdateSources", "NetTesting"], resources: [.copy("Fixtures")]),
         .testTarget(name: "StoreTests", dependencies: ["Store"]),
-        .testTarget(name: "InstallerTests", dependencies: ["Installer"]),
-        .testTarget(name: "BurnishCoreTests", dependencies: ["BurnishCore"], resources: [.copy("Fixtures")]),
+        .testTarget(name: "InstallerTests", dependencies: ["Installer", "NetTesting"]),
+        .testTarget(name: "SchedulerTests", dependencies: ["Scheduler"]),
+        .testTarget(name: "BurnishCoreTests", dependencies: ["BurnishCore", "NetTesting"], resources: [.copy("Fixtures")]),
     ]
 )

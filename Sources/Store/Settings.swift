@@ -30,7 +30,7 @@ public enum HomebrewHandling: String, Sendable, Codable, CaseIterable, Identifia
     case showOnly
     /// Leave them out of Burnish entirely.
     case hide
-    /// Run `brew upgrade --cask <token>` when asked to update (F18).
+    /// Run `brew upgrade --cask <token>` when asked to update.
     case upgradeWithBrew
 
     public var id: String { rawValue }
@@ -44,7 +44,7 @@ public enum HomebrewHandling: String, Sendable, Codable, CaseIterable, Identifia
     }
 }
 
-/// Settings (F14). Missing keys fall back to defaults, so old files keep working.
+/// Settings. Missing keys fall back to defaults, so old files keep working.
 public struct Settings: Sendable, Codable, Equatable {
     public var checkFrequency: CheckFrequency = .daily
     public var notificationsEnabled = true
@@ -53,7 +53,7 @@ public struct Settings: Sendable, Codable, Equatable {
     public var homebrewHandling: HomebrewHandling = .showOnly
     /// Sends installed App Store bundle IDs to Apple's lookup. Off for people who'd rather not.
     public var appStoreLookups = true
-    /// Fetch the community match fixes from Burnish's GitHub repository (F17).
+    /// Fetch the community match fixes from Burnish's GitHub repository.
     public var communityOverrides = true
     public var hasCompletedOnboarding = false
 
@@ -73,7 +73,7 @@ public struct Settings: Sendable, Codable, Equatable {
     }
 }
 
-/// Ignore rules (F11). Keyed by bundle ID so they survive moving or renaming the app.
+/// Ignore rules. Keyed by bundle ID so they survive moving or renaming the app.
 public struct IgnoreRules: Sendable, Codable, Equatable {
     /// Apps ignored forever.
     public var apps: Set<String> = []
@@ -95,7 +95,7 @@ public struct IgnoreRules: Sendable, Codable, Equatable {
 /// Small bits of state that aren't settings.
 public struct AppState: Sendable, Codable, Equatable {
     public var lastCheck: Date?
-    /// At most one notification a day (F13).
+    /// At most one notification a day.
     public var lastNotification: Date?
     /// Notifications are requested on the first update found, not at launch.
     public var askedForNotifications = false

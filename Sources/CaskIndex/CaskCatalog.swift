@@ -3,9 +3,6 @@ import Foundation
 /// Homebrew's casks indexed for matching and search. Built once per refresh.
 public final class CaskCatalog: Sendable {
     public let casks: [Cask]
-    /// When Burnish last got this data from Homebrew.
-    public let dataDate: Date?
-    public let platform: Platform
 
     private let byToken: [String: Int]
     let byQuitID: [String: [Int]]
@@ -13,10 +10,8 @@ public final class CaskCatalog: Sendable {
     let byAppName: [String: [Int]]
     let byName: [String: [Int]]
 
-    public init(casks: [Cask], dataDate: Date? = nil, platform: Platform = .current) {
+    public init(casks: [Cask]) {
         self.casks = casks
-        self.dataDate = dataDate
-        self.platform = platform
         var byToken: [String: Int] = [:]
         var byQuitID: [String: [Int]] = [:]
         var byHintID: [String: [Int]] = [:]

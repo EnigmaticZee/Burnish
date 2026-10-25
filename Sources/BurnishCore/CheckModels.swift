@@ -4,7 +4,7 @@ import Inventory
 import UpdateSources
 import Versions
 
-/// A newer release, plus whether it looks like a paid major upgrade (F12).
+/// A newer release, plus whether it looks like a paid major upgrade.
 public struct UpdateCandidate: Sendable, Hashable, Codable {
     public let release: Release
     public let isMajorUpgrade: Bool
@@ -16,7 +16,7 @@ public struct UpdateCandidate: Sendable, Hashable, Codable {
 
     public var source: SourceKind { release.source }
     public var version: VersionPair { release.version }
-    public var displayVersion: String { release.version.short ?? release.version.build ?? "?" }
+    public var displayVersion: String { release.version.display }
 }
 
 public enum IgnoreKind: Sendable, Hashable, Codable {
@@ -53,7 +53,7 @@ public enum CheckStatus: Sendable, Hashable, Codable {
     }
 }
 
-/// The main window's five tabs (F8).
+/// The main window's five tabs.
 public enum StatusTab: String, Sendable, CaseIterable, Codable, Identifiable {
     case updates, upToDate, needsConfirmation, cantCheck, ignored
 
@@ -152,5 +152,4 @@ public struct CheckReport: Sendable, Codable {
         self.problems = problems
     }
 
-    public var outdated: [AppCheckResult] { results.filter(\.status.isOutdated) }
 }

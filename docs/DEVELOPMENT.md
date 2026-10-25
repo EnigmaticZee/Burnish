@@ -77,6 +77,20 @@ One Swift package, one target per module:
 - `docs/HISTORY.md` entries are the release notes everywhere: the GitHub release and, through
   `scripts/release-notes-html.py`, the update window inside Burnish.
 
+## Scripts
+
+| Script | What it does |
+| --- | --- |
+| `scripts/test.sh` | Runs the test suite |
+| `scripts/build-app.sh` | Builds `build/Burnish.app` (`RELEASE=1` for the universal release build) |
+| `scripts/make-dmg.sh` | Builds the release app and packs `dist/Burnish.dmg` (needs `dmgbuild`) |
+| `scripts/update-strings.sh` | Refreshes the string catalog from the source |
+| `scripts/make-icons.sh` | Rebuilds the icons from `App/AppIcon.icon` (Icon Composer) |
+| `scripts/make-dmg-art.swift` | Redraws the DMG window background |
+| `scripts/make-showcase.sh` | Redraws the README banner from the app's screens, filled with sample apps |
+| `scripts/make-cask-fixture.py` | Cuts the test fixtures out of a full copy of Homebrew's cask list |
+| `scripts/sign.sh` | Developer ID signing, once there's a certificate |
+
 ## Text and translations
 
 Every word Burnish shows goes through the string catalog, `App/Localizable.xcstrings`, so

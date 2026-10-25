@@ -1,6 +1,6 @@
 import Foundation
 
-/// Optional handoff for apps installed by Homebrew: `brew upgrade --cask <token>` (F18).
+/// Optional handoff for apps installed by Homebrew: `brew upgrade --cask <token>`.
 /// Off unless the person turns it on, so Burnish and Homebrew never fight over an app.
 public struct BrewUpgrader: Sendable {
     public enum Failure: Error, Equatable, LocalizedError {

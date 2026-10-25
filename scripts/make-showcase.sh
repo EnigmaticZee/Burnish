@@ -3,9 +3,7 @@
 # screens, filled with sample apps so no real app list ends up in the repository.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-if [ -z "${DEVELOPER_DIR:-}" ] && [ -d /Applications/Xcode.app ] && [[ "$(xcode-select -p)" == *CommandLineTools* ]]; then
-    export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-fi
+. scripts/xcode-env.sh
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 scripts/build-app.sh >/dev/null

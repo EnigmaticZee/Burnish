@@ -18,7 +18,6 @@ public struct GitHubRelease: Sendable, Hashable, Codable {
     }
 
     public let tag: String
-    public let name: String?
     public let body: String?
     public let page: URL?
     public let publishedAt: Date?
@@ -36,7 +35,7 @@ public struct GitHubRelease: Sendable, Hashable, Codable {
     }
 }
 
-/// Newest non-draft, non-prerelease release from GitHub's API (F16). Requests are conditional
+/// Newest non-draft, non-prerelease release from GitHub's API. Requests are conditional
 /// (ETag), so repeat checks don't use up GitHub's 60-requests-an-hour limit.
 public actor GitHubSource {
     public enum Failure: Error, Equatable, LocalizedError {
@@ -114,7 +113,6 @@ public actor GitHubSource {
             let digest: String?
         }
         let tag_name: String
-        let name: String?
         let body: String?
         let html_url: String?
         let published_at: String?
@@ -127,7 +125,6 @@ public actor GitHubSource {
         guard let p = try? JSONDecoder().decode(Payload.self, from: data), p.draft != true, p.prerelease != true else { return nil }
         return GitHubRelease(
             tag: p.tag_name,
-            name: p.name,
             body: p.body,
             page: p.html_url.flatMap(URL.init(string:)),
             publishedAt: p.published_at.flatMap { ISO8601DateFormatter().date(from: $0) },

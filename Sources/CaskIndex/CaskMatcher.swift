@@ -2,10 +2,10 @@ import Foundation
 import Inventory
 import Versions
 
-/// How sure Burnish is that a cask describes an installed app (F5).
+/// How sure Burnish is that a cask describes an installed app.
 public struct CaskMatch: Sendable, Hashable, Codable {
     public enum Confidence: Int, Sendable, Codable, Comparable, CustomStringConvertible {
-        /// Name only. Never raises an alert; shown under Needs your confirmation.
+        /// Name only. Never raises an alert; shown under Needs confirmation.
         case low = 0
         /// File name and display name agree, or a `.pkg` cask quits this bundle ID.
         case medium
@@ -51,7 +51,7 @@ public struct CaskMatch: Sendable, Hashable, Codable {
     public var canRaiseAlert: Bool { confidence >= .medium && !channelUnsure }
 }
 
-/// Corrections that win over scoring: the user's, then the community file's (F17).
+/// Corrections that win over scoring: the user's, then the community file's.
 public struct MatchOverrides: Sendable, Hashable, Codable {
     /// Bundle ID → cask token.
     public var chosen: [String: String]

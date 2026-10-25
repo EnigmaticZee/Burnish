@@ -3,7 +3,7 @@ import Inventory
 import Net
 import Versions
 
-/// Apple's public lookup endpoint, batched by bundle ID (F2). Detect only: updates open in the App Store.
+/// Apple's public lookup endpoint, batched by bundle ID. Detect only: updates open in the App Store.
 public struct AppStoreSource: Sendable {
     public static let batchSize = 200
     /// The App Store's Updates page, where Apple's own Update All installs every App Store update at once.

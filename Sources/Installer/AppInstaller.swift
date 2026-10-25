@@ -56,7 +56,7 @@ public struct InstallerEnvironment: Sendable {
     }
 }
 
-/// Download → verify → unpack → verify → quit → replace → relaunch (F10).
+/// Download → verify → unpack → verify → quit → replace → relaunch.
 ///
 /// Every install rule (the README's eight promises) runs before the installed app is touched. Any failure
 /// returns `.refused` with a plain reason and the download page; the old app stays as it was.
@@ -100,8 +100,7 @@ public struct AppInstaller: Sendable {
             return refuse(.manualOnly, String(localized: "This update has to be downloaded from the developer's page"))
         }
         // Sparkle's own rule: below this version the developer wants a manual (often paid) upgrade.
-        if let minimum = release.minimumAutoupdateVersion.flatMap(Version.init),
-           let installed = (app.version.build ?? app.version.short).flatMap(Version.init), installed < minimum {
+        if release.wantsManualUpgrade(from: app.version) {
             return refuse(.manualOnly, String(localized: "The developer asks for this upgrade to be downloaded by hand"))
         }
         guard let url = release.downloadURL else { return refuse(.manualOnly, String(localized: "The source doesn't offer a download")) }
@@ -125,7 +124,7 @@ public struct AppInstaller: Sendable {
         progress(.downloading(received: 0, total: release.length))
         let file = job.appendingPathComponent("download")
         do {
-            _ = try await env.client.download(url, to: file) { received, total in
+            try await env.client.download(url, to: file) { received, total in
                 progress(.downloading(received: received, total: total ?? release.length))
             }
         } catch {

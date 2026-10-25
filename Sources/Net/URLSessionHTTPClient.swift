@@ -30,16 +30,16 @@ public final class URLSessionHTTPClient: HTTPClient {
                 for (key, value) in http.allHeaderFields {
                     if let key = key as? String, let value = value as? String { headerMap[key] = value }
                 }
-                return HTTPResponse(status: http.statusCode, headers: headerMap, body: data, url: http.url ?? url)
+                return HTTPResponse(status: http.statusCode, headers: headerMap, body: data)
             } catch {
                 throw Self.map(error, rejection: delegate.rejection)
             }
         }
     }
 
-    public func download(_ url: URL, to destination: URL, progress: @escaping @Sendable (Int64, Int64?) -> Void) async throws -> DownloadResult {
+    public func download(_ url: URL, to destination: URL, progress: @escaping @Sendable (Int64, Int64?) -> Void) async throws {
         try Self.requireHTTPS(url)
-        return try await limiter.run {
+        try await limiter.run {
             let delegate = DownloadDelegate(original: url, destination: destination, progress: progress)
             let config = URLSessionConfiguration.ephemeral
             config.httpAdditionalHeaders = ["User-Agent": Net.userAgent]
@@ -47,7 +47,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             config.httpCookieAcceptPolicy = .never
             let downloadSession = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
             defer { downloadSession.finishTasksAndInvalidate() }
-            return try await withTaskCancellationHandler {
+            try await withTaskCancellationHandler {
                 try await withCheckedThrowingContinuation { continuation in
                     delegate.start(downloadSession.downloadTask(with: url), continuation: continuation)
                 }
@@ -57,7 +57,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         }
     }
 
-    static func requireHTTPS(_ url: URL) throws {
+    public static func requireHTTPS(_ url: URL) throws {
         guard url.scheme?.lowercased() == "https" else { throw HTTPError.insecureURL(url.absoluteString) }
     }
 
@@ -82,16 +82,14 @@ public final class URLSessionHTTPClient: HTTPClient {
 /// Refuses redirects to plain HTTP and logs redirects to another host (install rule 1).
 final class RedirectGuard: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
     private let lock = NSLock()
-    private let original: URL
-    private var _chain: [URL]
+    /// The last URL in the redirect chain, to spot a hop to another host.
+    private var last: URL
     private var _rejection: HTTPError?
 
     init(original: URL) {
-        self.original = original
-        _chain = [original]
+        last = original
     }
 
-    var chain: [URL] { lock.withLock { _chain } }
     var rejection: HTTPError? { lock.withLock { _rejection } }
 
     func urlSession(
@@ -99,8 +97,10 @@ final class RedirectGuard: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest
     ) async -> URLRequest? {
         guard let next = request.url else { return nil }
-        let previous = lock.withLock { _chain.last ?? original }
-        lock.withLock { _chain.append(next) }
+        let previous = lock.withLock {
+            defer { last = next }
+            return last
+        }
         guard next.scheme?.lowercased() == "https" else {
             lock.withLock { _rejection = .insecureRedirect(next.absoluteString) }
             Net.log.error("Refused redirect to non-HTTPS \(next.absoluteString, privacy: .public)")
@@ -118,9 +118,9 @@ final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unchecked S
     private let destination: URL
     private let progress: @Sendable (Int64, Int64?) -> Void
     private let lock = NSLock()
-    private var continuation: CheckedContinuation<DownloadResult, Error>?
+    private var continuation: CheckedContinuation<Void, Error>?
     private var task: URLSessionTask?
-    private var moved: DownloadResult?
+    private var moved = false
     private var moveError: Error?
 
     init(original: URL, destination: URL, progress: @escaping @Sendable (Int64, Int64?) -> Void) {
@@ -129,7 +129,7 @@ final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unchecked S
         self.progress = progress
     }
 
-    func start(_ task: URLSessionTask, continuation: CheckedContinuation<DownloadResult, Error>) {
+    func start(_ task: URLSessionTask, continuation: CheckedContinuation<Void, Error>) {
         lock.withLock {
             self.task = task
             self.continuation = continuation
@@ -165,13 +165,7 @@ final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unchecked S
             try fm.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
             if fm.fileExists(atPath: destination.path) { try fm.removeItem(at: destination) }
             try fm.moveItem(at: location, to: destination)
-            let result = DownloadResult(
-                file: destination,
-                redirectChain: redirects.chain,
-                mimeType: downloadTask.response?.mimeType,
-                suggestedFilename: downloadTask.response?.suggestedFilename
-            )
-            lock.withLock { moved = result }
+            lock.withLock { moved = true }
         } catch {
             lock.withLock { moveError = error }
         }
@@ -190,8 +184,8 @@ final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unchecked S
             continuation.resume(throwing: URLSessionHTTPClient.map(error, rejection: nil))
         } else if let moveError {
             continuation.resume(throwing: moveError)
-        } else if let moved {
-            continuation.resume(returning: moved)
+        } else if moved {
+            continuation.resume()
         } else {
             continuation.resume(throwing: HTTPError.other("Download produced no file"))
         }

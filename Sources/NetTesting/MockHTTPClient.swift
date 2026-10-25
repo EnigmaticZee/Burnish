@@ -1,7 +1,8 @@
 import Foundation
+import Net
 
-/// A test double that answers from canned responses and records every request.
-/// Lives in the main target so every module's tests can use it.
+/// A test double that answers from canned responses and records every request. Only test targets
+/// depend on this module, so it never ships in the app.
 public final class MockHTTPClient: HTTPClient, @unchecked Sendable {
     public typealias Handler = @Sendable (URL, [String: String]) throws -> HTTPResponse
 
@@ -16,7 +17,7 @@ public final class MockHTTPClient: HTTPClient, @unchecked Sendable {
 
     public func respond(to url: String, status: Int = 200, headers: [String: String] = [:], body: Data) {
         lock.withLock {
-            handlers[url] = { requested, _ in HTTPResponse(status: status, headers: headers, body: body, url: requested) }
+            handlers[url] = { requested, _ in HTTPResponse(status: status, headers: headers, body: body) }
         }
     }
 
@@ -38,11 +39,11 @@ public final class MockHTTPClient: HTTPClient, @unchecked Sendable {
             _requests.append(url)
             return handlers[url.absoluteString]
         }
-        guard let handler else { return HTTPResponse(status: 404, url: url) }
+        guard let handler else { return HTTPResponse(status: 404) }
         return try handler(url, headers)
     }
 
-    public func download(_ url: URL, to destination: URL, progress: @escaping @Sendable (Int64, Int64?) -> Void) async throws -> DownloadResult {
+    public func download(_ url: URL, to destination: URL, progress: @escaping @Sendable (Int64, Int64?) -> Void) async throws {
         try URLSessionHTTPClient.requireHTTPS(url)
         let data = lock.withLock { () -> Data? in
             _requests.append(url)
@@ -52,6 +53,5 @@ public final class MockHTTPClient: HTTPClient, @unchecked Sendable {
         try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
         try data.write(to: destination)
         progress(Int64(data.count), Int64(data.count))
-        return DownloadResult(file: destination, redirectChain: [url], mimeType: nil, suggestedFilename: url.lastPathComponent)
     }
 }

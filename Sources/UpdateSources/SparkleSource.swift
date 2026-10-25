@@ -4,7 +4,7 @@ import Inventory
 import Net
 import Versions
 
-/// Reads an app's own Sparkle appcast and picks the newest item this Mac can run (F3).
+/// Reads an app's own Sparkle appcast and picks the newest item this Mac can run.
 public struct SparkleSource: Sendable {
     public struct Result: Sendable {
         public var release: Release?

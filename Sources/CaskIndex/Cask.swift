@@ -8,7 +8,6 @@ public struct Cask: Sendable, Hashable, Codable, Identifiable {
 
     public let token: String
     public let names: [String]
-    public let desc: String?
     public let homepage: URL?
     /// `version` as Homebrew writes it, such as `1.2.3,456` or `latest`.
     public let version: String
@@ -135,7 +134,6 @@ extension Cask {
 
         self.token = token
         self.names = Self.strings(fields["name"])
-        self.desc = fields["desc"] as? String
         self.homepage = (fields["homepage"] as? String).flatMap(URL.init(string:))
         self.version = version
         self.sha256 = (sha == nil || sha == "no_check") ? nil : sha?.lowercased()

@@ -89,6 +89,13 @@ public struct Release: Sendable, Hashable, Codable {
         self.minimumAutoupdateVersion = minimumAutoupdateVersion
     }
 
+    /// Sparkle's rule: an installed build below `minimumAutoupdateVersion` must be upgraded by hand.
+    public func wantsManualUpgrade(from installed: VersionPair) -> Bool {
+        guard let minimum = minimumAutoupdateVersion.flatMap(Version.init),
+              let current = (installed.build ?? installed.short).flatMap(Version.init) else { return false }
+        return current < minimum
+    }
+
     public func compare(with installed: VersionPair) -> UpdateVerdict {
         UpdateComparator.compare(installed: installed, available: version, basis: basis.comparison)
     }
@@ -109,7 +116,6 @@ public struct ReleaseNotes: Sendable, Hashable, Codable {
         self.link = link
     }
 
-    public var isEmpty: Bool { text == nil && link == nil }
 }
 
 /// The macOS version this Mac runs, for minimum-system checks.

@@ -5,14 +5,11 @@ public struct HTTPResponse: Sendable {
     public let status: Int
     public let headers: [String: String]
     public let body: Data
-    /// The URL that answered, after any redirects.
-    public let url: URL
 
-    public init(status: Int, headers: [String: String] = [:], body: Data = Data(), url: URL) {
+    public init(status: Int, headers: [String: String] = [:], body: Data = Data()) {
         self.status = status
         self.headers = headers
         self.body = body
-        self.url = url
     }
 
     public func header(_ name: String) -> String? {
@@ -21,14 +18,6 @@ public struct HTTPResponse: Sendable {
     }
 
     public var isSuccess: Bool { (200..<300).contains(status) }
-}
-
-public struct DownloadResult: Sendable {
-    public let file: URL
-    /// Every URL the download passed through, the first being the one asked for.
-    public let redirectChain: [URL]
-    public let mimeType: String?
-    public let suggestedFilename: String?
 }
 
 public enum HTTPError: Error, Equatable, LocalizedError {
@@ -45,7 +34,7 @@ public enum HTTPError: Error, Equatable, LocalizedError {
         case .insecureRedirect(let url): String(localized: "Redirected to a non-HTTPS address: \(url)")
         case .status(let code): String(localized: "The server answered \(code)")
         case .offline: String(localized: "No internet connection")
-        case .timedOut: String(localized: "Feed not reachable (timed out)")
+        case .timedOut: String(localized: "Timed out")
         case .other(let message): message
         }
     }
@@ -55,7 +44,7 @@ public protocol HTTPClient: Sendable {
     /// GET a URL. Requests must be HTTPS; redirects to plain HTTP fail.
     func get(_ url: URL, headers: [String: String], timeout: TimeInterval) async throws -> HTTPResponse
     /// Download a URL to `destination`, reporting bytes received and the expected total.
-    func download(_ url: URL, to destination: URL, progress: @escaping @Sendable (Int64, Int64?) -> Void) async throws -> DownloadResult
+    func download(_ url: URL, to destination: URL, progress: @escaping @Sendable (Int64, Int64?) -> Void) async throws
 }
 
 extension HTTPClient {

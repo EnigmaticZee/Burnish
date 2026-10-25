@@ -136,8 +136,11 @@ public actor UpdateChecker {
         // GitHub only matters when the developer feeds didn't already decide.
         if match.canRaiseAlert, !findings.sparkleSucceeded, !findings.electronSucceeded,
            let cask = findings.cask, let repo = HomebrewSource.githubRepository(for: cask) {
-            if let latest = try? await github.latestRelease(of: repo) {
-                findings.github = GitHubSource.release(latest, forCask: cask)
+            do {
+                findings.github = GitHubSource.release(try await github.latestRelease(of: repo), forCask: cask)
+            } catch {
+                // A repository with no releases is normal; a rate limit or an outage is worth a note.
+                if error != .noRelease { findings.githubFailure = error.errorDescription }
             }
         }
     }

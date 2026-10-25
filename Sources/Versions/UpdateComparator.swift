@@ -114,7 +114,6 @@ public enum UpdateComparator {
         if current.isPrefix(of: latest), let extra = latest.dropping(current.components.count), let installedBuild {
             if extra == installedBuild { return .same }
             if Self.looksLikeSameBuildScheme(extra, installedBuild) {
-                if extra == installedBuild { return .same }
                 return extra > installedBuild ? .newer(major: false) : .older
             }
         }

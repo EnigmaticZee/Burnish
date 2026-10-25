@@ -37,7 +37,7 @@ func makeCask(_ token: String, version: String, app: String, quit: String? = nil
 
 func findings(cask: Cask, for app: InstalledApp) -> SourceFindings {
     var f = SourceFindings()
-    let matcher = CaskMatcher(catalog: CaskCatalog(casks: [cask], platform: arm))
+    let matcher = CaskMatcher(catalog: CaskCatalog(casks: [cask]))
     f.match = matcher.match(app)
     f.cask = f.match.flatMap { matcher.catalog.cask($0.token) }
     return f
@@ -73,12 +73,10 @@ func findings(cask: Cask, for app: InstalledApp) -> SourceFindings {
 
     @Test func lowMatchNeedsConfirmation() {
         let app = makeApp("Tool", "com.other.tool", "5.4")
-        var cask = makeCask("tool", version: "6.0", app: "Toolkit.app")
-        cask = makeCask("tool", version: "6.0", app: "Toolkit.app")
-        var f = findings(cask: cask, for: app)
+        let cask = makeCask("tool", version: "6.0", app: "Toolkit.app")
+        let f = findings(cask: cask, for: app)
         // Name only ("Tool" == token "tool") with a different file name: low.
         #expect(f.match?.confidence == .low)
-        f.cask = cask
         let result = StatusDecider.decide(app, findings: f, options: DecisionOptions(), system: macOS27)
         guard case .needsConfirmation = result.status else { Issue.record("expected needsConfirmation, got \(result.status)"); return }
     }

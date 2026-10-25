@@ -44,7 +44,7 @@ public struct ReleaseNotesDocument: Sendable, Hashable {
 
     public var isEmpty: Bool { blocks.isEmpty }
 
-    /// Text only, for the CLI and tests.
+    /// Text only, for tests.
     public var plainText: String {
         blocks.map { block -> String in
             switch block {

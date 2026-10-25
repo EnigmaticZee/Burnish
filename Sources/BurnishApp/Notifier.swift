@@ -3,7 +3,7 @@ import Scheduler
 import Store
 import UserNotifications
 
-/// At most one notification a day, listing the count (F13). Permission is asked the first
+/// At most one notification a day, listing the count. Permission is asked the first
 /// time an update is found, never at launch.
 @MainActor
 enum Notifier {

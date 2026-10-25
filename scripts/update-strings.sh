@@ -5,9 +5,7 @@
 # compiles it into the app. The `burnish` command-line tool stays in English.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-if [ -z "${DEVELOPER_DIR:-}" ] && [ -d /Applications/Xcode.app ] && [[ "$(xcode-select -p)" == *CommandLineTools* ]]; then
-    export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-fi
+. scripts/xcode-env.sh
 CATALOG=App/Localizable.xcstrings
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT

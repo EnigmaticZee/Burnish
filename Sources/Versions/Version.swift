@@ -54,17 +54,7 @@ public struct Version: Sendable, Comparable, Hashable, CustomStringConvertible {
     }
 
     /// `155.1.97.57` → `1.97.57`. Nil when nothing numeric would remain.
-    public func droppingFirstComponent() -> Version? {
-        let rest = Array(components.dropFirst())
-        guard case .number = rest.first else { return nil }
-        let raw = rest.map { part -> String in
-            switch part {
-            case let .number(n): n
-            case let .word(w, _): w
-            }
-        }.joined(separator: ".")
-        return Version(raw: raw, components: rest)
-    }
+    public func droppingFirstComponent() -> Version? { dropping(1) }
 
     /// The first number, for shape checks. `Double` so huge date-like numbers don't overflow.
     public var leadingNumber: Double? {

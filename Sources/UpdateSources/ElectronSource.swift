@@ -5,7 +5,7 @@ import Net
 import Versions
 
 /// Apps built with electron-builder say where they update from in `app-update.yml`;
-/// the provider serves `latest-mac.yml` with the version, files and SHA-512 checksums (F15).
+/// the provider serves `latest-mac.yml` with the version, files and SHA-512 checksums.
 public struct ElectronSource: Sendable {
     public enum Failure: Error, Equatable, LocalizedError {
         case unsupportedProvider(String)

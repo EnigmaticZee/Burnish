@@ -1,7 +1,7 @@
 import Foundation
 import Versions
 
-/// Finds apps and reads what they say about themselves (F1).
+/// Finds apps and reads what they say about themselves.
 public struct AppInventory: Sendable {
     public static let systemApplications = URL(fileURLWithPath: "/Applications")
     public static var userApplications: URL {

@@ -2,6 +2,7 @@ import CaskIndex
 import Foundation
 import Inventory
 import Net
+import NetTesting
 import Store
 import Testing
 import UpdateSources
@@ -116,8 +117,8 @@ final class Collected: @unchecked Sendable {
         let client = MockHTTPClient()
         let body = Data(#"{"schema":1,"overrides":{"com.x.app":"x-app","com.y.none":null}}"#.utf8)
         client.respond(to: CommunityOverrides.sourceURL.absoluteString) { url, headers in
-            headers["If-None-Match"] == "\"e1\"" ? HTTPResponse(status: 304, url: url)
-                : HTTPResponse(status: 200, headers: ["ETag": "\"e1\""], body: body, url: url)
+            headers["If-None-Match"] == "\"e1\"" ? HTTPResponse(status: 304)
+                : HTTPResponse(status: 200, headers: ["ETag": "\"e1\""], body: body)
         }
         let clock = Clock()
         let community = CommunityOverrides(client: client, store: StateStore(directory: dir), now: { clock.now })

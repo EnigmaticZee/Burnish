@@ -3,13 +3,11 @@
 # change the design):
 #   App/Assets.car       the Liquid Glass icon macOS renders itself (light, dark, clear and tinted)
 #   App/AppIcon.icns     the flat fallback for older systems, also the DMG's disk icon
-#   docs/images/icon.png the README's icon
+#   docs/images/icon.png the icon for the README banner (scripts/make-showcase.sh)
 # Needs Xcode 26 or later, which ships actool and Icon Composer.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-if [ -z "${DEVELOPER_DIR:-}" ] && [ -d /Applications/Xcode.app ] && [[ "$(xcode-select -p)" == *CommandLineTools* ]]; then
-    export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-fi
+. scripts/xcode-env.sh
 ICTOOL="$(xcode-select -p)/../Applications/Icon Composer.app/Contents/Executables/ictool"
 [ -x "$ICTOOL" ] || { echo "Icon Composer not found; install Xcode 26 or later." >&2; exit 1; }
 TMP="$(mktemp -d)"

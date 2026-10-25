@@ -19,6 +19,8 @@ public struct SourceFindings: Sendable {
     public var match: CaskMatch?
     public var cask: Cask?
     public var github: Release?
+    /// Why GitHub couldn't be asked (rate limit, network). Homebrew's data still decides.
+    public var githubFailure: String?
 
     public init() {}
 }
@@ -138,6 +140,7 @@ public enum StatusDecider {
                                   decidedBy: .homebrew, notes: notes)
         }
         var release = HomebrewSource.release(for: cask)
+        if let failure = findings.githubFailure { notes.append(failure) }
         if let github = findings.github, let gv = github.version.short.flatMap(Version.init),
            let cv = release.version.short.flatMap(Version.init) {
             if gv > cv, UpdateComparator.isCompatible(gv, cv), github.downloadURL != nil {
@@ -165,13 +168,10 @@ public enum StatusDecider {
         switch release.compare(with: app.version) {
         case .newer where !system.satisfies(minimum: release.minimumOS):
             // The App Store and Electron feeds list releases this Mac can't run.
-            status = .upToDate(note: "Version \(release.version.display) needs macOS \(release.minimumOS ?? "") or later")
+            status = .upToDate(note: String(localized: "Version \(release.version.display) needs macOS \(release.minimumOS ?? "") or later"))
         case .newer(let major):
-            // Sparkle's minimumAutoupdateVersion marks a manual, often paid, upgrade.
-            let manual = release.minimumAutoupdateVersion.flatMap(Version.init).map { minimum in
-                (app.version.build ?? app.version.short).flatMap(Version.init).map { $0 < minimum } ?? false
-            } ?? false
-            status = .outdated(UpdateCandidate(release: release, isMajorUpgrade: major || manual))
+            // A manual upgrade is often a paid one, so it's kept out of Update All like a major one.
+            status = .outdated(UpdateCandidate(release: release, isMajorUpgrade: major || release.wantsManualUpgrade(from: app.version)))
         case .same:
             status = .upToDate(note: incompatibleNote)
         case .older:

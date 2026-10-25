@@ -85,7 +85,7 @@ final class AppModel {
     }
     #endif
 
-    /// Loads saved state without scheduling or checking (previews and tests).
+    /// Loads saved state without scheduling or checking (previews).
     func loadSnapshot() async {
         isLoading = true
         settings = await engine.store.load(.settings, default: Settings())
@@ -116,7 +116,7 @@ final class AppModel {
         do {
             if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
         } catch {
-            problems.append(String(localized: "Couldn't change Open at Login: \(error.localizedDescription)"))
+            problems.append(String(localized: "Couldn't change Open Burnish at login: \(error.localizedDescription)"))
         }
     }
 
@@ -297,7 +297,7 @@ final class AppModel {
         return alert.runModal() == .alertFirstButtonReturn ? .tryAgain : .cancel
     }
 
-    // MARK: Ignore rules (F11)
+    // MARK: Ignore rules
 
     func ignoreVersion(_ result: AppCheckResult) async {
         guard let candidate = result.status.candidate else { return }
@@ -322,7 +322,7 @@ final class AppModel {
         await recheck(result)
     }
 
-    // MARK: Match corrections (F5, F19)
+    // MARK: Match corrections
 
     func confirmMatch(_ result: AppCheckResult, token: String) async {
         await engine.store.update(.userOverrides, default: MatchOverrides()) {

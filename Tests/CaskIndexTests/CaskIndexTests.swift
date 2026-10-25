@@ -1,6 +1,7 @@
 import Foundation
 import Inventory
 import Net
+import NetTesting
 import Testing
 import Versions
 @testable import CaskIndex
@@ -13,7 +14,7 @@ func fixtureData() throws -> Data {
 }
 
 func fixtureCatalog(platform: Platform = arm27) throws -> CaskCatalog {
-    CaskCatalog(casks: try CaskDataStore.parse(fixtureData(), platform: platform), platform: platform)
+    CaskCatalog(casks: try CaskDataStore.parse(fixtureData(), platform: platform))
 }
 
 func app(
@@ -222,7 +223,7 @@ func app(
             json["homepage"] = "https://example.com"
             return Cask(json: json, platform: arm27)!
         }
-        let catalog = CaskCatalog(casks: [cask("twin", version: "2.0"), cask("twin-pro", version: "3.0")], platform: arm27)
+        let catalog = CaskCatalog(casks: [cask("twin", version: "2.0"), cask("twin-pro", version: "3.0")])
         let m = try #require(CaskMatcher(catalog: catalog).match(app("Twin.app", "com.example.twin", "1.0", names: ["Twin"])))
         #expect(m.channelUnsure)
         #expect(!m.canRaiseAlert)
@@ -251,8 +252,8 @@ func app(
         let body = try fixtureData()
         let url = CaskDataStore.sourceURL.absoluteString
         client.respond(to: url) { requested, headers in
-            if headers["If-None-Match"] == "\"v1\"" { return HTTPResponse(status: 304, url: requested) }
-            return HTTPResponse(status: 200, headers: ["ETag": "\"v1\""], body: body, url: requested)
+            if headers["If-None-Match"] == "\"v1\"" { return HTTPResponse(status: 304) }
+            return HTTPResponse(status: 200, headers: ["ETag": "\"v1\""], body: body)
         }
         let clock = Clock()
         let (store, dir) = try makeStore(client, clock: clock)
@@ -316,7 +317,7 @@ func app(
     }
 
     @Test func namesMatchButQuitIDsBelongToAnotherApp() throws {
-        let catalog = CaskCatalog(casks: [cask("twin", apps: ["Twin.app"], names: ["Twin"], quit: "com.other.twin")], platform: arm27)
+        let catalog = CaskCatalog(casks: [cask("twin", apps: ["Twin.app"], names: ["Twin"], quit: "com.other.twin")])
         let m = try #require(CaskMatcher(catalog: catalog).match(app("Twin.app", "com.example.twin", "1.0", names: ["Twin"])))
         #expect(m.confidence == .low, "contradicting bundle ID drops to low")
         #expect(!m.canRaiseAlert)
@@ -324,7 +325,7 @@ func app(
 
     @Test func pluginPackageThatAlsoQuitsTheHostIsNotAMatch() throws {
         let plugin = cask("host-plugin", apps: [], names: ["Host Plugin"], quit: ["com.vendor.plugin", "com.vendor.host"], pkg: true)
-        let catalog = CaskCatalog(casks: [plugin], platform: arm27)
+        let catalog = CaskCatalog(casks: [plugin])
         let m = CaskMatcher(catalog: catalog).match(app("Host.app", "com.vendor.host", "5.0", names: ["Host"]))
         #expect(m == nil || m?.canRaiseAlert == false)
     }
