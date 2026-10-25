@@ -31,6 +31,13 @@ struct SettingsView: View {
                 Text("Automatic updates")
             }
             Section {
+                Toggle("Keep replaced versions for 30 days", isOn: $model.settings.keepEarlierVersions)
+                Text("Burnish keeps each app's previous version in its own folder, so emptying the Trash doesn't take away Put Back. It uses disk space, and after 30 days the copy goes to the Trash.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } header: {
+                Text("A way back")
+            }
+            Section {
                 Toggle("Also check apps in ~/Applications", isOn: $model.settings.scanUserApplications)
                 Picker("Apps installed with Homebrew", selection: $model.settings.homebrewHandling) {
                     ForEach(HomebrewHandling.allCases) { Text($0.label).tag($0) }

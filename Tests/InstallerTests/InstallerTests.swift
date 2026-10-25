@@ -870,3 +870,38 @@ actor Counter {
         h.expectRefused(await h.install(app, release), .trustedOrigin)
     }
 }
+
+@Suite struct KeepingEarlierVersions {
+    func setUp() throws -> (root: URL, kept: EarlierVersions, trash: URL) {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("burnish-earlier-\(UUID().uuidString)")
+        let trash = root.appendingPathComponent("Trash")
+        return (root, EarlierVersions(directory: root.appendingPathComponent("Earlier Versions"), trash: FolderTrash(folder: trash)), trash)
+    }
+
+    @Test func keepsOneVersionPerAppAndTrashesTheOneBefore() throws {
+        let (root, kept, trash) = try setUp()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let v1 = try makeBundle(in: root.appendingPathComponent("a"), name: "Fixture 1.0", short: "1.0", build: "100")
+        let first = try kept.keep(v1, bundleID: bundleID)
+        #expect(FileManager.default.fileExists(atPath: first.path))
+        let v2 = try makeBundle(in: root.appendingPathComponent("b"), name: "Fixture 1.1", short: "1.1", build: "110")
+        let second = try kept.keep(v2, bundleID: bundleID)
+        #expect(FileManager.default.fileExists(atPath: second.path))
+        #expect(!FileManager.default.fileExists(atPath: first.path), "only the latest earlier version stays")
+        #expect((try? FileManager.default.contentsOfDirectory(atPath: trash.path))?.contains("Fixture 1.0.app") == true, "and the older one went to the Trash, not away")
+    }
+
+    @Test func afterThirtyDaysItGoesToTheTrash() throws {
+        let (root, kept, trash) = try setUp()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let old = try makeBundle(in: root.appendingPathComponent("a"), name: "Fixture 0.9", short: "0.9", build: "90")
+        let now = Date()
+        let kept1 = try kept.keep(old, bundleID: bundleID, now: now.addingTimeInterval(-31 * 86400))
+        #expect(kept.prune(now: now).map(\.lastPathComponent) == [kept1.lastPathComponent])
+        #expect(!FileManager.default.fileExists(atPath: kept1.path))
+        #expect((try? FileManager.default.contentsOfDirectory(atPath: trash.path))?.isEmpty == false)
+        let fresh = try makeBundle(in: root.appendingPathComponent("b"), name: "Fixture 1.0", short: "1.0", build: "100")
+        _ = try kept.keep(fresh, bundleID: bundleID, now: now)
+        #expect(kept.prune(now: now).isEmpty, "a fresh copy stays")
+    }
+}

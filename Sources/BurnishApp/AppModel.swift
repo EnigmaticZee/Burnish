@@ -150,6 +150,7 @@ final class AppModel {
         }
         totalCount = apps.count
 
+        engine.earlierVersions.prune()
         let report = await engine.check(apps, settings: settings) { [weak self] result in
             await self?.receive(result)
         }

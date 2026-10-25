@@ -26,6 +26,9 @@ public final class BurnishEngine: Sendable {
     }
 
     public var downloadsDirectory: URL { store.directory.appendingPathComponent("Downloads", isDirectory: true) }
+    public var earlierVersions: EarlierVersions {
+        EarlierVersions(directory: store.directory.appendingPathComponent("Earlier Versions", isDirectory: true))
+    }
 
     public func roots(for settings: Settings) -> [URL] {
         var roots = [AppInventory.systemApplications]
@@ -40,6 +43,7 @@ public final class BurnishEngine: Sendable {
 
     /// Scan, check every app, remember the report.
     public func runCheck(onResult: @escaping @Sendable (AppCheckResult) async -> Void = { _ in }) async -> CheckReport {
+        earlierVersions.prune()
         let settings = await store.load(.settings, default: Settings())
         var apps = scan(settings: settings).apps
         if settings.homebrewHandling == .hide { apps.removeAll(where: \.isManagedByHomebrew) }
@@ -114,13 +118,18 @@ public final class BurnishEngine: Sendable {
         if release.downloadPage == nil { release.downloadPage = result.downloadPage }
         let expected = await catalog()?.cask(result.match?.token ?? "")?.appNames ?? []
         let installer = AppInstaller(environment: .live(client: client, workDirectory: downloadsDirectory))
-        let outcome = await installer.install(
+        var outcome = await installer.install(
             InstallRequest(app: result.app, release: release, expectedAppNames: expected),
             progress: progress, askToQuit: askToQuit
         )
         let version = candidate.displayVersion
         switch outcome {
-        case .installed(let oldCopy, _):
+        case .installed(var oldCopy, let relaunched):
+            // Out of the Trash and into Burnish's folder, when the person wants a longer way back.
+            if let copy = oldCopy, await store.load(.settings, default: Settings()).keepEarlierVersions {
+                oldCopy = (try? earlierVersions.keep(copy, bundleID: result.app.bundleID)) ?? copy
+                outcome = .installed(oldCopy: oldCopy, relaunched: relaunched)
+            }
             await record(.updated(from: result.app.version.display, to: version, previousCopy: oldCopy?.path,
                                   automatic: automatic, checks: result.installChecks(release).map(\.rawValue)), for: result)
         case .openedInInstaller:

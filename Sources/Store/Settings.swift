@@ -83,6 +83,8 @@ public struct Settings: Sendable, Codable, Equatable {
     /// Install minor updates on their own, for apps that aren't open, after `autoUpdateWait`.
     public var autoUpdate = false
     public var autoUpdateWait: AutoUpdateWait = .threeDays
+    /// Keep the version an update replaces in Burnish's folder for 30 days, not just in the Trash.
+    public var keepEarlierVersions = false
     public var hasCompletedOnboarding = false
 
     public init() {}
@@ -99,6 +101,7 @@ public struct Settings: Sendable, Codable, Equatable {
         communityOverrides = (try? c.decodeIfPresent(Bool.self, forKey: .communityOverrides)) ?? d.communityOverrides
         autoUpdate = (try? c.decodeIfPresent(Bool.self, forKey: .autoUpdate)) ?? d.autoUpdate
         autoUpdateWait = (try? c.decodeIfPresent(AutoUpdateWait.self, forKey: .autoUpdateWait)) ?? d.autoUpdateWait
+        keepEarlierVersions = (try? c.decodeIfPresent(Bool.self, forKey: .keepEarlierVersions)) ?? d.keepEarlierVersions
         hasCompletedOnboarding = (try? c.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding)) ?? d.hasCompletedOnboarding
     }
 }
