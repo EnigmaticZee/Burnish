@@ -104,7 +104,9 @@ settles; the groundwork is in place.
 - Write text as a literal where SwiftUI takes one (`Text("Check Now")`, `Button("Ignore App")`).
   Text built in code, including every message from the core modules, uses
   `String(localized: "…")`. Counts are one string with interpolation (`"\(count) updates"`); the
-  catalog holds the plural forms, so never branch on `count == 1` for wording.
+  catalog holds the plural forms, so never branch on `count == 1` for wording. The one exception
+  is text that leaves the number out ("updates waiting" under a big count): catalogs can't
+  pluralise that, so it's two strings.
 - Things that aren't words (bullets, bare numbers, version strings) use `Text(verbatim:)` or a
   formatter, so they don't end up in the catalog.
 - After changing any visible text, run `scripts/update-strings.sh` and commit the catalog with the

@@ -97,3 +97,21 @@ import Testing
         #expect(loaded.events(for: "com.x.app").first?.kind == .handedOff(version: "3.0", to: "homebrew"))
     }
 }
+
+@Suite struct WidgetSnapshotFile {
+    @Test func roundTripsAndKeepsThreeApps() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("burnish-widget-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let items = (1...5).map { WidgetSnapshot.Item(name: "App \($0)", installed: "1.0", latest: "1.\($0)", appPath: "/Applications/App \($0).app") }
+        let snapshot = WidgetSnapshot(updateCount: 5, top: items, lastCheck: Date(timeIntervalSince1970: 1_800_000_000))
+        #expect(snapshot.top.count == 3, "the widget shows three at most")
+        try snapshot.save(to: dir)
+        #expect(WidgetSnapshot.load(from: dir) == snapshot)
+        #expect(WidgetSnapshot.load(from: dir.appendingPathComponent("missing")) == nil)
+    }
+
+    @Test func pointsAtTheRealHomeFolder() {
+        #expect(WidgetSnapshot.directory.path.hasSuffix("/Library/Application Support/Burnish"))
+        #expect(!WidgetSnapshot.directory.path.contains("/Containers/"), "never the sandbox container")
+    }
+}

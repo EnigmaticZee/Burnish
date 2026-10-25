@@ -7,6 +7,7 @@ import Store
 import SwiftUI
 import UpdateSources
 import Versions
+import WidgetUI
 
 /// Debug builds only: `Burnish --render-previews <folder>` draws each screen offscreen to PNG
 /// (light and dark) from the last saved report, then quits. Used to check layout without
@@ -26,6 +27,7 @@ enum PreviewRenderer {
                 await model.loadSnapshot()
             }
             renderMenuBarIcons(to: folder)
+            renderWidgets(model: model, to: folder)
             try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             for dark in [false, true] {
                 let suffix = dark ? "-dark" : ""
@@ -48,6 +50,27 @@ enum PreviewRenderer {
             NSApp.terminate(nil)
         }
         return true
+    }
+
+    /// The desktop widget, small and medium, on a rounded card like the desktop draws.
+    static func renderWidgets(model: AppModel, to folder: URL) {
+        let top = model.outdated.prefix(3).map {
+            WidgetSnapshot.Item(name: $0.app.name, installed: $0.app.version.display,
+                                latest: $0.status.candidate?.displayVersion ?? "", appPath: $0.app.url.path)
+        }
+        let snapshot = WidgetSnapshot(updateCount: model.outdated.count, top: Array(top), lastCheck: model.lastCheck)
+        for dark in [false, true] {
+            let suffix = dark ? "-dark" : ""
+            for (size, width) in [(UpdatesWidgetView.Size.small, CGFloat(170)), (.medium, 364)] {
+                let card = UpdatesWidgetView(snapshot: snapshot, size: size)
+                    .padding(16)
+                    .frame(width: width, height: 170)
+                    .background(RoundedRectangle(cornerRadius: 22).fill(.background.secondary))
+                    .padding(20)
+                render(card, width: width + 40, height: 210, dark: dark,
+                       to: folder.appendingPathComponent("widget-\(size == .small ? "small" : "medium")\(suffix).png"))
+            }
+        }
     }
 
     /// The menu bar glyph in each state, at 4x, on a light and a dark strip.

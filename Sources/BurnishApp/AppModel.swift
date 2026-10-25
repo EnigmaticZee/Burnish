@@ -10,6 +10,7 @@ import Scheduler
 import ServiceManagement
 import Store
 import UpdateSources
+import WidgetKit
 
 /// Per-row install progress (the "Installing" and "Install refused" states).
 enum InstallState: Equatable {
@@ -63,6 +64,7 @@ final class AppModel {
 
     func start() async {
         await loadSnapshot()
+        refreshWidget()
 
         pathMonitor.pathUpdateHandler = { [weak self] path in
             Task { @MainActor in self?.isOnline = path.status == .satisfied }
@@ -148,6 +150,7 @@ final class AppModel {
         state = await engine.store.update(.appState, default: AppState()) { $0.lastCheck = report.finishedAt }
         lastCheck = report.finishedAt
         history = await engine.history()
+        refreshWidget()
         isChecking = false
         stopAnimation()
         await engine.releaseCaches()
@@ -173,6 +176,17 @@ final class AppModel {
     private func replace(_ result: AppCheckResult) {
         if let index = results.firstIndex(where: { $0.id == result.id }) { results[index] = result }
         Task { await persistResults() }
+        refreshWidget()
+    }
+
+    /// Writes what the desktop widget shows and asks WidgetKit to redraw it.
+    private func refreshWidget() {
+        let top = outdated.prefix(3).map {
+            WidgetSnapshot.Item(name: $0.app.name, installed: $0.app.version.display,
+                                latest: $0.status.candidate?.displayVersion ?? "", appPath: $0.app.url.path)
+        }
+        try? WidgetSnapshot(updateCount: outdated.count, top: Array(top), lastCheck: lastCheck).save()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func persistResults() async {

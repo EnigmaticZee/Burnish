@@ -149,6 +149,7 @@ Build it with `swift build -c release --product burnish`.
 ✅ Safe one-click and Update All installs, with the old version kept in the Trash<br>
 ✅ Ignore a version or an app, and correct a match<br>
 ✅ Put back the version an update replaced, and a history for every app<br>
+✅ A desktop widget with the update count and the first three apps<br>
 ✅ Daily check with at most one notification a day<br>
 ✅ Burnish updates itself
 

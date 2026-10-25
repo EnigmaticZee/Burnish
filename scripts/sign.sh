@@ -18,6 +18,8 @@ if [ -d "$SPARKLE" ]; then
     sign "$SPARKLE/Versions/B/Updater.app"
     sign "$SPARKLE"
 fi
+WIDGET="$APP/Contents/PlugIns/BurnishWidget.appex"
+[ -d "$WIDGET" ] && sign --entitlements "$(dirname "$0")/../App/Widget.entitlements" "$WIDGET"
 sign --entitlements "$ENTITLEMENTS" "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
 echo "Signed $APP as $IDENTITY"

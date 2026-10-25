@@ -7,6 +7,7 @@ let package = Package(
     products: [
         .executable(name: "BurnishApp", targets: ["BurnishApp"]),
         .executable(name: "burnish", targets: ["BurnishCLI"]),
+        .executable(name: "BurnishWidget", targets: ["BurnishWidget"]),
     ],
     dependencies: [
         // Used only to update Burnish itself (no other third-party dependencies).
@@ -36,9 +37,13 @@ let package = Package(
             name: "BurnishCore",
             dependencies: ["Versions", "Net", "Inventory", "CaskIndex", "UpdateSources", "Store", "Installer"]
         ),
+        // The desktop widget's views, shared by the extension and the app's preview renderer.
+        .target(name: "WidgetUI", dependencies: ["Store"]),
+        // The widget extension itself, packed into Burnish.app/Contents/PlugIns by build-app.sh.
+        .executableTarget(name: "BurnishWidget", dependencies: ["Store", "WidgetUI"], swiftSettings: [.unsafeFlags(["-parse-as-library"])]),
         .executableTarget(
             name: "BurnishApp",
-            dependencies: ["BurnishCore", "Scheduler", .product(name: "Sparkle", package: "Sparkle")],
+            dependencies: ["BurnishCore", "Scheduler", "WidgetUI", .product(name: "Sparkle", package: "Sparkle")],
             swiftSettings: [.unsafeFlags(["-parse-as-library"])],
             linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
         ),

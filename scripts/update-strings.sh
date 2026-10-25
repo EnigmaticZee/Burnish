@@ -11,11 +11,13 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 # A separate build folder, so the extra compiler flag doesn't invalidate the normal build.
-if ! swift build --product BurnishApp --scratch-path .build/strings \
-    -Xswiftc -emit-localized-strings -Xswiftc -emit-localized-strings-path -Xswiftc "$TMP" >"$TMP/build.log" 2>&1; then
-    cat "$TMP/build.log" >&2
-    exit 1
-fi
+for product in BurnishApp BurnishWidget; do
+    if ! swift build --product "$product" --scratch-path .build/strings \
+        -Xswiftc -emit-localized-strings -Xswiftc -emit-localized-strings-path -Xswiftc "$TMP" >"$TMP/build.log" 2>&1; then
+        cat "$TMP/build.log" >&2
+        exit 1
+    fi
+done
 [ -f "$CATALOG" ] || echo '{"sourceLanguage":"en","strings":{},"version":"1.0"}' > "$CATALOG"
 xcrun xcstringstool sync "$CATALOG" --stringsdata "$TMP"/*.stringsdata
 echo "$(xcrun xcstringstool print "$CATALOG" | grep -c .) strings in $CATALOG"

@@ -24,6 +24,7 @@ fi
 
 echo "Building Burnish $VERSION ($BUILD), $CONFIG"
 swift build -c "$CONFIG" --product BurnishApp "${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}"
+swift build -c "$CONFIG" --product BurnishWidget "${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}"
 BIN_DIR="$(swift build -c "$CONFIG" --product BurnishApp "${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}" --show-bin-path)"
 
 APP=build/Burnish.app
@@ -36,6 +37,13 @@ sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" App/Info.plist > "$APP
 cp App/Assets.car App/AppIcon.icns "$APP/Contents/Resources/"
 # UI text: the string catalog compiles to one .lproj per language (scripts/update-strings.sh).
 xcrun xcstringstool compile App/Localizable.xcstrings --output-directory "$APP/Contents/Resources" >/dev/null
+
+# The desktop widget, a sandboxed extension with the same text.
+WIDGET="$APP/Contents/PlugIns/BurnishWidget.appex"
+mkdir -p "$WIDGET/Contents/MacOS" "$WIDGET/Contents/Resources"
+cp "$BIN_DIR/BurnishWidget" "$WIDGET/Contents/MacOS/BurnishWidget"
+sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" App/Widget-Info.plist > "$WIDGET/Contents/Info.plist"
+xcrun xcstringstool compile App/Localizable.xcstrings --output-directory "$WIDGET/Contents/Resources" >/dev/null
 
 # Sparkle (Burnish's own updates), from the Swift package.
 SPARKLE_FRAMEWORK="$(find .build -path '*Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework' -maxdepth 8 -type d | head -1)"
@@ -55,6 +63,7 @@ else
     for part in "$SPARKLE"/XPCServices/*.xpc "$SPARKLE/Autoupdate" "$SPARKLE/Updater.app" "$APP/Contents/Frameworks/Sparkle.framework"; do
         codesign --force --sign - "$part"
     done
+    codesign --force --sign - --entitlements App/Widget.entitlements "$WIDGET"
     codesign --force --sign - --entitlements App/Burnish.entitlements \
         -r='designated => identifier "io.github.enigmaticzee.Burnish"' "$APP"
 fi

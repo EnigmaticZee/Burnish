@@ -448,6 +448,9 @@
     "Homebrew's app list, once a day" : {
 
     },
+    "How many apps have updates waiting, and which." : {
+
+    },
     "Ignore App" : {
 
     },
@@ -594,6 +597,9 @@
 
     },
     "Open Burnish at login" : {
+
+    },
+    "Open Burnish to check your apps" : {
 
     },
     "Open Developer's Site" : {
@@ -1024,6 +1030,9 @@
     "a different macOS version" : {
 
     },
+    "and %lld more" : {
+
+    },
     "brew upgrade failed" : {
 
     },
@@ -1073,6 +1082,12 @@
 
     },
     "not signed by the same developer" : {
+
+    },
+    "update waiting" : {
+
+    },
+    "updates waiting" : {
 
     },
     "your choice" : {
