@@ -7,6 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/EnigmaticZee/Burnish/releases/latest/download/Burnish.dmg"><b>Download Burnish for Mac</b></a>
+  &nbsp;·&nbsp; <a href="https://enigmaticzee.github.io/Burnish/">Website</a>
   &nbsp;·&nbsp; free &nbsp;·&nbsp; macOS 14+ &nbsp;·&nbsp; Apple silicon &amp; Intel
 </p>
 

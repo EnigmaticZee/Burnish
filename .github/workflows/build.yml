@@ -79,6 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -120,3 +121,7 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" dist/Burnish.dmg dist/appcast.xml \
             --title "Burnish ${GITHUB_REF_NAME#v}" --notes-file notes.md --latest
+      - name: Refresh the website's What's new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

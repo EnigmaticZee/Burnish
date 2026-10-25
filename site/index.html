@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Burnish: every app on your Mac, kept current</title>
+  <meta name="description" content="A free, open-source menu bar app that finds updates for every app on your Mac, from the App Store, Homebrew, Sparkle and more, and installs them carefully.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbf3e6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16110d" media="(prefers-color-scheme: dark)">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Burnish: every app on your Mac, kept current">
+  <meta property="og:description" content="Free and open source. Finds updates for apps from anywhere and installs them carefully, from your menu bar.">
+  <meta property="og:image" content="https://enigmaticzee.github.io/Burnish/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/icon-64.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icon-256.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav" id="top">
+    <a class="brand" href="#top"><img src="assets/icon-64.png" alt="" width="28" height="28"> Burnish</a>
+    <nav aria-label="Sections">
+      <a href="#features">Features</a>
+      <a href="#whats-new">What's new</a>
+      <a href="#install">Install</a>
+      <a href="{{REPO}}" class="nav-github">GitHub</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-copy">
+        <a class="new-pill reveal" href="#whats-new">
+          <span class="new-dot" aria-hidden="true"></span>
+          New in {{VERSION}}: {{RELEASE_HEADLINE_PLAIN}}
+          <span aria-hidden="true">→</span>
+        </a>
+        <h1 class="reveal">Every app on your Mac, <span class="shine">kept current.</span></h1>
+        <p class="lede reveal">Burnish finds updates for apps from anywhere (direct downloads, the App Store, Homebrew) and installs them carefully, right from your menu bar. Free and open source.</p>
+        <div class="cta reveal">
+          <a class="btn btn-primary" href="{{DOWNLOAD_URL}}">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0l-4-4m4 4l4-4M4 16h12" /></svg>
+            Download for Mac
+          </a>
+          <a class="btn btn-ghost" href="{{REPO}}">View on GitHub</a>
+        </div>
+        <p class="fineprint reveal">Version {{VERSION}} · macOS 14 or later · Apple silicon and Intel · Free</p>
+      </div>
+
+      <div class="hero-stage reveal" aria-hidden="true">
+        <div class="desktop">
+          <div class="menubar">
+            <span class="mb-left"><i></i><b>Finder</b><span>File</span><span>Edit</span><span>View</span></span>
+            <span class="mb-right">
+              <span class="mb-bell" id="bell">
+                <svg viewBox="0 0 18 16">
+                  <path class="ring ring-in" d="M15.28 6.48 A7.4 7.4 0 0 0 12.92 4.12 M5.08 4.12 A7.4 7.4 0 0 0 2.72 6.48" />
+                  <path class="ring ring-out" d="M16.8 5.52 A9.2 9.2 0 0 0 13.88 2.6 M4.12 2.6 A9.2 9.2 0 0 0 1.2 5.52" />
+                  <rect x="2" y="12.5" width="14" height="2" rx="1" />
+                  <path d="M3.6 11.6 A5.4 5.4 0 0 1 14.4 11.6 Z" />
+                  <rect x="8.4" y="5" width="1.2" height="1.6" />
+                  <ellipse cx="9" cy="4.55" rx="1.9" ry="0.85" />
+                </svg>
+                <span class="mb-count" id="count">4</span>
+              </span>
+              <span class="mb-clock">9:41</span>
+            </span>
+          </div>
+
+          <div class="popover" id="popover">
+            <div class="pop-head">
+              <div>
+                <strong id="pop-title">4 updates</strong>
+                <small id="pop-sub">Checked just now</small>
+              </div>
+              <span class="pop-more">•••</span>
+            </div>
+            <div class="pop-progress"><span id="progress"></span></div>
+            <ul class="pop-rows" id="rows">
+              <li style="--tile: #e8590c"><span class="tile">F</span><div class="row-text"><b>Firefox <em>Homebrew</em></b><small>157.0.2 → 158.0.1</small></div><span class="pill">Update</span></li>
+              <li style="--tile: #5865f2"><span class="tile">D</span><div class="row-text"><b>Discord <em>Homebrew</em></b><small>0.0.416 → 0.0.419</small></div><span class="pill">Update</span></li>
+              <li style="--tile: #8e5cf7"><span class="tile">F</span><div class="row-text"><b>Figma <em>Developer feed</em></b><small>126.9.16 → 126.10.11</small></div><span class="pill">Update</span></li>
+              <li style="--tile: #f08c00"><span class="tile">V</span><div class="row-text"><b>VLC <em>Developer feed</em></b><small>3.0.21 → 3.0.24</small></div><span class="pill">Update</span></li>
+            </ul>
+            <div class="pop-done" id="done">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M7.5 12.5l3 3 6-6.5" /></svg>
+              <span>Everything's up to date</span>
+            </div>
+            <div class="pop-foot"><span class="pill pill-strong" id="update-all">Update All</span><span class="pill">Open Burnish</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sources -->
+    <section class="sources" aria-label="Where Burnish finds updates">
+      <p class="sources-title">Finds updates from</p>
+      <div class="marquee">
+        <ul class="marquee-track">
+          <li>Mac App Store</li><li>Sparkle feeds</li><li>Electron</li><li>Tauri</li>
+          <li>Homebrew · 3,400+ apps</li><li>GitHub Releases</li><li>Microsoft AutoUpdate</li>
+          <li>Adobe Creative Cloud</li><li>Setapp</li><li>JetBrains Toolbox</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Screenshot -->
+    <section class="showcase reveal">
+      <picture>
+        <source srcset="assets/showcase-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="assets/showcase.jpg" alt="The Burnish menu bar popover listing six updates in front of the main window, which shows Google Chrome's details." width="1600" height="1018" loading="lazy">
+      </picture>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+      <h2 class="reveal">Careful by design</h2>
+      <p class="section-lede reveal">An updater replaces other apps on your Mac, so it should be the most careful app you own.</p>
+      <div class="grid">
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
+          <h3>Finds updates anywhere</h3>
+          <p>Each app is checked against the best source it has: its developer's own feed first, the App Store, then Homebrew's catalogue, however you installed it.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z" /><path d="M8.5 12l2.5 2.5 4.5-5" /></svg>
+          <h3>Never guesses</h3>
+          <p>Not sure which app is which? It asks instead of raising a false alarm. Zero false alerts on our 50-app test, checked on every build.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 018 0v3" /></svg>
+          <h3>Eight checks per install</h3>
+          <p>The developer's signature, the published checksum, the same team as your copy, Gatekeeper. Any check fails, nothing changes.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7L4.5 11.5 9 16" /><path d="M5 11.5h9a5.5 5.5 0 010 11h-2" transform="translate(0 -3)" /></svg>
+          <h3>Put Back, anytime</h3>
+          <p>Every old version goes to the Trash, never deleted. Changed your mind? One click brings it back.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18.5h17" /><path d="M6 18.5a6 6 0 0112 0" /><path d="M12 12.5v-2" /><path d="M10 10.5h4" /></svg>
+          <h3>Quiet in your menu bar</h3>
+          <p>One check a day, at most one notification, a desktop widget if you like. Developers' own updaters get their turn too.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M6 18L18 6" /></svg>
+          <h3>Private, properly</h3>
+          <p>No account, no analytics, no crash reports. The only requests are the ones it takes to ask for updates, and they're all listed.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Promises -->
+    <section class="promises" id="promises">
+      <h2 class="reveal">Eight promises</h2>
+      <p class="section-lede reveal">Every install keeps all eight, or it doesn't happen and you get the developer's download page instead.</p>
+      <ol class="promise-list">
+        <li class="reveal"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>Only trusted sources.</b> The app's own feed or Homebrew's data, over HTTPS.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>The developer's signature.</b> If the app pins a signing key, the update must be signed with it.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>The published checksum.</b> The download must match it exactly.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>The same developer.</b> Same team, same bundle ID, and Gatekeeper agrees.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>No installer runs on its own.</b> Packages open in Apple's Installer, so you see every step.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>No force-quitting.</b> Apps are asked politely. Unsaved work? You decide.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>Nothing deleted.</b> The old version goes to the Trash, and Put Back returns it.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span><b>Your password stays yours.</b> When admin rights are needed, macOS asks you itself.</span></li>
+      </ol>
+    </section>
+
+    <!-- What's new: filled from docs/HISTORY.md for the published release -->
+    <section class="whats-new" id="whats-new">
+      <h2 class="reveal">What's new</h2>
+      <article class="release reveal">
+        <div class="release-meta">
+          <span class="release-version">{{VERSION}}</span>
+          <time datetime="{{RELEASE_DATE_ISO}}">{{RELEASE_DATE}}</time>
+        </div>
+        <p class="release-headline"><svg class="ding" viewBox="0 0 18 16" aria-hidden="true"><path class="ring" d="M15.28 6.48 A7.4 7.4 0 0 0 12.92 4.12 M5.08 4.12 A7.4 7.4 0 0 0 2.72 6.48" /><rect x="2" y="12.5" width="14" height="2" rx="1" /><path d="M3.6 11.6 A5.4 5.4 0 0 1 14.4 11.6 Z" /><rect x="8.4" y="5" width="1.2" height="1.6" /><ellipse cx="9" cy="4.55" rx="1.9" ry="0.85" /></svg> {{RELEASE_HEADLINE}}</p>
+        <ul class="release-items">
+{{RELEASE_ITEMS}}
+        </ul>
+{{RELEASE_EXTRA}}
+        <a class="release-all" href="{{REPO}}/releases">Every release →</a>
+      </article>
+    </section>
+
+    <!-- Install -->
+    <section class="install" id="install">
+      <h2 class="reveal">Install in a minute</h2>
+      <ol class="steps">
+        <li class="reveal">
+          <span class="step-n">1</span>
+          <h3>Download and drag</h3>
+          <p><a href="{{DOWNLOAD_URL}}">Download Burnish.dmg</a>, open it and drag Burnish into Applications.</p>
+        </li>
+        <li class="reveal">
+          <span class="step-n">2</span>
+          <h3>Open it once</h3>
+          <p>Burnish isn't notarised by Apple yet, so macOS blocks the first launch. Click <b>Done</b>, then <b>System Settings → Privacy &amp; Security → Open Anyway</b>.</p>
+        </li>
+        <li class="reveal">
+          <span class="step-n">3</span>
+          <h3>Let it update apps</h3>
+          <p>Turn on <b>App Management</b> when Burnish asks. Finding updates works without it; installing needs it.</p>
+        </li>
+      </ol>
+      <details class="terminal reveal">
+        <summary>Prefer Terminal? Skip step 2</summary>
+        <div class="code">
+          <code id="xattr">xattr -dr com.apple.quarantine /Applications/Burnish.app</code>
+          <button type="button" class="copy" data-copy="#xattr">Copy</button>
+        </div>
+      </details>
+    </section>
+
+    <!-- Privacy -->
+    <section class="privacy">
+      <h2 class="reveal">Where your data goes</h2>
+      <p class="section-lede reveal">Nowhere it doesn't have to. These are the only places Burnish talks to:</p>
+      <ul class="privacy-list">
+        <li class="reveal"><b>Homebrew's app list</b><span>At most once a day. Nothing about your apps.</span></li>
+        <li class="reveal"><b>Apple's App Store lookup</b><span>Your App Store apps' bundle IDs. You can turn it off.</span></li>
+        <li class="reveal"><b>Each app's own update feed</b><span>And the download itself, when you update.</span></li>
+        <li class="reveal"><b>GitHub</b><span>For apps whose downloads live there, community match fixes, and Burnish's own updates.</span></li>
+      </ul>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq">
+      <h2 class="reveal">Questions</h2>
+      <details class="reveal">
+        <summary>Is it safe to let an app replace other apps?</summary>
+        <p>That's what the eight promises are for. Every check runs before your app is touched, each one has an automated test that feeds it a bad file and proves the install is refused, and the old version always goes to the Trash.</p>
+      </details>
+      <details class="reveal">
+        <summary>Will it fight with Homebrew?</summary>
+        <p>No. Apps you installed with Homebrew are shown but left to <code>brew upgrade</code>, unless you ask Burnish to run it for you.</p>
+      </details>
+      <details class="reveal">
+        <summary>What about App Store apps?</summary>
+        <p>Burnish finds their updates and hands them to the App Store: several at once open the Updates page, where Apple's Update All does them together.</p>
+      </details>
+      <details class="reveal">
+        <summary>Why does it say "Can't check" for some apps?</summary>
+        <p>Some apps have no public update source. Burnish says so rather than guessing, and tells you when a developer's own updater looks after the app instead.</p>
+      </details>
+      <details class="reveal">
+        <summary>Does it cost anything?</summary>
+        <p>No, and it never will: no account, no subscription, no ads. It's MIT licensed, so you can read every line.</p>
+      </details>
+    </section>
+
+    <!-- Final call -->
+    <section class="final reveal">
+      <img class="final-icon" src="assets/icon-256.png" alt="" width="120" height="120" loading="lazy">
+      <h2>Ring the bell.</h2>
+      <p>Your apps, kept current, without the dozen update windows.</p>
+      <a class="btn btn-primary" href="{{DOWNLOAD_URL}}">Download Burnish {{VERSION}}</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Made by Zee · <a href="{{REPO}}/blob/main/LICENSE">MIT License</a> · <a href="{{REPO}}">Source on GitHub</a></span>
+    <span>This page loads nothing from anywhere else, and counts no one.</span>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

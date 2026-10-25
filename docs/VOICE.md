@@ -56,9 +56,21 @@ app inside the DMG now passes codesign --verify --strict.
 
 ## Release notes
 
-`docs/HISTORY.md` is the single source: it becomes the GitHub release and the update window inside
-Burnish, so every entry has to read well in a small window. Short paragraphs, no tables, no
-headings inside an entry.
+`docs/HISTORY.md` is the single source: it becomes the GitHub release, the update window inside
+Burnish and the "What's new" section of the website, so every entry has to read well in a small
+window. Short paragraphs, no tables, no headings inside an entry.
+
+**Write for the person using Burnish, not for us.** No module names, no "refactored", no
+"improved performance" without saying what got faster. If someone who has never seen the code
+can't tell what changed for them, rewrite it.
+
+**The size of the release sets the tone.**
+
+- **A big release** (new features people will notice) stays clear: lead with what's new, one
+  bold line each, and keep the jokes for the headline and maybe one item.
+- **A small release** (fixes, polish, nothing anyone would plan their day around) is where the
+  fun lives. Every fix still says exactly what used to go wrong, but each one can carry its own
+  wink, and the headline can be pure play. Safety and security fixes stay plain even here.
 
 - **Open with one line** that sets the mood, like a headline: "First light." Not a paragraph.
 - **Each item:** a bold line saying what changed for the person, then a sentence or two on why it
@@ -76,6 +88,17 @@ Examples (made up, to show the shape):
 > allowed.
 
 > **Tauri apps get checked too.** They used to wait in *Can't check*, looking left out.
+
+A small release, whole:
+
+> ## 0.2.1-beta — 2026-11-02
+> Small fixes, big feelings.
+>
+> - **Discord no longer claims to be two apps.** Having Discord and Discord Canary installed made
+>   the Updates list show Discord twice; it had been reading the Canary's version for both.
+> - **The widget wakes up after a restart.** It used to say "Open Burnish to check your apps"
+>   until the next daily check, even though Burnish had checked an hour ago.
+> - **"Checked just now" stays honest.** It no longer says "just now" for an hour.
 
 > **Fixed: an update feed that redirected to a different website was followed without warning.**
 > Burnish now stops and offers the developer's download page instead. If you updated an app from

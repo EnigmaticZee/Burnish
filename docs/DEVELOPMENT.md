@@ -91,9 +91,22 @@ One Swift package, one target per module:
 | `scripts/update-strings.sh` | Refreshes the string catalog from the source |
 | `scripts/make-icons.sh` | Rebuilds the icons from `App/AppIcon.icon` (Icon Composer) |
 | `scripts/make-dmg-art.swift` | Redraws the DMG window background |
-| `scripts/make-showcase.sh` | Redraws the README banner from the app's screens, filled with sample apps |
+| `scripts/make-showcase.sh` | Redraws the README banner, the website's images and the social preview from the app's screens, filled with sample apps |
+| `scripts/build-site.py` | Builds the website into `_site/` for a given release (`python3 scripts/build-site.py 0.2.0-beta`) |
 | `scripts/make-cask-fixture.py` | Cuts the test fixtures out of a full copy of Homebrew's cask list |
 | `scripts/sign.sh` | Developer ID signing, once there's a certificate |
+
+## The website
+
+`site/` is the homepage at <https://enigmaticzee.github.io/Burnish/>: one hand-written page, a
+stylesheet and a small script, with no frameworks and nothing loaded from anywhere else (it keeps
+the app's privacy promise). `scripts/build-site.py` fills its "What's new" from the newest
+published release's entry in `docs/HISTORY.md`, so the page never announces a version whose
+download isn't up yet.
+
+The Website workflow deploys it to GitHub Pages whenever `site/` changes on `main`, and the Build
+workflow starts it after every release. To look at it locally, build it and serve `_site/` with
+any static file server.
 
 ## Text and translations
 
