@@ -18,6 +18,7 @@ if [ -d "$SPARKLE" ]; then
     sign "$SPARKLE/Versions/B/Updater.app"
     sign "$SPARKLE"
 fi
+[ -f "$APP/Contents/Helpers/burnish" ] && sign "$APP/Contents/Helpers/burnish"
 WIDGET="$APP/Contents/PlugIns/BurnishWidget.appex"
 [ -d "$WIDGET" ] && sign --entitlements "$(dirname "$0")/../App/Widget.entitlements" "$WIDGET"
 sign --entitlements "$ENTITLEMENTS" "$APP"

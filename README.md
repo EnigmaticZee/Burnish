@@ -133,17 +133,25 @@ No. Apple's Software Update handles macOS and Apple's own apps.
 
 ## From the command line
 
-The `burnish` tool uses the same engine:
+The `burnish` tool ships inside the app and uses the same engine:
 
 ```sh
-burnish check            # every app's status; add --csv or --json
-burnish update Firefox   # one verified install
-burnish restore Firefox  # put back the version that update replaced
-burnish history Firefox  # what Burnish has done with an app
-burnish inventory        # every app with bundle ID, versions, Team ID and update hints
+B=/Applications/Burnish.app/Contents/Helpers/burnish
+$B check                 # every app's status; add --csv or --json
+$B count                 # how many updates are waiting (--cached answers instantly)
+$B update Firefox        # one verified install
+$B restore Firefox       # put back the version that update replaced
+$B history Firefox       # what Burnish has done with an app
+$B inventory             # every app with bundle ID, versions, Team ID and update hints
 ```
 
-Build it with `swift build -c release --product burnish`.
+## Shortcuts
+
+- **Open URL** with `burnish://check`, `burnish://update-all` or `burnish://open` runs a check,
+  updates everything Burnish can install, or opens the window.
+- **Run Shell Script** with `/Applications/Burnish.app/Contents/Helpers/burnish count` gives you the
+  number of updates waiting, for widgets, Focus filters or a morning summary.
+- The daily notification has an **Update All** button too.
 
 ## Roadmap
 

@@ -90,6 +90,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         [.banner]
     }
 
+    /// burnish://check, burnish://update-all and burnish://open, for Shortcuts and the widget.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls where url.scheme == "burnish" {
+            switch url.host {
+            case "check": Task { await model.check() }
+            case "update-all": Task { await model.updateAll() }
+            default:
+                model.selectedTab = .updates
+                openWindow(id: "main")
+            }
+        }
+    }
+
     /// Opens a SwiftUI `Window` scene from AppKit code.
     private func openWindow(id: String) {
         NSApp.activate(ignoringOtherApps: true)

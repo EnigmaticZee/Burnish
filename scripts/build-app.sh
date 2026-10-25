@@ -25,6 +25,7 @@ fi
 echo "Building Burnish $VERSION ($BUILD), $CONFIG"
 swift build -c "$CONFIG" --product BurnishApp "${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}"
 swift build -c "$CONFIG" --product BurnishWidget "${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}"
+swift build -c "$CONFIG" --product burnish "${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}"
 BIN_DIR="$(swift build -c "$CONFIG" --product BurnishApp "${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}" --show-bin-path)"
 
 APP=build/Burnish.app
@@ -37,6 +38,11 @@ sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" App/Info.plist > "$APP
 cp App/Assets.car App/AppIcon.icns "$APP/Contents/Resources/"
 # UI text: the string catalog compiles to one .lproj per language (scripts/update-strings.sh).
 xcrun xcstringstool compile App/Localizable.xcstrings --output-directory "$APP/Contents/Resources" >/dev/null
+
+# The command-line tool, for Shortcuts, scripts and IT admins. Not next to the app's own
+# executable: on a case-insensitive disk "burnish" and "Burnish" are the same file.
+mkdir -p "$APP/Contents/Helpers"
+cp "$BIN_DIR/burnish" "$APP/Contents/Helpers/burnish"
 
 # The desktop widget, a sandboxed extension with the same text.
 WIDGET="$APP/Contents/PlugIns/BurnishWidget.appex"
@@ -64,6 +70,7 @@ else
         codesign --force --sign - "$part"
     done
     codesign --force --sign - --entitlements App/Widget.entitlements "$WIDGET"
+    codesign --force --sign - "$APP/Contents/Helpers/burnish"
     codesign --force --sign - --entitlements App/Burnish.entitlements \
         -r='designated => identifier "io.github.enigmaticzee.Burnish"' "$APP"
 fi

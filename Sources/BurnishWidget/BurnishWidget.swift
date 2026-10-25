@@ -51,5 +51,6 @@ struct EntryView: View {
 
     var body: some View {
         UpdatesWidgetView(snapshot: entry.snapshot, size: family == .systemMedium ? .medium : .small)
+            .widgetURL(URL(string: "burnish://open"))
     }
 }

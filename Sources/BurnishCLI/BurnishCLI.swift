@@ -8,6 +8,7 @@ import UpdateSources
 // burnish inventory            Every app found, with bundle ID, versions, Team ID and source hints
 // burnish check [--csv|--json] Detection report: app, installed, latest, source, confidence
 // burnish update <app>         One verified install, with the same checks as the app
+// burnish count [--cached]     How many updates are waiting (for Shortcuts and scripts)
 // burnish history <app>        What Burnish has done with one app
 // burnish restore <app>        Put back the version Burnish's latest update replaced
 
@@ -107,6 +108,11 @@ struct BurnishCLI {
 
             """.utf8))
 
+        case "count":
+            // A fresh check by default; --cached answers instantly from the last one.
+            let report = arguments.contains("--cached") ? await engine.lastReport() : await engine.runCheck()
+            print(report?.results.filter(\.status.isOutdated).count ?? 0)
+
         case "update":
             guard let query = arguments.dropFirst().first(where: { !$0.hasPrefix("--") }) else {
                 print("Usage: burnish update <app name or bundle ID>")
@@ -202,6 +208,7 @@ struct BurnishCLI {
               burnish check --csv            Same, as CSV
               burnish check --json           Same, as JSON
               burnish update <app>           Download, verify and install one app's update
+              burnish count [--cached]       How many updates are waiting
               burnish history <app>          What Burnish has done with one app
               burnish restore <app>          Put back the version Burnish's latest update replaced
             """)
