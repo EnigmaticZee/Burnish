@@ -140,18 +140,18 @@
         </article>
         <article class="card reveal">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 018 0v3" /></svg>
-          <h3>Eight checks per install</h3>
-          <p>The developer's signature, the published checksum, the same team as your copy, Gatekeeper. Any check fails, nothing changes.</p>
+          <h3>Hallmarks on every update</h3>
+          <p>See where each update comes from and the checks it must pass: the developer's signature, the checksum, the same team as your copy, Gatekeeper. One fails, nothing changes.</p>
         </article>
         <article class="card reveal">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7L4.5 11.5 9 16" /><path d="M5 11.5h9a5.5 5.5 0 010 11h-2" transform="translate(0 -3)" /></svg>
           <h3>Put Back, anytime</h3>
-          <p>Every old version goes to the Trash, never deleted. Changed your mind? One click brings it back.</p>
+          <p>Every old version goes to the Trash, never deleted, or waits 30 days in Burnish's own folder if you like. Changed your mind? One click brings it back.</p>
         </article>
         <article class="card reveal">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18.5h17" /><path d="M6 18.5a6 6 0 0112 0" /><path d="M12 12.5v-2" /><path d="M10 10.5h4" /></svg>
           <h3>Quiet in your menu bar</h3>
-          <p>One check a day, at most one notification, a desktop widget if you like. Developers' own updaters get their turn too.</p>
+          <p>One check a day, at most one notification. Minor updates can install themselves after a wait you choose; major ones always wait for you.</p>
         </article>
         <article class="card reveal">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M6 18L18 6" /></svg>
@@ -235,7 +235,7 @@
         <li class="reveal"><b>Homebrew's app list</b><span>At most once a day. Nothing about your apps.</span></li>
         <li class="reveal"><b>Apple's App Store lookup</b><span>Your App Store apps' bundle IDs. You can turn it off.</span></li>
         <li class="reveal"><b>Each app's own update feed</b><span>And the download itself, when you update.</span></li>
-        <li class="reveal"><b>GitHub</b><span>For apps whose downloads live there, community match fixes, and Burnish's own updates.</span></li>
+        <li class="reveal"><b>GitHub</b><span>For apps whose downloads live there, community match fixes and feeds, and Burnish's own updates.</span></li>
       </ul>
     </section>
 
@@ -253,6 +253,10 @@
       <details class="reveal">
         <summary>What about App Store apps?</summary>
         <p>Burnish finds their updates and hands them to the App Store: several at once open the Updates page, where Apple's Update All does them together.</p>
+      </details>
+      <details class="reveal">
+        <summary>Can it update apps without asking?</summary>
+        <p>If you turn it on. Minor updates for apps that aren't open install once they've been out a few days, security fixes right away. Major upgrades, which may be paid, always wait for you, and each app can have its own rule.</p>
       </details>
       <details class="reveal">
         <summary>Why does it say "Can't check" for some apps?</summary>
