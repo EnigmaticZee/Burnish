@@ -76,3 +76,9 @@ One Swift package, one target per module:
   the release.
 - `docs/HISTORY.md` entries are the release notes everywhere: the GitHub release and, through
   `scripts/release-notes-html.py`, the update window inside Burnish.
+
+## Commits and release notes
+
+Meaningful first, fun second: every commit and release note says exactly what changed, and the
+good ones make you smile while doing it. [docs/VOICE.md](VOICE.md) has the rules and examples;
+read it before your first commit.
