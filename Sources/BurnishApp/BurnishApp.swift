@@ -58,7 +58,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         #if DEBUG
         if PreviewRenderer.runIfRequested(model: model) { return }
         #endif
-        if Notifier.available { UNUserNotificationCenter.current().delegate = self }
+        if Notifier.available {
+            UNUserNotificationCenter.current().delegate = self
+            Notifier.registerActions()
+        }
         // Starts Burnish's own update checks; an update waits while Burnish is busy with another app.
         let model = model
         SelfUpdater.shared.isBusy = { model.isChecking || model.anyInstalling }
@@ -69,11 +72,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
     }
 
-    /// Clicking the notification opens the main window on the Updates tab.
+    /// The notification's Update All button updates everything Burnish can; clicking the
+    /// notification itself opens the main window on the Updates tab.
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        let action = response.actionIdentifier
         await MainActor.run {
-            model.selectedTab = .updates
-            openWindow(id: "main")
+            if action == Notifier.updateAllAction {
+                Task { await model.updateAll() }
+            } else {
+                model.selectedTab = .updates
+                openWindow(id: "main")
+            }
         }
     }
 

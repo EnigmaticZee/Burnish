@@ -38,6 +38,8 @@ final class AppModel {
     private(set) var caskDataOffline = false
     private(set) var problems: [String] = []
     private(set) var isOnline = true
+    /// Low Data Mode: no automatic downloads.
+    private(set) var isConstrained = false
     /// Set when an install failed for want of App Management; shown as the menu bar dot.
     var needsAppManagement = false
     var installStates: [String: InstallState] = [:]
@@ -69,7 +71,10 @@ final class AppModel {
         refreshWidget()
 
         pathMonitor.pathUpdateHandler = { [weak self] path in
-            Task { @MainActor in self?.isOnline = path.status == .satisfied }
+            Task { @MainActor in
+                self?.isOnline = path.status == .satisfied
+                self?.isConstrained = path.isConstrained
+            }
         }
         pathMonitor.start(queue: DispatchQueue(label: "burnish.path"))
 
@@ -157,7 +162,10 @@ final class AppModel {
         isChecking = false
         stopAnimation()
         await engine.releaseCaches()
-        if background { await Notifier.notifyIfNeeded(model: self) }
+        if background {
+            let updated = await runAutomaticUpdates()
+            await Notifier.notifyIfNeeded(model: self, autoUpdated: updated)
+        }
     }
 
     private func receive(_ result: AppCheckResult) {
@@ -300,6 +308,30 @@ final class AppModel {
         installStates[id] = .running(.downloading(received: 0, total: nil))
         let outcome = await engine.install(result, progress: progressHandler(id), askToQuit: Self.askToQuitHandler)
         await finish(result, outcome)
+    }
+
+    // MARK: Automatic updates
+
+    func autoUpdateDecision(for result: AppCheckResult) -> AutoUpdatePolicy.Decision {
+        AutoUpdatePolicy.decide(
+            result, settings: settings, rule: appRules.rule(for: result.app.bundleID),
+            firstSeen: result.status.candidate.flatMap { history.firstSeen(version: $0.displayVersion, for: result.app.bundleID) },
+            isRunning: NSWorkspace.shared.runningApplications.contains { $0.bundleURL?.standardizedFileURL == result.app.url.standardizedFileURL }
+        )
+    }
+
+    /// Installs what the policy allows, one app at a time, never asking anything: an app that
+    /// won't quit simply waits for next time. Returns the names it updated.
+    private func runAutomaticUpdates() async -> [String] {
+        guard isOnline, !isConstrained else { return [] }
+        var updated: [String] = []
+        for result in outdated where !isInstalling(result) && autoUpdateDecision(for: result) == .install {
+            installStates[result.id] = .running(.downloading(received: 0, total: nil))
+            let outcome = await engine.install(result, automatic: true, progress: progressHandler(result.id), askToQuit: { _ in .cancel })
+            await finish(result, outcome)
+            if case .installed = outcome { updated.append(result.app.name) }
+        }
+        return updated
     }
 
     /// The version Burnish can put back: the one its latest update of this app replaced, while

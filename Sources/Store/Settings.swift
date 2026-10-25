@@ -44,6 +44,31 @@ public enum HomebrewHandling: String, Sendable, Codable, CaseIterable, Identifia
     }
 }
 
+/// How long a new version has to be out before Burnish installs it on its own.
+public enum AutoUpdateWait: String, Sendable, Codable, CaseIterable, Identifiable {
+    case none, oneDay, threeDays, oneWeek
+
+    public var id: String { rawValue }
+
+    public var days: Int {
+        switch self {
+        case .none: 0
+        case .oneDay: 1
+        case .threeDays: 3
+        case .oneWeek: 7
+        }
+    }
+
+    public var label: String {
+        switch self {
+        case .none: String(localized: "Don't wait")
+        case .oneDay: String(localized: "1 day")
+        case .threeDays: String(localized: "3 days")
+        case .oneWeek: String(localized: "1 week")
+        }
+    }
+}
+
 /// Settings. Missing keys fall back to defaults, so old files keep working.
 public struct Settings: Sendable, Codable, Equatable {
     public var checkFrequency: CheckFrequency = .daily
@@ -55,6 +80,9 @@ public struct Settings: Sendable, Codable, Equatable {
     public var appStoreLookups = true
     /// Fetch the community match fixes from Burnish's GitHub repository.
     public var communityOverrides = true
+    /// Install minor updates on their own, for apps that aren't open, after `autoUpdateWait`.
+    public var autoUpdate = false
+    public var autoUpdateWait: AutoUpdateWait = .threeDays
     public var hasCompletedOnboarding = false
 
     public init() {}
@@ -69,6 +97,8 @@ public struct Settings: Sendable, Codable, Equatable {
         homebrewHandling = (try? c.decodeIfPresent(HomebrewHandling.self, forKey: .homebrewHandling)) ?? d.homebrewHandling
         appStoreLookups = (try? c.decodeIfPresent(Bool.self, forKey: .appStoreLookups)) ?? d.appStoreLookups
         communityOverrides = (try? c.decodeIfPresent(Bool.self, forKey: .communityOverrides)) ?? d.communityOverrides
+        autoUpdate = (try? c.decodeIfPresent(Bool.self, forKey: .autoUpdate)) ?? d.autoUpdate
+        autoUpdateWait = (try? c.decodeIfPresent(AutoUpdateWait.self, forKey: .autoUpdateWait)) ?? d.autoUpdateWait
         hasCompletedOnboarding = (try? c.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding)) ?? d.hasCompletedOnboarding
     }
 }

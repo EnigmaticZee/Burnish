@@ -157,6 +157,12 @@ struct DetailView: View {
                 label("Status")
                 Text(statusText).fixedSize(horizontal: false, vertical: true)
             }
+            if let automatic = automaticText {
+                GridRow {
+                    label("Automatic")
+                    Text(automatic).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+            }
             if let source = result.status.candidate?.source ?? result.decidedBy {
                 GridRow {
                     label("Source")
@@ -211,6 +217,18 @@ struct DetailView: View {
         case let (s?, _): s
         case let (nil, b?): b
         default: "–"
+        }
+    }
+
+    /// When this update installs on its own, or why it won't; nothing when automatic updates are off for it.
+    private var automaticText: String? {
+        let rule = model.appRules.rule(for: result.app.bundleID)
+        guard result.status.isOutdated, rule.updates == .automatic || (rule.updates == .followSettings && model.settings.autoUpdate)
+        else { return nil }
+        switch model.autoUpdateDecision(for: result) {
+        case .install: return String(localized: "Installs on its own after the next check")
+        case .wait(let until): return String(localized: "Installs on its own from \(until.formatted(date: .abbreviated, time: .omitted))")
+        case .skip(let why): return String(localized: "Waits for you: \(why.lowercasedFirst)")
         }
     }
 
@@ -559,4 +577,9 @@ struct RulesSection: View {
         change(&changed)
         Task { await model.setRule(changed, for: result) }
     }
+}
+
+extension String {
+    /// "The app is open" → "the app is open", for joining after a colon.
+    var lowercasedFirst: String { prefix(1).lowercased() + dropFirst() }
 }

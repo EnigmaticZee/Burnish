@@ -3,7 +3,7 @@ import BurnishCore
 import Store
 import SwiftUI
 
-/// One pane, kept to ten controls or fewer.
+/// One pane, grouped by what each control is for.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
 
@@ -18,6 +18,17 @@ struct SettingsView: View {
                 Text("At most one notification a day.").font(.caption).foregroundStyle(.secondary)
                 Toggle("Open Burnish at login", isOn: $model.settings.launchAtLogin)
                 Toggle("Keep Burnish up to date automatically", isOn: Bindable(SelfUpdater.shared).automaticallyChecks)
+            }
+            Section {
+                Toggle("Install app updates automatically", isOn: $model.settings.autoUpdate)
+                Picker("Wait after a release", selection: $model.settings.autoUpdateWait) {
+                    ForEach(AutoUpdateWait.allCases) { Text($0.label).tag($0) }
+                }
+                .disabled(!model.settings.autoUpdate)
+                Text("Only apps that aren't open, never major upgrades, with every check. Security updates skip the wait, and each app can choose for itself in its rules.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } header: {
+                Text("Automatic updates")
             }
             Section {
                 Toggle("Also check apps in ~/Applications", isOn: $model.settings.scanUserApplications)

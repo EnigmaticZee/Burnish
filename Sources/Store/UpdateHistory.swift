@@ -24,6 +24,11 @@ public struct UpdateHistory: Codable, Sendable, Equatable {
         if !seen { record(.found(version: version, source: source), for: bundleID, at: date) }
     }
 
+    /// When Burnish first saw this version, for the automatic-update wait.
+    public func firstSeen(version: String, for bundleID: String) -> Date? {
+        events(for: bundleID).last { if case .found(version, _) = $0.kind { true } else { false } }?.date
+    }
+
     /// Burnish's most recent update of this app, when nothing has been put back since.
     public func latestUpdate(for bundleID: String) -> HistoryEvent? {
         for event in events(for: bundleID) {
