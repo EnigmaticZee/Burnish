@@ -26,6 +26,11 @@ public final class BurnishEngine: Sendable {
     }
 
     public var downloadsDirectory: URL { store.directory.appendingPathComponent("Downloads", isDirectory: true) }
+    /// The person's settings with anything their organisation enforces applied on top.
+    public func settings() async -> Settings {
+        ManagedSettings.apply(to: await store.load(.settings, default: Settings())).settings
+    }
+
     public var earlierVersions: EarlierVersions {
         EarlierVersions(directory: store.directory.appendingPathComponent("Earlier Versions", isDirectory: true))
     }
@@ -44,7 +49,7 @@ public final class BurnishEngine: Sendable {
     /// Scan, check every app, remember the report.
     public func runCheck(onResult: @escaping @Sendable (AppCheckResult) async -> Void = { _ in }) async -> CheckReport {
         earlierVersions.prune()
-        let settings = await store.load(.settings, default: Settings())
+        let settings = await settings()
         var apps = scan(settings: settings).apps
         if settings.homebrewHandling == .hide { apps.removeAll(where: \.isManagedByHomebrew) }
         let report = await check(apps, settings: settings, onResult: onResult)
@@ -126,7 +131,7 @@ public final class BurnishEngine: Sendable {
         switch outcome {
         case .installed(var oldCopy, let relaunched):
             // Out of the Trash and into Burnish's folder, when the person wants a longer way back.
-            if let copy = oldCopy, await store.load(.settings, default: Settings()).keepEarlierVersions {
+            if let copy = oldCopy, await settings().keepEarlierVersions {
                 oldCopy = (try? earlierVersions.keep(copy, bundleID: result.app.bundleID)) ?? copy
                 outcome = .installed(oldCopy: oldCopy, relaunched: relaunched)
             }

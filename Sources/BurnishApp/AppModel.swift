@@ -57,6 +57,8 @@ final class AppModel {
     private(set) var history = UpdateHistory()
     /// Per-app choices: automatic or not, stay on a major version, follow betas.
     private(set) var appRules = AppRules()
+    /// Settings the person's organisation enforces; Settings shows them locked.
+    private(set) var lockedSettings: Set<ManagedSettings.Key> = []
     private var animationTimer: Timer?
     var animationFrame = 0
 
@@ -100,7 +102,9 @@ final class AppModel {
     /// Loads saved state without scheduling or checking (previews).
     func loadSnapshot() async {
         isLoading = true
-        settings = await engine.store.load(.settings, default: Settings())
+        let managed = ManagedSettings.apply(to: await engine.store.load(.settings, default: Settings()))
+        settings = managed.settings
+        lockedSettings = managed.locked
         isLoading = false
         state = await engine.store.load(.appState, default: AppState())
         if let report = await engine.lastReport() { apply(report) }

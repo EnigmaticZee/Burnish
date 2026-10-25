@@ -115,3 +115,31 @@ import Testing
         #expect(!WidgetSnapshot.directory.path.contains("/Containers/"), "never the sandbox container")
     }
 }
+
+@Suite struct ManagedSettingsRules {
+    @Test func enforcedValuesWinAndLock() {
+        let profile: [ManagedSettings.Key: Any] = [
+            .autoUpdate: true, .autoUpdateWait: "oneWeek", .appStoreLookups: false, .checkFrequency: "weekly", .skipOnboarding: true,
+        ]
+        var mine = Settings()
+        mine.autoUpdate = false
+        let (applied, locked) = ManagedSettings.apply(to: mine) { profile[$0] }
+        #expect(applied.autoUpdate)
+        #expect(applied.autoUpdateWait == .oneWeek)
+        #expect(!applied.appStoreLookups)
+        #expect(applied.checkFrequency == .weekly)
+        #expect(applied.hasCompletedOnboarding)
+        #expect(locked == [.autoUpdate, .autoUpdateWait, .appStoreLookups, .checkFrequency, .skipOnboarding])
+    }
+
+    @Test func wrongTypesAndUnknownValuesAreIgnored() {
+        let profile: [ManagedSettings.Key: Any] = [.autoUpdate: "yes", .checkFrequency: "hourly"]
+        let (applied, locked) = ManagedSettings.apply(to: Settings()) { profile[$0] }
+        #expect(applied == Settings())
+        #expect(locked.isEmpty)
+    }
+
+    @Test func nothingIsForcedOnAnOrdinaryMac() {
+        #expect(ManagedSettings.apply(to: Settings()).locked.isEmpty)
+    }
+}

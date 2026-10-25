@@ -66,7 +66,7 @@ struct BurnishCLI {
 
         switch command {
         case "inventory":
-            let settings = await engine.store.load(.settings, default: Settings())
+            let settings = await engine.settings()
             let start = Date()
             let result = engine.scan(settings: settings)
             print(pad("App", 28) + pad("Bundle ID", 38) + pad("Version", 16) + pad("Build", 16) + pad("Team ID", 12) + "Hints")
@@ -118,7 +118,7 @@ struct BurnishCLI {
                 print("Usage: burnish update <app name or bundle ID>")
                 return
             }
-            let settings = await engine.store.load(.settings, default: Settings())
+            let settings = await engine.settings()
             let report = await engine.runCheck()
             guard let result = report.results.first(where: {
                 $0.app.bundleID == query || $0.app.name.caseInsensitiveCompare(query) == .orderedSame
@@ -169,7 +169,7 @@ struct BurnishCLI {
                 print("Usage: burnish \(command) <app name or bundle ID>")
                 return
             }
-            let settings = await engine.store.load(.settings, default: Settings())
+            let settings = await engine.settings()
             guard let app = engine.scan(settings: settings).apps.first(where: {
                 $0.bundleID == query || $0.name.caseInsensitiveCompare(query) == .orderedSame
             }) else {

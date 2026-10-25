@@ -10,21 +10,30 @@ struct SettingsView: View {
     var body: some View {
         @Bindable var model = model
         Form {
+            if !model.lockedSettings.isEmpty {
+                Section {
+                    Label("Some settings are set by your organisation.", systemImage: "building.2")
+                        .font(.callout).foregroundStyle(.secondary)
+                }
+            }
             Section {
                 Picker("Check for updates", selection: $model.settings.checkFrequency) {
                     ForEach(CheckFrequency.allCases) { Text($0.label).tag($0) }
                 }
+                .disabled(locked(.checkFrequency))
                 Toggle("Notify me when updates are found", isOn: $model.settings.notificationsEnabled)
+                    .disabled(locked(.notificationsEnabled))
                 Text("At most one notification a day.").font(.caption).foregroundStyle(.secondary)
                 Toggle("Open Burnish at login", isOn: $model.settings.launchAtLogin)
                 Toggle("Keep Burnish up to date automatically", isOn: Bindable(SelfUpdater.shared).automaticallyChecks)
             }
             Section {
                 Toggle("Install app updates automatically", isOn: $model.settings.autoUpdate)
+                    .disabled(locked(.autoUpdate))
                 Picker("Wait after a release", selection: $model.settings.autoUpdateWait) {
                     ForEach(AutoUpdateWait.allCases) { Text($0.label).tag($0) }
                 }
-                .disabled(!model.settings.autoUpdate)
+                .disabled(!model.settings.autoUpdate || locked(.autoUpdateWait))
                 Text("Only apps that aren't open, never major upgrades, with every check. Security updates skip the wait, and each app can choose for itself in its rules.")
                     .font(.caption).foregroundStyle(.secondary)
             } header: {
@@ -32,6 +41,7 @@ struct SettingsView: View {
             }
             Section {
                 Toggle("Keep replaced versions for 30 days", isOn: $model.settings.keepEarlierVersions)
+                    .disabled(locked(.keepEarlierVersions))
                 Text("Burnish keeps each app's previous version in its own folder, so emptying the Trash doesn't take away Put Back. It uses disk space, and after 30 days the copy goes to the Trash.")
                     .font(.caption).foregroundStyle(.secondary)
             } header: {
@@ -39,17 +49,21 @@ struct SettingsView: View {
             }
             Section {
                 Toggle("Also check apps in ~/Applications", isOn: $model.settings.scanUserApplications)
+                    .disabled(locked(.scanUserApplications))
                 Picker("Apps installed with Homebrew", selection: $model.settings.homebrewHandling) {
                     ForEach(HomebrewHandling.allCases) { Text($0.label).tag($0) }
                 }
+                .disabled(locked(.homebrewHandling))
                 Text("By default Burnish shows their status and leaves updating to `brew upgrade --cask`, so the two never fight.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section {
                 Toggle("Look up App Store apps with Apple", isOn: $model.settings.appStoreLookups)
+                    .disabled(locked(.appStoreLookups))
                 Text("Sends the bundle IDs of your App Store apps to Apple's public lookup.")
                     .font(.caption).foregroundStyle(.secondary)
                 Toggle("Use community match fixes", isOn: $model.settings.communityOverrides)
+                    .disabled(locked(.communityOverrides))
                 Text("Downloads corrections from Burnish's GitHub repository once a day.")
                     .font(.caption).foregroundStyle(.secondary)
             } header: {
@@ -67,6 +81,8 @@ struct SettingsView: View {
         .frame(width: 480)
         .fixedSize()
     }
+
+    private func locked(_ key: ManagedSettings.Key) -> Bool { model.lockedSettings.contains(key) }
 }
 
 /// First run: what Burnish scans and sends, the App Management permission, then the first scan.

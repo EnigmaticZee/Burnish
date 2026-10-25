@@ -145,6 +145,11 @@ $B history Firefox       # what Burnish has done with an app
 $B inventory             # every app with bundle ID, versions, Team ID and update hints
 ```
 
+## For IT admins
+
+Settings can be enforced with a configuration profile, and the bundled `burnish` tool produces
+JSON and CSV reports. [docs/ADMINS.md](docs/ADMINS.md) has every key and an example.
+
 ## Shortcuts
 
 - **Open URL** with `burnish://check`, `burnish://update-all` or `burnish://open` runs a check,
