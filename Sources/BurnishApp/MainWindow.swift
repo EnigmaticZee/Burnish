@@ -5,7 +5,7 @@ import SwiftUI
 enum SortOrder: String, CaseIterable, Identifiable {
     case name, date
     var id: String { rawValue }
-    var label: String { self == .name ? "Name" : "Date" }
+    var label: String { self == .name ? String(localized: "Name") : String(localized: "Date") }
 }
 
 /// Sidebar with the five tabs and counts, a sortable list, and the detail pane (F8).
@@ -60,11 +60,11 @@ struct MainWindow: View {
             VStack(spacing: 0) {
                 if let offline = model.offlineBanner { Banner(text: offline, symbol: "wifi.slash") }
                 if model.needsAppManagement {
-                    Banner(text: "Burnish needs App Management to replace apps.", symbol: "lock", action: ("Open Settings", Permissions.openAppManagement))
+                    Banner(text: String(localized: "Burnish needs App Management to replace apps."), symbol: "lock", action: (String(localized: "Open Settings"), Permissions.openAppManagement))
                 }
                 AppStoreBanner()
                 if model.isChecking {
-                    Banner(text: "Checked \(model.checkedCount) of \(model.totalCount) apps", symbol: "arrow.clockwise")
+                    Banner(text: String(localized: "Checked \(model.checkedCount) of \(model.totalCount) apps"), symbol: "arrow.clockwise")
                 }
             }
         }
@@ -97,7 +97,7 @@ struct ResultList: View {
             }
         }
         .navigationTitle(tab.title)
-        .navigationSubtitle(model.lastCheck.map { "Checked \($0.relativeDescription)" } ?? "")
+        .navigationSubtitle(model.lastCheck.map { String(localized: "Checked \($0.relativeDescription)") } ?? "")
     }
 
     private var filtered: [AppCheckResult] {
@@ -119,21 +119,21 @@ struct ResultList: View {
 
     private var emptyTitle: String {
         switch tab {
-        case .updates: "Everything's up to date"
-        case .upToDate: "Nothing here yet"
-        case .needsConfirmation: "Nothing to confirm"
-        case .cantCheck: "Every app has a source"
-        case .ignored: "Nothing ignored"
+        case .updates: String(localized: "Everything's up to date")
+        case .upToDate: String(localized: "Nothing here yet")
+        case .needsConfirmation: String(localized: "Nothing to confirm")
+        case .cantCheck: String(localized: "Every app has a source")
+        case .ignored: String(localized: "Nothing ignored")
         }
     }
 
     private var emptyDescription: String {
         switch tab {
-        case .updates: model.lastCheck.map { "Checked \($0.relativeDescription)." } ?? "Burnish hasn't checked yet."
-        case .upToDate: "Apps with no update waiting show here."
-        case .needsConfirmation: "When Burnish isn't sure which Homebrew entry is an app, it asks here."
-        case .cantCheck: "Apps Burnish can't find an update source for show here, with the reason."
-        case .ignored: "Apps and versions you ignore show here."
+        case .updates: model.lastCheck.map { String(localized: "Checked \($0.relativeDescription).") } ?? String(localized: "Burnish hasn't checked yet.")
+        case .upToDate: String(localized: "Apps with no update waiting show here.")
+        case .needsConfirmation: String(localized: "When Burnish isn't sure which Homebrew entry is an app, it asks here.")
+        case .cantCheck: String(localized: "Apps Burnish can't find an update source for show here, with the reason.")
+        case .ignored: String(localized: "Apps and versions you ignore show here.")
         }
     }
 }
@@ -169,9 +169,9 @@ struct ResultRow: View {
     private var secondaryLine: String? {
         switch result.status {
         case .cantCheck(let reason): reason
-        case .needsConfirmation(let match): "Is this Homebrew's \(match.token)?"
-        case .ignored(.version(let v), _): "Ignoring version \(v)"
-        case .ignored(.app, _): "Ignored"
+        case .needsConfirmation(let match): String(localized: "Is this Homebrew's \(match.token)?")
+        case .ignored(.version(let v), _): String(localized: "Ignoring version \(v)")
+        case .ignored(.app, _): String(localized: "Ignored")
         case .upToDate(let note): note
         case .outdated: nil
         }

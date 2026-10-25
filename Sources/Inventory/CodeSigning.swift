@@ -53,8 +53,8 @@ public enum SignatureValidator {
 
         public var errorDescription: String? {
             switch self {
-            case .unsigned: "The new copy isn't signed"
-            case .invalid(let detail): "The new copy's signature isn't valid (\(detail))"
+            case .unsigned: String(localized: "The new copy isn't signed")
+            case .invalid(let detail): String(localized: "The new copy's signature isn't valid (\(detail))")
             }
         }
     }
@@ -77,7 +77,7 @@ public enum SignatureValidator {
         let status = SecStaticCodeCheckValidityWithErrors(staticCode, flags, requirement, &error)
         if status == errSecSuccess { return }
         if status == errSecCSUnsigned { throw .unsigned }
-        if status == errSecCSReqFailed { throw .invalid("not signed by the same developer") }
+        if status == errSecCSReqFailed { throw .invalid(String(localized: "not signed by the same developer")) }
         let detail = (error?.takeRetainedValue()).map { CFErrorCopyDescription($0) as String } ?? "OSStatus \(status)"
         throw .invalid(detail)
     }

@@ -61,11 +61,11 @@ public enum StatusTab: String, Sendable, CaseIterable, Codable, Identifiable {
 
     public var title: String {
         switch self {
-        case .updates: "Updates"
-        case .upToDate: "Up to date"
-        case .needsConfirmation: "Needs confirmation"
-        case .cantCheck: "Can't check"
-        case .ignored: "Ignored"
+        case .updates: String(localized: "Updates")
+        case .upToDate: String(localized: "Up to date")
+        case .needsConfirmation: String(localized: "Needs confirmation")
+        case .cantCheck: String(localized: "Can't check")
+        case .ignored: String(localized: "Ignored")
         }
     }
 

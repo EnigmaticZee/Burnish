@@ -41,11 +41,11 @@ public enum HTTPError: Error, Equatable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .insecureURL(let url): "Not an HTTPS address: \(url)"
-        case .insecureRedirect(let url): "Redirected to a non-HTTPS address: \(url)"
-        case .status(let code): "The server answered \(code)"
-        case .offline: "No internet connection"
-        case .timedOut: "Feed not reachable (timed out)"
+        case .insecureURL(let url): String(localized: "Not an HTTPS address: \(url)")
+        case .insecureRedirect(let url): String(localized: "Redirected to a non-HTTPS address: \(url)")
+        case .status(let code): String(localized: "The server answered \(code)")
+        case .offline: String(localized: "No internet connection")
+        case .timedOut: String(localized: "Feed not reachable (timed out)")
         case .other(let message): message
         }
     }

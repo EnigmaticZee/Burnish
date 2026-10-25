@@ -77,6 +77,22 @@ One Swift package, one target per module:
 - `docs/HISTORY.md` entries are the release notes everywhere: the GitHub release and, through
   `scripts/release-notes-html.py`, the update window inside Burnish.
 
+## Text and translations
+
+Every word Burnish shows goes through the string catalog, `App/Localizable.xcstrings`, so
+translations can be added without touching code. Translations themselves wait until the interface
+settles; the groundwork is in place.
+
+- Write text as a literal where SwiftUI takes one (`Text("Check Now")`, `Button("Ignore App")`).
+  Text built in code, including every message from the core modules, uses
+  `String(localized: "…")`. Counts are one string with interpolation (`"\(count) updates"`); the
+  catalog holds the plural forms, so never branch on `count == 1` for wording.
+- Things that aren't words (bullets, bare numbers, version strings) use `Text(verbatim:)` or a
+  formatter, so they don't end up in the catalog.
+- After changing any visible text, run `scripts/update-strings.sh` and commit the catalog with the
+  change. `scripts/build-app.sh` compiles it into the app.
+- The `burnish` command-line tool and log messages stay in English.
+
 ## Commits and release notes
 
 Meaningful first, fun second: every commit and release note says exactly what changed, and the

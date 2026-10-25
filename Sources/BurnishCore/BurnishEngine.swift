@@ -96,7 +96,7 @@ public final class BurnishEngine: Sendable {
         askToQuit: @escaping @Sendable (String) async -> QuitDecision
     ) async -> InstallOutcome {
         guard let candidate = result.status.candidate else {
-            return .refused(InstallRefusal(.manualOnly, "There's no update to install", downloadPage: result.downloadPage))
+            return .refused(InstallRefusal(.manualOnly, String(localized: "There's no update to install"), downloadPage: result.downloadPage))
         }
         var release = candidate.release
         if release.downloadPage == nil { release.downloadPage = result.downloadPage }

@@ -36,6 +36,8 @@ cp "$BIN_DIR/BurnishApp" "$APP/Contents/MacOS/Burnish"
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" App/Info.plist > "$APP/Contents/Info.plist"
 # Assets.car is the Liquid Glass icon; AppIcon.icns is the fallback for older systems (scripts/make-icons.sh).
 cp App/Assets.car App/AppIcon.icns "$APP/Contents/Resources/"
+# UI text: the string catalog compiles to one .lproj per language (scripts/update-strings.sh).
+xcrun xcstringstool compile App/Localizable.xcstrings --output-directory "$APP/Contents/Resources" >/dev/null
 
 # Sparkle (Burnish's own updates), from the Swift package.
 SPARKLE_FRAMEWORK="$(find .build -path '*Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework' -maxdepth 8 -type d | head -1)"

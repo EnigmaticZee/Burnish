@@ -10,9 +10,9 @@ public struct BrewUpgrader: Sendable {
 
         public var errorDescription: String? {
             switch self {
-            case .brewNotFound: "Homebrew isn't installed in the usual place"
-            case .failed(let detail): "brew upgrade failed: \(detail)"
-            case .needsPassword(let token): "Homebrew needs your password for this one. Run `brew upgrade --cask \(token)` in Terminal."
+            case .brewNotFound: String(localized: "Homebrew isn't installed in the usual place")
+            case .failed(let detail): String(localized: "brew upgrade failed: \(detail)")
+            case .needsPassword(let token): String(localized: "Homebrew needs your password for this one. Run `brew upgrade --cask \(token)` in Terminal.")
             }
         }
     }

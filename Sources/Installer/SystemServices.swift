@@ -124,22 +124,23 @@ public struct SystemFileOperations: FileOperating {
             repeat with i from 2 to 6
                 set cmd to cmd & " " & quoted form of (item i of argv)
             end repeat
-            do shell script cmd with prompt "Burnish needs an administrator to update " & (item 7 of argv) & "." with administrator privileges
+            do shell script cmd with prompt (item 7 of argv) with administrator privileges
         end run
         """
         let output = try await Shell.run("/usr/bin/osascript", [
-            "-e", script, Self.replaceScript, old.path, new.path, trashTarget.path, partial.path, requirement, appName,
+            "-e", script, Self.replaceScript, old.path, new.path, trashTarget.path, partial.path, requirement,
+            String(localized: "Burnish needs an administrator to update \(appName)."),
         ])
         guard output.succeeded else {
             let text = output.errorText
             if text.contains("-128") { throw CocoaError(.userCancelled) }
             let message: String
             if text.hasSuffix("(5)") {
-                message = "The copy failed, so the old version was put back"
+                message = String(localized: "The copy failed, so the old version was put back")
             } else if text.hasSuffix("(6)") {
-                message = "The copy failed. The old version is in the Trash as \(trashTarget.lastPathComponent)"
+                message = String(localized: "The copy failed. The old version is in the Trash as \(trashTarget.lastPathComponent)")
             } else if text.hasSuffix("(3)") {
-                message = "A file with the same name is already in the Trash"
+                message = String(localized: "A file with the same name is already in the Trash")
             } else {
                 message = text
             }

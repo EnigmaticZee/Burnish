@@ -17,13 +17,13 @@ extension InstallPhase {
         switch self {
         case let .downloading(received, total):
             if let total, total > 0 {
-                return "Downloading \(Int(Double(received) / Double(total) * 100))%"
+                return String(localized: "Downloading \(Int(Double(received) / Double(total) * 100))%")
             }
-            return received > 0 ? "Downloading \(ByteCountFormatter.string(fromByteCount: received, countStyle: .file))" : "Downloading"
-        case .verifying: return "Verifying"
-        case .waitingForQuit: return "Waiting for the app to quit"
-        case .replacing: return "Replacing"
-        case .relaunching: return "Relaunching"
+            return received > 0 ? String(localized: "Downloading \(ByteCountFormatter.string(fromByteCount: received, countStyle: .file))") : String(localized: "Downloading")
+        case .verifying: return String(localized: "Verifying")
+        case .waitingForQuit: return String(localized: "Waiting for the app to quit")
+        case .replacing: return String(localized: "Replacing")
+        case .relaunching: return String(localized: "Relaunching")
         }
     }
 
@@ -62,7 +62,10 @@ public struct InstallRefusal: Error, Sendable, Equatable, LocalizedError {
         case quit
         /// Rule 7/8: moving files failed or needed a permission.
         case replace
+        /// An administrator was needed and the prompt didn't succeed.
         case permission
+        /// macOS's App Management permission is off, so no app can be replaced.
+        case appManagement
         /// The source has nothing Burnish can install by itself.
         case manualOnly
         case download

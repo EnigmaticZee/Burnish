@@ -51,7 +51,7 @@ struct SourceBadge: View {
 
 /// A quiet tag, like "May be paid".
 struct Tag: View {
-    let text: String
+    let text: LocalizedStringKey
     var symbol: String?
 
     var body: some View {
@@ -144,10 +144,10 @@ struct UpdateControl: View {
 
     private func helpText(_ action: UpdateAction) -> String {
         switch action {
-        case .install: "Download, verify and install \(result.status.candidate?.displayVersion ?? "")"
-        case .openAppStore: "Open in the App Store"
+        case .install: String(localized: "Download, verify and install \(result.status.candidate?.displayVersion ?? "")")
+        case .openAppStore: String(localized: "Open in the App Store")
         case .openDownloadPage(_, let reason): reason
-        case .brewUpgrade(let token): "Run brew upgrade --cask \(token)"
+        case .brewUpgrade(let token): String(localized: "Run brew upgrade --cask \(token)")
         default: ""
         }
     }
@@ -171,7 +171,7 @@ struct RefusalNote: View {
 extension Date {
     var relativeDescription: String {
         let interval = Date().timeIntervalSince(self)
-        if interval < 60 { return "just now" }
+        if interval < 60 { return String(localized: "just now") }
         return RelativeDateTimeFormatter().localizedString(for: self, relativeTo: Date())
     }
 }

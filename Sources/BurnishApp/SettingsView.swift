@@ -118,7 +118,7 @@ struct OnboardingView: View {
                 Text("Checked \(model.checkedCount) of \(model.totalCount) apps").foregroundStyle(.secondary)
             } else {
                 let count = model.outdated.count
-                Text(count == 0 ? "Everything's up to date." : count == 1 ? "1 app has an update." : "\(count) apps have updates.")
+                Text(count == 0 ? "Everything's up to date." : "\(count) apps have updates.")
                 Text("Burnish lives in the menu bar and checks once a day.").foregroundStyle(.secondary)
             }
             Spacer()

@@ -116,7 +116,7 @@ final class AppModel {
         do {
             if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
         } catch {
-            problems.append("Couldn't change Open at Login: \(error.localizedDescription)")
+            problems.append(String(localized: "Couldn't change Open at Login: \(error.localizedDescription)"))
         }
     }
 
@@ -213,8 +213,8 @@ final class AppModel {
     /// "Using data from 23 Oct, 09:14" when offline.
     var offlineBanner: String? {
         guard !isOnline || caskDataOffline else { return nil }
-        guard let caskDataDate else { return "You're offline" }
-        return "Using data from \(caskDataDate.formatted(.dateTime.day().month(.abbreviated).hour().minute()))"
+        guard let caskDataDate else { return String(localized: "You're offline") }
+        return String(localized: "Using data from \(caskDataDate.formatted(.dateTime.day().month(.abbreviated).hour().minute()))")
     }
 
     // MARK: Updating
@@ -234,7 +234,7 @@ final class AppModel {
                 installStates[result.id] = .done(relaunched: false)
                 await recheck(result)
             } catch {
-                installStates[result.id] = .failed(error.errorDescription ?? "brew upgrade failed")
+                installStates[result.id] = .failed(error.errorDescription ?? String(localized: "brew upgrade failed"))
             }
         case .managedByHomebrew, .none:
             break
@@ -262,8 +262,8 @@ final class AppModel {
         guard isOnline else { return }
         let id = result.id
         installStates[id] = .running(.downloading(received: 0, total: nil))
-        let outcome = await engine.install(result, progress: { phase in
-            Task { @MainActor [weak self] in
+        let outcome = await engine.install(result, progress: { [weak self] phase in
+            Task { @MainActor in
                 guard let self, case .running = self.installStates[id] else { return }
                 self.installStates[id] = .running(phase)
             }
@@ -279,7 +279,7 @@ final class AppModel {
         case .openedInInstaller:
             installStates[id] = .openedInstaller
         case .refused(let refusal):
-            if refusal.rule == .permission, refusal.message.contains("App Management") { needsAppManagement = true }
+            if refusal.rule == .appManagement { needsAppManagement = true }
             installStates[id] = .refused(refusal)
         case .cancelled:
             installStates[id] = nil
@@ -290,10 +290,10 @@ final class AppModel {
     static func askToQuit(_ name: String) -> QuitDecision {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
-        alert.messageText = "\(name) didn't quit"
-        alert.informativeText = "It may have unsaved work. Save it and quit \(name) yourself, then choose Try Again."
-        alert.addButton(withTitle: "Try Again")
-        alert.addButton(withTitle: "Cancel Update")
+        alert.messageText = String(localized: "\(name) didn't quit")
+        alert.informativeText = String(localized: "It may have unsaved work. Save it and quit \(name) yourself, then choose Try Again.")
+        alert.addButton(withTitle: String(localized: "Try Again"))
+        alert.addButton(withTitle: String(localized: "Cancel Update"))
         return alert.runModal() == .alertFirstButtonReturn ? .tryAgain : .cancel
     }
 

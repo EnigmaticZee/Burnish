@@ -22,10 +22,10 @@ public enum UpdateAction: Sendable, Equatable {
 
     public var buttonTitle: String {
         switch self {
-        case .install, .brewUpgrade: "Update"
-        case .openAppStore: "App Store"
-        case .openDownloadPage: "Download"
-        case .managedByHomebrew: "Homebrew"
+        case .install, .brewUpgrade: String(localized: "Update")
+        case .openAppStore: String(localized: "App Store")
+        case .openDownloadPage: String(localized: "Download")
+        case .managedByHomebrew: String(localized: "Homebrew")
         case .none: ""
         }
     }
@@ -48,14 +48,14 @@ extension AppCheckResult {
             return homebrew == .upgradeWithBrew ? .brewUpgrade(token: token) : .managedByHomebrew(token: token)
         }
         if !app.signature.canBeAutoUpdated {
-            return .openDownloadPage(downloadPage, reason: "Burnish only replaces apps signed by their developer")
+            return .openDownloadPage(downloadPage, reason: String(localized: "Burnish only replaces apps signed by their developer"))
         }
         if release.isInformational || release.needsManualInstall || release.downloadURL == nil {
-            return .openDownloadPage(downloadPage, reason: "This update comes from the developer's page")
+            return .openDownloadPage(downloadPage, reason: String(localized: "This update comes from the developer's page"))
         }
         if let minimum = release.minimumAutoupdateVersion.flatMap(Version.init),
            let installed = (app.version.build ?? app.version.short).flatMap(Version.init), installed < minimum {
-            return .openDownloadPage(downloadPage, reason: "The developer asks for this upgrade to be downloaded by hand")
+            return .openDownloadPage(downloadPage, reason: String(localized: "The developer asks for this upgrade to be downloaded by hand"))
         }
         return .install
     }

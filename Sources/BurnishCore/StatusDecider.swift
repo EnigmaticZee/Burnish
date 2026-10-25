@@ -43,7 +43,7 @@ public enum StatusDecider {
         result.checkedAt = now
         if let cask = findings.cask {
             result.cask = CaskSummary(cask)
-            if cask.deprecated || cask.disabled { result.notes.append("No longer maintained in Homebrew") }
+            if cask.deprecated || cask.disabled { result.notes.append(String(localized: "No longer maintained in Homebrew")) }
         }
         result.match = findings.match
 
@@ -70,23 +70,23 @@ public enum StatusDecider {
         // 1. Mac App Store: the receipt decides, and only the App Store updates it.
         if app.isAppStore {
             guard options.appStoreLookups else {
-                return AppCheckResult(app: app, status: .cantCheck(reason: "App Store checks are turned off in Settings"))
+                return AppCheckResult(app: app, status: .cantCheck(reason: String(localized: "App Store checks are turned off in Settings")))
             }
             switch findings.appStore {
             case .found(let release?):
                 return verdict(app, release: release, notes: notes, system: system)
             case .found(nil):
-                return AppCheckResult(app: app, status: .cantCheck(reason: "Not found in the App Store for your region"), decidedBy: .appStore)
+                return AppCheckResult(app: app, status: .cantCheck(reason: String(localized: "Not found in the App Store for your region")), decidedBy: .appStore)
             case .failed(let why):
                 return AppCheckResult(app: app, status: .cantCheck(reason: why), decidedBy: .appStore)
             case .notApplicable:
-                return AppCheckResult(app: app, status: .cantCheck(reason: "App Store not checked"))
+                return AppCheckResult(app: app, status: .cantCheck(reason: String(localized: "App Store not checked")))
             }
         }
 
         // Apple's own apps outside the App Store come with macOS updates.
         if app.isApple {
-            return AppCheckResult(app: app, status: .cantCheck(reason: "Updated by Apple through Software Update"))
+            return AppCheckResult(app: app, status: .cantCheck(reason: String(localized: "Updated by Apple through Software Update")))
         }
 
         // 2. The developer's Sparkle feed.
@@ -95,7 +95,7 @@ public enum StatusDecider {
             if let release = feed.release {
                 let result = verdict(app, release: release, notes: notes, system: system, incompatibleNote: feed.newerButIncompatible)
                 if case let .cantCheck(reason) = result.status {
-                    notes.append("Developer feed: \(reason)")
+                    notes.append(String(localized: "Developer feed: \(reason)"))
                 } else {
                     return result
                 }
@@ -106,7 +106,7 @@ public enum StatusDecider {
             notes.append(why)
         case .notApplicable:
             if app.sparkleFeedURL == nil, app.sparklePublicEDKey != nil {
-                notes.append("This app sets its update feed while running, so Burnish uses Homebrew's data")
+                notes.append(String(localized: "This app sets its update feed while running, so Burnish uses Homebrew's data"))
             }
         }
 
@@ -115,7 +115,7 @@ public enum StatusDecider {
         case .found(let release):
             let result = verdict(app, release: release, notes: notes, system: system)
             if case let .cantCheck(reason) = result.status {
-                notes.append("Developer feed: \(reason)")
+                notes.append(String(localized: "Developer feed: \(reason)"))
             } else {
                 return result
             }
@@ -127,14 +127,14 @@ public enum StatusDecider {
 
         // 4. Homebrew's cask data, matched by confidence.
         guard let match = findings.match, let cask = findings.cask else {
-            let reason = notes.first ?? "No update source found"
+            let reason = notes.first ?? String(localized: "No update source found")
             return AppCheckResult(app: app, status: .cantCheck(reason: reason), notes: Array(notes.dropFirst()))
         }
         guard match.canRaiseAlert else {
             return AppCheckResult(app: app, status: .needsConfirmation(match), decidedBy: .homebrew, notes: notes)
         }
         if cask.isLatestVersion {
-            return AppCheckResult(app: app, status: .cantCheck(reason: "Can't compare: Homebrew lists this app's version as \"latest\""),
+            return AppCheckResult(app: app, status: .cantCheck(reason: String(localized: "Can't compare: Homebrew lists this app's version as \"latest\"")),
                                   decidedBy: .homebrew, notes: notes)
         }
         var release = HomebrewSource.release(for: cask)
@@ -148,11 +148,11 @@ public enum StatusDecider {
             }
         }
         if !cask.supports(macOS: system.major) {
-            let needs = cask.minimumMacOS.map { "macOS \($0) or later" } ?? "a different macOS version"
+            let needs = cask.minimumMacOS.map { String(localized: "macOS \($0) or later") } ?? String(localized: "a different macOS version")
             let shown = release.version.display
             switch release.compare(with: app.version) {
             case .newer:
-                return AppCheckResult(app: app, status: .upToDate(note: "Version \(shown) needs \(needs)"), decidedBy: release.source, notes: notes)
+                return AppCheckResult(app: app, status: .upToDate(note: String(localized: "Version \(shown) needs \(needs)")), decidedBy: release.source, notes: notes)
             default:
                 break
             }
@@ -176,10 +176,28 @@ public enum StatusDecider {
             status = .upToDate(note: incompatibleNote)
         case .older:
             // A beta build, or a source that lags: never a downgrade.
-            status = .upToDate(note: incompatibleNote ?? "The installed version is newer than \(release.source.label)'s \(release.version.display)")
+            status = .upToDate(note: incompatibleNote ?? String(localized: "The installed version is newer than \(release.source.label)'s \(release.version.display)"))
         case .cantCompare(let why):
-            status = .cantCheck(reason: why)
+            status = .cantCheck(reason: why.text)
         }
         return AppCheckResult(app: app, status: status, decidedBy: release.source, notes: notes)
+    }
+}
+
+extension CantCompareReason {
+    /// What the Can't check row says.
+    var text: String {
+        switch self {
+        case .noVersion(fromFeed: false): String(localized: "The source gave no version")
+        case .noVersion(fromFeed: true): String(localized: "The feed gave no version")
+        case .latest: String(localized: "The source has no version number (\"latest\")")
+        case .unreadable(let version): String(localized: "Unreadable version \"\(version)\"")
+        case .installedUnreadable: String(localized: "The installed version isn't readable")
+        case let .formatsDiffer(installed, available, fromFeed: false):
+            String(localized: "Version formats don't line up (installed \(installed), source \(available))")
+        case let .formatsDiffer(installed, available, fromFeed: true):
+            String(localized: "Build numbers don't line up (installed \(installed), feed \(available))")
+        case .buildNewerVersionOlder: String(localized: "The feed's build is newer but its version is older")
+        }
     }
 }

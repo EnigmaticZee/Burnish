@@ -57,7 +57,23 @@ public enum UpdateVerdict: Sendable, Equatable {
     /// The installed copy is newer than the source (a beta, or a source that lags). Never a downgrade.
     case older
     /// Burnish can't tell. Never shown as an update.
-    case cantCompare(String)
+    case cantCompare(CantCompareReason)
+}
+
+/// Why two versions couldn't be compared. Kept as data so this module stays free of UI text.
+public enum CantCompareReason: Sendable, Equatable {
+    /// The source gave no version at all.
+    case noVersion(fromFeed: Bool)
+    /// The source says "latest" instead of a number.
+    case latest
+    /// The source's version isn't readable.
+    case unreadable(String)
+    /// The installed copy's version isn't readable.
+    case installedUnreadable
+    /// The two use different numbering schemes.
+    case formatsDiffer(installed: String, available: String, fromFeed: Bool)
+    /// The feed's build number is newer but its display version is older.
+    case buildNewerVersionOlder
 }
 
 public enum UpdateComparator {
@@ -72,13 +88,13 @@ public enum UpdateComparator {
 
     private static func compareShort(installed: VersionPair, available: VersionPair) -> UpdateVerdict {
         guard let availableString = available.short ?? available.build else {
-            return .cantCompare("The source gave no version")
+            return .cantCompare(.noVersion(fromFeed: false))
         }
         guard let latest = Version(availableString) else {
             return .cantCompare(unreadable(availableString))
         }
         guard let installedString = installed.short ?? installed.build, let current = Version(installedString) else {
-            return .cantCompare("The installed version isn't readable")
+            return .cantCompare(.installedUnreadable)
         }
         let installedBuild = installed.build.flatMap(Version.init)
 
@@ -120,7 +136,7 @@ public enum UpdateComparator {
             if latest == unprefixed { return .same }
             return latest > unprefixed ? .newer(major: false) : .older
         }
-        return .cantCompare("Version formats don't line up (installed \(installedString), source \(availableString))")
+        return .cantCompare(.formatsDiffer(installed: installedString, available: availableString, fromFeed: false))
     }
 
     /// Two single numbers with the same number of digits (at least three): `2629` and `2630`.
@@ -134,13 +150,13 @@ public enum UpdateComparator {
 
     private static func compareBuild(installed: VersionPair, available: VersionPair) -> UpdateVerdict {
         guard let availableString = available.build ?? available.short else {
-            return .cantCompare("The feed gave no version")
+            return .cantCompare(.noVersion(fromFeed: true))
         }
         guard let latest = Version(availableString) else {
             return .cantCompare(unreadable(availableString))
         }
         guard let installedString = installed.build ?? installed.short, let current = Version(installedString) else {
-            return .cantCompare("The installed version isn't readable")
+            return .cantCompare(.installedUnreadable)
         }
         let installedShort = installed.short.flatMap(Version.init)
         let availableShort = available.short.flatMap(Version.init)
@@ -153,13 +169,13 @@ public enum UpdateComparator {
                 return availableShort > installedShort
                     ? .newer(major: isMajorUpgrade(from: installedShort, to: availableShort)) : .older
             }
-            return .cantCompare("Build numbers don't line up (installed \(installedString), feed \(availableString))")
+            return .cantCompare(.formatsDiffer(installed: installedString, available: availableString, fromFeed: true))
         }
         guard latest > current else { return .older }
 
         if let installedShort, let availableShort, isCompatible(installedShort, availableShort) {
             if availableShort < installedShort {
-                return .cantCompare("The feed's build is newer but its version is older")
+                return .cantCompare(.buildNewerVersionOlder)
             }
             return .newer(major: isMajorUpgrade(from: installedShort, to: availableShort))
         }
@@ -184,8 +200,8 @@ public enum UpdateComparator {
         return to > from && from >= 1 && to < 50
     }
 
-    private static func unreadable(_ string: String) -> String {
-        string.lowercased() == "latest" ? "The source has no version number (\"latest\")" : "Unreadable version \"\(string)\""
+    private static func unreadable(_ string: String) -> CantCompareReason {
+        string.lowercased() == "latest" ? .latest : .unreadable(string)
     }
 }
 

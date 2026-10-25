@@ -14,9 +14,9 @@ public struct ElectronSource: Sendable {
 
         public var errorDescription: String? {
             switch self {
-            case .unsupportedProvider(let p): "Update provider \"\(p)\" isn't supported"
-            case .unreachable(let why): "Feed not reachable (\(why))"
-            case .unreadable: "The update feed couldn't be read"
+            case .unsupportedProvider(let p): String(localized: "Update provider \"\(p)\" isn't supported")
+            case .unreachable(let why): String(localized: "Feed not reachable (\(why))")
+            case .unreadable: String(localized: "The update feed couldn't be read")
             }
         }
     }

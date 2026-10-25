@@ -7,10 +7,10 @@ public enum CheckFrequency: String, Sendable, Codable, CaseIterable, Identifiabl
 
     public var label: String {
         switch self {
-        case .twiceDaily: "Twice a day"
-        case .daily: "Once a day"
-        case .weekly: "Once a week"
-        case .manual: "Only when I ask"
+        case .twiceDaily: String(localized: "Twice a day")
+        case .daily: String(localized: "Once a day")
+        case .weekly: String(localized: "Once a week")
+        case .manual: String(localized: "Only when I ask")
         }
     }
 
@@ -37,9 +37,9 @@ public enum HomebrewHandling: String, Sendable, Codable, CaseIterable, Identifia
 
     public var label: String {
         switch self {
-        case .showOnly: "Show, don't update"
-        case .hide: "Hide"
-        case .upgradeWithBrew: "Update with brew upgrade"
+        case .showOnly: String(localized: "Show, don't update")
+        case .hide: String(localized: "Hide")
+        case .upgradeWithBrew: String(localized: "Update with brew upgrade")
         }
     }
 }

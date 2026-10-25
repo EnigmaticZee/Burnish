@@ -25,10 +25,10 @@ public struct SparkleSource: Sendable {
 
         public var errorDescription: String? {
             switch self {
-            case .notHTTPS: "The update feed isn't HTTPS"
-            case .unreachable(let why): "Feed not reachable (\(why))"
-            case .unreadable: "The update feed couldn't be read"
-            case .noUsableItem: "The update feed lists no release for this Mac"
+            case .notHTTPS: String(localized: "The update feed isn't HTTPS")
+            case .unreachable(let why): String(localized: "Feed not reachable (\(why))")
+            case .unreadable: String(localized: "The update feed couldn't be read")
+            case .noUsableItem: String(localized: "The update feed lists no release for this Mac")
             }
         }
     }
@@ -82,7 +82,7 @@ public struct SparkleSource: Sendable {
         var note: String?
         if let (item, version) = newestIncompatible, best == nil || version > best!.1 {
             let shown = item.effectiveShortVersion ?? item.effectiveVersion ?? ""
-            note = item.minimumSystemVersion.map { "Version \(shown) needs macOS \($0) or later" } ?? "Version \(shown) can't run on this Mac"
+            note = item.minimumSystemVersion.map { String(localized: "Version \(shown) needs macOS \($0) or later") } ?? String(localized: "Version \(shown) can't run on this Mac")
         }
         guard let (item, _) = best else {
             if note != nil { return Result(release: nil, newerButIncompatible: note) }

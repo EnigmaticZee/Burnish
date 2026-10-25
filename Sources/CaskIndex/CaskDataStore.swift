@@ -22,7 +22,7 @@ public actor CaskDataStore {
         case noData(underlying: String)
         public var errorDescription: String? {
             switch self {
-            case .noData(let underlying): "Homebrew's app list isn't available yet (\(underlying))"
+            case .noData(let underlying): String(localized: "Homebrew's app list isn't available yet (\(underlying))")
             }
         }
     }
@@ -76,7 +76,7 @@ public actor CaskDataStore {
                 if let catalog = loadFromDisk(meta: meta) {
                     return remember(Loaded(catalog: catalog, dataDate: fetchedAt, isOffline: false))
                 }
-                throw HTTPError.other("Cached cask list is unreadable")
+                throw HTTPError.other(String(localized: "Cached cask list is unreadable"))
             }
             guard response.isSuccess else { throw HTTPError.status(response.status) }
             let casks = try Self.parse(response.body, platform: platform)
@@ -147,7 +147,7 @@ public actor CaskDataStore {
     public static func parse(_ data: Data, platform: Platform) throws -> [Cask] {
         try autoreleasepool {
             guard let list = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
-                throw HTTPError.other("Unexpected cask list format")
+                throw HTTPError.other(String(localized: "Unexpected cask list format"))
             }
             return list.compactMap { entry -> Cask? in
                 guard let cask = Cask(json: entry, platform: platform) else { return nil }

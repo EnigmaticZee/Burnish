@@ -81,41 +81,41 @@ public struct AppInstaller: Sendable {
         }
 
         // MARK: Before downloading anything
-        if snapshot.isAppStore { return refuse(.manualOnly, "App Store apps update in the App Store") }
-        if snapshot.isManagedByHomebrew { return refuse(.manualOnly, "Managed by Homebrew: update it with brew upgrade") }
+        if snapshot.isAppStore { return refuse(.manualOnly, String(localized: "App Store apps update in the App Store")) }
+        if snapshot.isManagedByHomebrew { return refuse(.manualOnly, String(localized: "Managed by Homebrew: update it with brew upgrade")) }
         // The check may be days old, and the app may have updated itself since. Decide from what's on disk now.
         guard var app = AppInventory(signatureReader: env.signatures, caskrooms: []).readApp(at: snapshot.url),
               app.bundleID == snapshot.bundleID else {
-            return refuse(.changedSinceCheck, "\(snapshot.name) has moved or changed since Burnish checked it. Check again.")
+            return refuse(.changedSinceCheck, String(localized: "\(snapshot.name) has moved or changed since Burnish checked it. Check again."))
         }
         app.caskroomToken = snapshot.caskroomToken
-        if app.isAppStore { return refuse(.manualOnly, "App Store apps update in the App Store") }
+        if app.isAppStore { return refuse(.manualOnly, String(localized: "App Store apps update in the App Store")) }
         guard app.signature.canBeAutoUpdated, let teamID = app.teamID, Self.isTeamID(teamID) else {
-            return refuse(.unsignedInstalledApp, "Burnish only replaces apps signed by their developer, and this copy isn't")
+            return refuse(.unsignedInstalledApp, String(localized: "Burnish only replaces apps signed by their developer, and this copy isn't"))
         }
         if let checkedTeam = snapshot.teamID, checkedTeam != teamID {
-            return refuse(.changedSinceCheck, "\(app.name)'s signature changed since Burnish checked it. Check again.")
+            return refuse(.changedSinceCheck, String(localized: "\(app.name)'s signature changed since Burnish checked it. Check again."))
         }
         if release.isInformational || release.needsManualInstall {
-            return refuse(.manualOnly, "This update has to be downloaded from the developer's page")
+            return refuse(.manualOnly, String(localized: "This update has to be downloaded from the developer's page"))
         }
         // Sparkle's own rule: below this version the developer wants a manual (often paid) upgrade.
         if let minimum = release.minimumAutoupdateVersion.flatMap(Version.init),
            let installed = (app.version.build ?? app.version.short).flatMap(Version.init), installed < minimum {
-            return refuse(.manualOnly, "The developer asks for this upgrade to be downloaded by hand")
+            return refuse(.manualOnly, String(localized: "The developer asks for this upgrade to be downloaded by hand"))
         }
-        guard let url = release.downloadURL else { return refuse(.manualOnly, "The source doesn't offer a download") }
+        guard let url = release.downloadURL else { return refuse(.manualOnly, String(localized: "The source doesn't offer a download")) }
         // Rule 1: only the app's own feed or Homebrew's data, and only over HTTPS.
         guard url.scheme?.lowercased() == "https", url.host?.isEmpty == false,
               [.sparkle, .homebrew, .electron, .github].contains(release.source)
-        else { return refuse(.trustedOrigin, "The download doesn't come from a trusted HTTPS source") }
+        else { return refuse(.trustedOrigin, String(localized: "The download doesn't come from a trusted HTTPS source")) }
         // Rule 2: an app that pins an EdDSA key only takes signed updates.
         let edKey = release.source == .sparkle ? app.sparklePublicEDKey : nil
         if edKey != nil, release.edSignature == nil {
-            return refuse(.publisherSignature, "The update isn't signed by its developer")
+            return refuse(.publisherSignature, String(localized: "The update isn't signed by its developer"))
         }
         guard case .newer = release.compare(with: app.version) else {
-            return refuse(.notNewer, "The update isn't newer than the installed version")
+            return refuse(.notNewer, String(localized: "The update isn't newer than the installed version"))
         }
 
         let job = env.workDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -136,17 +136,17 @@ public struct AppInstaller: Sendable {
         progress(.verifying)
         if let edKey, let signature = release.edSignature {
             guard DownloadVerifier.verifyEdDSA(file: file, signature: signature, publicKey: edKey) else {
-                return refuse(.publisherSignature, "The update's signature doesn't match the developer's key")
+                return refuse(.publisherSignature, String(localized: "The update's signature doesn't match the developer's key"))
             }
         }
         if let expected = release.sha256 {
             guard (try? DownloadVerifier.sha256Hex(of: file)) == expected.lowercased() else {
-                return refuse(.checksum, "The download doesn't match its published checksum")
+                return refuse(.checksum, String(localized: "The download doesn't match its published checksum"))
             }
         }
         if let expected = release.sha512 {
             guard (try? DownloadVerifier.sha512Base64(of: file)) == expected else {
-                return refuse(.checksum, "The download doesn't match its published checksum")
+                return refuse(.checksum, String(localized: "The download doesn't match its published checksum"))
             }
         }
 
@@ -161,7 +161,7 @@ public struct AppInstaller: Sendable {
         } catch .licenseAgreement {
             return refuse(.manualOnly, Unpacker.Failure.licenseAgreement.errorDescription!)
         } catch {
-            return refuse(.unpack, error.errorDescription ?? "The download couldn't be opened")
+            return refuse(.unpack, error.errorDescription ?? String(localized: "The download couldn't be opened"))
         }
 
         let newApp: URL
@@ -169,32 +169,32 @@ public struct AppInstaller: Sendable {
         case .found(let found):
             newApp = found
         case .wrongBundleID(let id):
-            return refuse(.sameDeveloper, "The new copy has a different bundle ID (\(id))")
+            return refuse(.sameDeveloper, String(localized: "The new copy has a different bundle ID (\(id))"))
         case .packageOnly(let pkg):
             return await openPackage(pkg, teamID: teamID, name: pkg.lastPathComponent, refuse: refuse)
         case .nothing:
-            return refuse(.unpack, "The download doesn't contain \(app.fileName)")
+            return refuse(.unpack, String(localized: "The download doesn't contain \(app.fileName)"))
         }
 
         // MARK: Same developer (rule 4)
         do {
             try env.validator.validate(newApp, teamID: teamID)
         } catch {
-            return refuse(.sameDeveloper, (error as? LocalizedError)?.errorDescription ?? "The new copy's signature isn't valid")
+            return refuse(.sameDeveloper, (error as? LocalizedError)?.errorDescription ?? String(localized: "The new copy's signature isn't valid"))
         }
         let newSignature = env.signatures.signature(of: newApp)
         guard newSignature.teamID == teamID else {
-            return refuse(.sameDeveloper, "Signature didn't match the installed app")
+            return refuse(.sameDeveloper, String(localized: "Signature didn't match the installed app"))
         }
         guard await env.gatekeeper.assess(newApp) else {
-            return refuse(.sameDeveloper, "macOS Gatekeeper didn't accept the new copy (it may not be notarised)")
+            return refuse(.sameDeveloper, String(localized: "macOS Gatekeeper didn't accept the new copy (it may not be notarised)"))
         }
         guard let newInfo = AppInventory(signatureReader: env.signatures, caskrooms: []).readApp(at: newApp),
               newInfo.bundleID == app.bundleID else {
-            return refuse(.sameDeveloper, "The new copy has a different bundle ID")
+            return refuse(.sameDeveloper, String(localized: "The new copy has a different bundle ID"))
         }
         guard case .newer = UpdateComparator.compare(installed: app.version, available: newInfo.version, basis: release.basis.comparison) else {
-            return refuse(.notNewer, "The download isn't newer than the installed version")
+            return refuse(.notNewer, String(localized: "The download isn't newer than the installed version"))
         }
         guard env.system.satisfies(minimum: newInfo.minimumSystemVersion) else {
             return refuse(.notNewer, "The new version needs macOS \(newInfo.minimumSystemVersion ?? "") or later")
@@ -229,9 +229,9 @@ public struct AppInstaller: Sendable {
             } catch {
                 await relaunchIfNeeded()
                 if Self.isPermissionError(error) {
-                    return refuse(.permission, "Burnish needs the App Management permission to replace apps. Turn it on in System Settings → Privacy & Security → App Management.")
+                    return refuse(.appManagement, String(localized: "Burnish needs the App Management permission to replace apps. Turn it on in System Settings → Privacy & Security → App Management."))
                 }
-                return refuse(.replace, "The old version couldn't be moved to the Trash (\(error.localizedDescription))")
+                return refuse(.replace, String(localized: "The old version couldn't be moved to the Trash (\(error.localizedDescription))"))
             }
             do {
                 try env.files.move(newApp, to: app.url)
@@ -244,8 +244,8 @@ public struct AppInstaller: Sendable {
                 }
                 if restored { await relaunchIfNeeded() }
                 return refuse(.replace, restored
-                    ? "The new version couldn't be moved into place, so the old one was put back"
-                    : "The new version couldn't be moved into place. The old version is in the Trash; drag it back to \(parent.path).")
+                    ? String(localized: "The new version couldn't be moved into place, so the old one was put back")
+                    : String(localized: "The new version couldn't be moved into place. The old version is in the Trash; drag it back to \(parent.path)."))
             }
         } else {
             let target = Self.uniqueTrashURL(for: app, in: env.userTrash)
@@ -258,7 +258,7 @@ public struct AppInstaller: Sendable {
                 return .cancelled
             } catch {
                 await relaunchIfNeeded()
-                return refuse(.permission, "Replacing \(app.name) needs an administrator, and that didn't work (\(error.localizedDescription))")
+                return refuse(.permission, String(localized: "Replacing \(app.name) needs an administrator, and that didn't work (\(error.localizedDescription))"))
             }
         }
 
@@ -276,7 +276,7 @@ public struct AppInstaller: Sendable {
         _ pkg: URL, teamID: String, name: String, refuse: (InstallRefusal.Rule, String) -> InstallOutcome
     ) async -> InstallOutcome {
         guard await env.packageSignatures.teamID(ofPackage: pkg) == teamID else {
-            return refuse(.package, "The installer package isn't signed by the same developer as the installed app")
+            return refuse(.package, String(localized: "The installer package isn't signed by the same developer as the installed app"))
         }
         // The job folder is cleaned up on return, so keep the package somewhere Installer can read it.
         let packages = env.workDirectory.appendingPathComponent("Packages", isDirectory: true)
@@ -285,7 +285,7 @@ public struct AppInstaller: Sendable {
             try FileManager.default.createDirectory(at: packages, withIntermediateDirectories: true)
             try FileManager.default.moveItem(at: pkg, to: kept)
         } catch {
-            return refuse(.package, "The installer package couldn't be saved (\(error.localizedDescription))")
+            return refuse(.package, String(localized: "The installer package couldn't be saved (\(error.localizedDescription))"))
         }
         await env.packageOpener.open(kept)
         return .openedInInstaller(kept)

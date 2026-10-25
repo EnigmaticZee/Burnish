@@ -539,7 +539,7 @@ final class Harness {
         h.trashFailure = NSError(domain: NSCocoaErrorDomain, code: NSFileWriteNoPermissionError)
         let outcome = await h.install(app, try h.sparkleRelease(signing: data))
         guard case let .refused(refusal) = outcome else { Issue.record("got \(outcome)"); return }
-        #expect(refusal.rule == .permission)
+        #expect(refusal.rule == .appManagement)
         #expect(refusal.message.contains("App Management"))
         #expect(h.installedVersion() == "1.0")
     }

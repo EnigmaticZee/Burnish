@@ -22,9 +22,11 @@ enum Notifier {
         guard await center.notificationSettings().authorizationStatus == .authorized else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = outdated.count == 1 ? "1 app update" : "\(outdated.count) app updates"
+        content.title = String(localized: "\(outdated.count) app updates")
         let names = outdated.prefix(3).map(\.app.name)
-        content.body = names.joined(separator: ", ") + (outdated.count > 3 ? " and \(outdated.count - 3) more" : "")
+        content.body = outdated.count > 3
+            ? String(localized: "\(names.joined(separator: ", ")) and \(outdated.count - 3) more")
+            : ListFormatter.localizedString(byJoining: names)
         let request = UNNotificationRequest(identifier: "burnish.updates", content: content, trigger: nil)
         try? await center.add(request)
         await model.engine.store.update(.appState, default: AppState()) { $0.lastNotification = Date() }

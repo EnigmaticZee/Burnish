@@ -69,11 +69,11 @@ public actor UpdateChecker {
         }()
 
         let casks = await loadedCasks
-        if casks == nil { problems.append("Homebrew's app list couldn't be loaded") }
+        if casks == nil { problems.append(String(localized: "Homebrew's app list couldn't be loaded")) }
         if let catalog = casks?.catalog { lastCatalog = catalog }
         let appStore = await storeLookup
         if case .failure(let error) = appStore {
-            problems.append("App Store lookup failed: \(error.localizedDescription)")
+            problems.append(String(localized: "App Store lookup failed: \(error.localizedDescription)"))
         }
 
         let matcher = casks.map { CaskMatcher(catalog: $0.catalog, user: options.userOverrides, community: options.communityOverrides) }
@@ -89,7 +89,7 @@ public actor UpdateChecker {
                     if app.isAppStore {
                         switch appStore {
                         case .success(let found): findings.appStore = .found(found[app.bundleID])
-                        case .failure: findings.appStore = .failed("App Store not reachable")
+                        case .failure: findings.appStore = .failed(String(localized: "App Store not reachable"))
                         }
                     } else if !app.isApple {
                         await Self.gather(&findings, app: app, client: client, system: system, platform: platform, matcher: matcher, github: github)
@@ -120,14 +120,14 @@ public actor UpdateChecker {
             do {
                 findings.sparkle = .found(try await SparkleSource(client: client, system: system, isARM: platform.isARM).check(feed: feed))
             } catch {
-                findings.sparkle = .failed(error.errorDescription ?? "Feed not reachable")
+                findings.sparkle = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }
         }
         if let config = app.electronUpdateConfig, !findings.sparkleSucceeded {
             do {
                 findings.electron = .found(try await ElectronSource(client: client, isARM: platform.isARM).check(configFile: config))
             } catch {
-                findings.electron = .failed(error.errorDescription ?? "Feed not reachable")
+                findings.electron = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }
         }
         guard let matcher, let match = matcher.match(app) else { return }

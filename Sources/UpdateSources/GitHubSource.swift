@@ -46,9 +46,9 @@ public actor GitHubSource {
 
         public var errorDescription: String? {
             switch self {
-            case .rateLimited: "GitHub's hourly limit was reached; try again later"
-            case .unreachable(let why): "GitHub not reachable (\(why))"
-            case .noRelease: "The repository has no published release"
+            case .rateLimited: String(localized: "GitHub's hourly limit was reached; try again later")
+            case .unreachable(let why): String(localized: "GitHub not reachable (\(why))")
+            case .noRelease: String(localized: "The repository has no published release")
             }
         }
     }

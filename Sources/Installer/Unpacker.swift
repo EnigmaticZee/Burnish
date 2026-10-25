@@ -10,9 +10,9 @@ public struct Unpacker: Sendable {
 
         public var errorDescription: String? {
             switch self {
-            case .unsupported: "Burnish can't open this kind of download"
-            case .licenseAgreement: "This download asks you to accept a licence agreement first"
-            case .tool(let detail): "The download couldn't be opened (\(detail))"
+            case .unsupported: String(localized: "Burnish can't open this kind of download")
+            case .licenseAgreement: String(localized: "This download asks you to accept a licence agreement first")
+            case .tool(let detail): String(localized: "The download couldn't be opened (\(detail))")
             }
         }
     }

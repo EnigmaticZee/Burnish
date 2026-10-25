@@ -164,8 +164,8 @@ struct DetailView: View {
 
     @ViewBuilder
     private var notes: some View {
-        let lines = result.notes + (result.cask?.isUnmaintained == true && !result.notes.contains("No longer maintained in Homebrew")
-                                    ? ["No longer maintained in Homebrew"] : [])
+        let lines = result.notes + (result.cask?.isUnmaintained == true && !result.notes.contains(String(localized: "No longer maintained in Homebrew"))
+                                    ? [String(localized: "No longer maintained in Homebrew")] : [])
         if !lines.isEmpty || result.app.isManagedByHomebrew {
             VStack(alignment: .leading, spacing: 6) {
                 if let token = result.app.caskroomToken {
@@ -179,7 +179,7 @@ struct DetailView: View {
         }
     }
 
-    private func label(_ text: String) -> some View {
+    private func label(_ text: LocalizedStringKey) -> some View {
         Text(text).foregroundStyle(.secondary).gridColumnAlignment(.trailing)
     }
 
@@ -194,48 +194,54 @@ struct DetailView: View {
 
     private var statusText: String {
         switch result.status {
-        case .outdated: "Update available"
-        case .upToDate(let note): note.map { "Up to date. \($0)" } ?? "Up to date"
-        case .needsConfirmation: "Needs your confirmation"
-        case .cantCheck(let reason): "Can't check: \(reason)"
-        case .ignored(.app, _): "Ignored"
-        case .ignored(.version(let v), _): "Ignoring version \(v)"
+        case .outdated: String(localized: "Update available")
+        case .upToDate(let note): note.map { String(localized: "Up to date. \($0)") } ?? String(localized: "Up to date")
+        case .needsConfirmation: String(localized: "Needs your confirmation")
+        case .cantCheck(let reason): String(localized: "Can't check: \(reason)")
+        case .ignored(.app, _): String(localized: "Ignored")
+        case .ignored(.version(let v), _): String(localized: "Ignoring version \(v)")
         }
     }
 
     private func confidenceText(_ match: CaskMatch) -> String {
         switch match.confidence {
-        case .confirmed: "confirmed"
-        case .high: "high confidence"
-        case .medium: "medium confidence"
-        case .low: "low confidence"
+        case .confirmed: String(localized: "confirmed")
+        case .high: String(localized: "high confidence")
+        case .medium: String(localized: "medium confidence")
+        case .low: String(localized: "low confidence")
         }
     }
 
     private func evidenceText(_ match: CaskMatch) -> String {
         let parts = match.evidence.map { e -> String in
             switch e {
-            case .bundleIDQuit, .bundleIDHint: "bundle ID"
-            case .fileName: "file name"
-            case .displayName: "name"
-            case .userChoice: "your choice"
-            case .communityChoice: "community fix"
-            case .caskroom: "installed by Homebrew"
+            case .bundleIDQuit, .bundleIDHint: String(localized: "bundle ID")
+            case .fileName: String(localized: "file name")
+            case .displayName: String(localized: "name")
+            case .userChoice: String(localized: "your choice")
+            case .communityChoice: String(localized: "community fix")
+            case .caskroom: String(localized: "installed by Homebrew")
             }
         }
-        return "Matched by " + ListFormatter.localizedString(byJoining: Array(NSOrderedSet(array: parts)) as? [String] ?? parts)
+        let list = ListFormatter.localizedString(byJoining: Array(NSOrderedSet(array: parts)) as? [String] ?? parts)
+        return String(localized: "Matched by \(list)")
     }
 
     private var signatureText: String {
         let s = result.app.signature
         switch s.kind {
-        case .developerID: return s.authority?.replacingOccurrences(of: "Developer ID Application: ", with: "") ?? "Developer ID \(s.teamID ?? "")"
-        case .appStore: return "Mac App Store"
-        case .apple: return "Apple"
-        case .development: return "Development certificate (not distributed)"
-        case .adHoc: return "Not signed by a developer (Burnish won't replace it)"
-        case .unsigned: return "Unsigned (Burnish won't replace it)"
-        case .other: return s.teamID.map { "Team \($0)" } ?? "\(s.authority ?? "Unknown") — no Team ID, so Burnish won't replace it"
+        case .developerID:
+            return s.authority?.replacingOccurrences(of: "Developer ID Application: ", with: "")
+                ?? String(localized: "Developer ID \(s.teamID ?? "")")
+        case .appStore: return String(localized: "Mac App Store")
+        case .apple: return String(localized: "Apple")
+        case .development: return String(localized: "Development certificate (not distributed)")
+        case .adHoc: return String(localized: "Not signed by a developer (Burnish won't replace it)")
+        case .unsigned: return String(localized: "Unsigned (Burnish won't replace it)")
+        case .other:
+            if let team = s.teamID { return String(localized: "Team \(team)") }
+            let who = s.authority ?? String(localized: "Unknown")
+            return String(localized: "\(who) — no Team ID, so Burnish won't replace it")
         }
     }
 }
@@ -291,7 +297,7 @@ struct ReleaseNotesView: View {
                     Text(attributed(runs)).fixedSize(horizontal: false, vertical: true)
                 case let .listItem(ordered, depth, runs):
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(ordered.map { "\($0)." } ?? "•").foregroundStyle(.secondary)
+                        Text(verbatim: ordered.map { "\($0)." } ?? "•").foregroundStyle(.secondary)
                         Text(attributed(runs)).fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.leading, CGFloat(depth) * 14)
@@ -340,7 +346,7 @@ struct CaskPicker: View {
             List(matches, id: \.token, selection: $selection) { cask in
                 VStack(alignment: .leading, spacing: 2) {
                     Text(cask.names.first ?? cask.token)
-                    Text("\(cask.token) · \(cask.version)\(cask.disabled ? " · no longer maintained" : "")")
+                    (cask.disabled ? Text("\(cask.token) · \(cask.version) · no longer maintained") : Text("\(cask.token) · \(cask.version)"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 .tag(cask.token)

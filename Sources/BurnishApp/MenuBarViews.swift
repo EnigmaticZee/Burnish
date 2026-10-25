@@ -11,7 +11,7 @@ struct MenuBarLabel: View {
         let count = model.outdated.count
         HStack(spacing: 3) {
             Image(nsImage: MenuBarIcon.image(checking: model.isChecking, frame: model.animationFrame, dot: model.needsAppManagement))
-            if count > 0 { Text("\(count)").monospacedDigit() }
+            if count > 0 { Text(count, format: .number).monospacedDigit() }
         }
         .accessibilityLabel(count > 0 ? "Burnish, \(count) updates" : "Burnish")
         .modifier(WindowOpenerBridge())
@@ -100,25 +100,21 @@ struct PopoverView: View {
     }
 
     private var title: String {
-        if model.isChecking && model.results.isEmpty { return "Checking…" }
+        if model.isChecking && model.results.isEmpty { return String(localized: "Checking…") }
         let count = model.outdated.count
-        switch count {
-        case 0: return "Up to date"
-        case 1: return "1 update"
-        default: return "\(count) updates"
-        }
+        return count == 0 ? String(localized: "Up to date") : String(localized: "\(count) updates")
     }
 
     private var subtitle: String {
         if model.isChecking { return "Checked \(model.checkedCount) of \(model.totalCount) apps" }
-        guard let last = model.lastCheck else { return "Not checked yet" }
-        return "Checked \(last.relativeDescription)"
+        guard let last = model.lastCheck else { return String(localized: "Not checked yet") }
+        return String(localized: "Checked \(last.relativeDescription)")
     }
 
     @ViewBuilder
     private var banners: some View {
         if let version = model.justUpdatedTo {
-            Banner(text: "Burnish updated itself to \(version).", symbol: "bell", action: ("What's New", {
+            Banner(text: String(localized: "Burnish updated itself to \(version)."), symbol: "bell", action: (String(localized: "What's New"), {
                 NSWorkspace.shared.open(URL(string: "https://github.com/EnigmaticZee/Burnish/releases")!)
                 model.justUpdatedTo = nil
             }))
@@ -127,7 +123,7 @@ struct PopoverView: View {
             Banner(text: offline, symbol: "wifi.slash")
         }
         if model.needsAppManagement {
-            Banner(text: "Burnish needs App Management to replace apps.", symbol: "lock", action: ("Open Settings", Permissions.openAppManagement))
+            Banner(text: String(localized: "Burnish needs App Management to replace apps."), symbol: "lock", action: (String(localized: "Open Settings"), Permissions.openAppManagement))
         }
         AppStoreBanner()
         if model.isChecking, model.totalCount > 0 {
@@ -251,14 +247,14 @@ struct AppStoreBanner: View {
     var body: some View {
         let count = model.appStoreUpdates.count
         if count >= 2 {
-            Banner(text: "\(count) updates are waiting in the App Store.", symbol: "bag",
-                   action: ("Open App Store", model.openAppStoreUpdates))
+            Banner(text: String(localized: "\(count) updates are waiting in the App Store."), symbol: "bag",
+                   action: (String(localized: "Open App Store"), model.openAppStoreUpdates))
         }
     }
 }
 
 enum UpdateAllHelp {
-    static let text = "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store for App Store apps"
+    static let text = String(localized: "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store for App Store apps")
 }
 
 enum Permissions {

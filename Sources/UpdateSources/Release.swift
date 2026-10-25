@@ -11,11 +11,11 @@ public enum SourceKind: String, Sendable, Codable, CaseIterable, Comparable {
 
     public var label: String {
         switch self {
-        case .appStore: "App Store"
-        case .sparkle: "Developer feed"
-        case .electron: "Developer feed"
-        case .homebrew: "Homebrew"
-        case .github: "GitHub"
+        case .appStore: String(localized: "App Store")
+        case .sparkle: String(localized: "Developer feed")
+        case .electron: String(localized: "Developer feed")
+        case .homebrew: String(localized: "Homebrew")
+        case .github: String(localized: "GitHub")
         }
     }
 
