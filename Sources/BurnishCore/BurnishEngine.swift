@@ -101,6 +101,7 @@ public final class BurnishEngine: Sendable {
 
     public func install(
         _ result: AppCheckResult,
+        automatic: Bool = false,
         progress: @escaping @Sendable (InstallPhase) -> Void,
         askToQuit: @escaping @Sendable (String) async -> QuitDecision
     ) async -> InstallOutcome {
@@ -118,7 +119,8 @@ public final class BurnishEngine: Sendable {
         let version = candidate.displayVersion
         switch outcome {
         case .installed(let oldCopy, _):
-            await record(.updated(from: result.app.version.display, to: version, previousCopy: oldCopy?.path), for: result)
+            await record(.updated(from: result.app.version.display, to: version, previousCopy: oldCopy?.path,
+                                  automatic: automatic, checks: result.installChecks(release).map(\.rawValue)), for: result)
         case .openedInInstaller:
             await record(.handedOff(version: version, to: "installer"), for: result)
         case .refused(let refusal):
@@ -137,7 +139,7 @@ public final class BurnishEngine: Sendable {
         askToQuit: @escaping @Sendable (String) async -> QuitDecision
     ) async -> InstallOutcome {
         let history = await store.load(.history, default: UpdateHistory())
-        guard case let .updated(from, to, previousCopy?)? = history.latestUpdate(for: result.app.bundleID)?.kind else {
+        guard case let .updated(from, to, previousCopy?, _, _)? = history.latestUpdate(for: result.app.bundleID)?.kind else {
             return .refused(InstallRefusal(.previousCopy, String(localized: "There's no earlier version to put back"), downloadPage: nil))
         }
         let installer = AppInstaller(environment: .live(client: client, workDirectory: downloadsDirectory))

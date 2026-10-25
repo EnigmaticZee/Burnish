@@ -302,7 +302,7 @@ final class AppModel {
     /// The version Burnish can put back: the one its latest update of this app replaced, while
     /// that copy is still in the Trash and the app is still on the version Burnish installed.
     func restorableVersion(_ result: AppCheckResult) -> String? {
-        guard case let .updated(from, to, copy?)? = history.latestUpdate(for: result.app.bundleID)?.kind,
+        guard case let .updated(from, to, copy?, _, _)? = history.latestUpdate(for: result.app.bundleID)?.kind,
               result.app.version.display == to, FileManager.default.fileExists(atPath: copy) else { return nil }
         return from
     }

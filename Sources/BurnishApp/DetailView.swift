@@ -18,6 +18,7 @@ struct DetailView: View {
                 header
                 confirmation
                 facts
+                HallmarksSection(result: result)
                 notes
                 ReleaseNotesSection(result: result)
                 HistorySection(result: result, putBack: model.restorableVersion(result).map { _ in { confirmingPutBack = true } })
@@ -424,8 +425,8 @@ struct HistorySection: View {
         switch kind {
         case let .found(version, source):
             String(localized: "Found \(version) (\(SourceKind(rawValue: source)?.label ?? source))")
-        case let .updated(from, to, _):
-            String(localized: "Updated \(from) → \(to). The earlier version went to the Trash.")
+        case let .updated(from, to, _, automatic, checks):
+            updatedText(from: from, to: to, automatic: automatic == true, checks: checks ?? [])
         case let .restored(to, from, _):
             String(localized: "Put back \(to). \(from) went to the Trash and is skipped.")
         case let .handedOff(version, "homebrew"):
@@ -437,6 +438,14 @@ struct HistorySection: View {
         }
     }
 
+    static func updatedText(from: String, to: String, automatic: Bool, checks: [String]) -> String {
+        let names = checks.compactMap { Hallmark.Kind(rawValue: $0)?.checkName }
+        let verified = names.isEmpty ? "" : " " + String(localized: "Checked: \(ListFormatter.localizedString(byJoining: names)).")
+        return (automatic
+            ? String(localized: "Updated \(from) → \(to) automatically.")
+            : String(localized: "Updated \(from) → \(to).")) + verified
+    }
+
     static func symbol(_ kind: HistoryEvent.Kind) -> String {
         switch kind {
         case .found: "bell"
@@ -444,6 +453,69 @@ struct HistorySection: View {
         case .restored: "arrow.uturn.backward.circle"
         case .handedOff: "shippingbox"
         case .refused: "exclamationmark.shield"
+        }
+    }
+}
+
+/// What Burnish vouches for about this update, before and during the install.
+struct HallmarksSection: View {
+    @Environment(AppModel.self) private var model
+    let result: AppCheckResult
+
+    var body: some View {
+        let marks = result.hallmarks(homebrew: model.settings.homebrewHandling)
+        if !marks.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Hallmarks").font(.headline)
+                    Text("What Burnish vouches for, now and during the install.").font(.caption).foregroundStyle(.secondary)
+                }
+                ForEach(marks) { mark in
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Image(systemName: Self.symbol(mark.state))
+                            .foregroundStyle(Self.tint(mark.state))
+                            .frame(width: 18)
+                            .help(Self.stateText(mark.state))
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(verbatim: mark.title).font(.callout.weight(.medium))
+                            if !mark.detail.isEmpty {
+                                Text(verbatim: mark.detail).font(.caption).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityValue(Self.stateText(mark.state))
+                }
+            }
+        }
+    }
+
+    static func symbol(_ state: Hallmark.State) -> String {
+        switch state {
+        case .confirmed: "checkmark.seal.fill"
+        case .checkedAtInstall: "checkmark.seal"
+        case .handedOff: "arrow.right.circle"
+        case .notAvailable: "minus.circle"
+        case .caution: "exclamationmark.triangle"
+        }
+    }
+
+    static func tint(_ state: Hallmark.State) -> Color {
+        switch state {
+        case .confirmed, .checkedAtInstall: Color(red: 0.80, green: 0.51, blue: 0.17)
+        case .handedOff, .notAvailable: .secondary
+        case .caution: .orange
+        }
+    }
+
+    static func stateText(_ state: Hallmark.State) -> String {
+        switch state {
+        case .confirmed: String(localized: "Confirmed")
+        case .checkedAtInstall: String(localized: "Checked during the install")
+        case .handedOff: String(localized: "Checked by whoever installs it")
+        case .notAvailable: String(localized: "Not offered by this source")
+        case .caution: String(localized: "Worth knowing")
         }
     }
 }

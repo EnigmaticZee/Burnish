@@ -46,7 +46,8 @@ public struct HistoryEvent: Codable, Sendable, Hashable, Identifiable {
         /// A newer version showed up. `source` is the update source's raw name (`sparkle`, `homebrew`).
         case found(version: String, source: String)
         /// Burnish installed it, and the earlier version went to the Trash at `previousCopy`.
-        case updated(from: String, to: String, previousCopy: String?)
+        /// `automatic` when it happened on its own; `checks` names the hallmarks that passed.
+        case updated(from: String, to: String, previousCopy: String?, automatic: Bool? = nil, checks: [String]? = nil)
         /// An earlier version went back in place; the newer one went to the Trash at `replacedCopy`.
         case restored(to: String, from: String, replacedCopy: String?)
         /// Someone else did the install: `homebrew` or `installer` (Apple's Installer).

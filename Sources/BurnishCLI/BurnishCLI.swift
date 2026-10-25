@@ -211,7 +211,8 @@ struct BurnishCLI {
 func describe(_ kind: HistoryEvent.Kind) -> String {
     switch kind {
     case let .found(version, source): "found \(version) (\(source))"
-    case let .updated(from, to, copy): "updated \(from) → \(to)\(copy.map { "; earlier version in the Trash at \($0)" } ?? "")"
+    case let .updated(from, to, copy, automatic, checks):
+        "\(automatic == true ? "updated automatically" : "updated") \(from) → \(to)\(checks.map { "; checked: " + $0.joined(separator: ", ") } ?? "")\(copy.map { "; earlier version at \($0)" } ?? "")"
     case let .restored(to, from, _): "put back \(to); \(from) is skipped"
     case let .handedOff(version, to): "\(version) handed to \(to)"
     case let .refused(version, reason): "refused \(version): \(reason)"

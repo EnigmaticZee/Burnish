@@ -80,7 +80,7 @@ import Testing
         #expect(history.latestUpdate(for: "com.x.app") == nil)
         history.record(.updated(from: "1.0", to: "1.1", previousCopy: "/T/x 1.0.app"), for: "com.x.app")
         history.noteFound(version: "1.2", source: "homebrew", for: "com.x.app")
-        guard case .updated(_, "1.1", _)? = history.latestUpdate(for: "com.x.app")?.kind else {
+        guard case .updated(_, "1.1", _, _, _)? = history.latestUpdate(for: "com.x.app")?.kind else {
             Issue.record("expected the 1.1 update"); return
         }
         history.record(.restored(to: "1.0", from: "1.1", replacedCopy: "/T/x 1.1.app"), for: "com.x.app")
