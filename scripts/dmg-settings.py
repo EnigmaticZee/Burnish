@@ -1,6 +1,7 @@
 # dmgbuild settings for dist/Burnish.dmg (used by scripts/make-dmg.sh).
-# The window is 660 x 440 (the art plus the title bar); icon centres match the art drawn by
-# scripts/make-dmg-art.swift.
+# The window is 660 x 440 (the art plus the title bar); icon centres match App/dmg-background.png
+# when it exists. No hide_extensions: it writes Finder info onto the app bundle, which strict
+# code-signature checks reject (Finder hides .app on its own).
 import os.path
 
 app = defines.get("app", "build/Burnish.app")  # noqa: F821 (provided by dmgbuild)
@@ -10,7 +11,6 @@ format = "UDZO"
 filesystem = "HFS+"
 files = [app]
 symlinks = {"Applications": "/Applications"}
-hide_extensions = [app_name]
 
 icon = defines.get("volume_icon")  # noqa: F821
 background = defines.get("background") or "builtin-arrow"  # noqa: F821
