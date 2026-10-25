@@ -63,6 +63,10 @@ struct MainWindow: View {
                     Banner(text: String(localized: "Burnish needs App Management to replace apps."), symbol: "lock", action: (String(localized: "Open Settings"), Permissions.openAppManagement))
                 }
                 AppStoreBanner()
+                if model.intelOnlyCount > 0 {
+                    Banner(text: String(localized: "\(model.intelOnlyCount) apps only run on Intel chips, through Rosetta, which Apple is retiring for most apps after macOS 27."),
+                           symbol: "cpu")
+                }
                 if model.isChecking {
                     Banner(text: String(localized: "Checked \(model.checkedCount) of \(model.totalCount) apps"), symbol: "arrow.clockwise")
                 }
@@ -153,6 +157,7 @@ struct ResultRow: View {
                 HStack(spacing: 6) {
                     VersionLine(result: result).layoutPriority(1)
                     if result.status.candidate?.isMajorUpgrade == true, result.status.isOutdated { Tag(text: "May be paid") }
+                    if model.isAppleSilicon, result.app.isIntelOnly { Tag(text: "Intel", symbol: "cpu") }
                     if result.app.isManagedByHomebrew { Text("Installed by Homebrew").font(.caption).foregroundStyle(.secondary) }
                 }
                 if let line = secondaryLine {

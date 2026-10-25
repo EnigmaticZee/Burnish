@@ -117,11 +117,13 @@ enum PreviewRenderer {
 /// Sample apps for README art: well-known apps, versions that read naturally, every state shown.
 enum DemoData {
     static func app(_ name: String, _ id: String, _ short: String, build: String? = nil, appStore: Bool = false,
-                    folder: String = "/Applications", team: String = "DEMO000001", caskroom: String? = nil) -> InstalledApp {
+                    folder: String = "/Applications", team: String = "DEMO000001", caskroom: String? = nil,
+                    architectures: [String] = ["arm64", "x86_64"]) -> InstalledApp {
         InstalledApp(bundleID: id, name: name, bundleNames: [name], url: URL(fileURLWithPath: "\(folder)/\(name).app"),
                      version: VersionPair(short: short, build: build),
                      signature: CodeSignature(kind: appStore ? .appStore : .developerID, teamID: team, authority: appStore ? nil : "Developer ID Application: \(name) (\(team))"),
-                     isAppStore: appStore, caskroomToken: caskroom, modificationDate: Date().addingTimeInterval(-86400 * 20))
+                     isAppStore: appStore, caskroomToken: caskroom, architectures: architectures,
+                     modificationDate: Date().addingTimeInterval(-86400 * 20))
     }
 
     static func outdated(_ app: InstalledApp, _ latest: String, _ source: SourceKind, token: String? = nil, major: Bool = false,
@@ -171,7 +173,8 @@ enum DemoData {
             upToDate(app("Telegram", "ru.keepcoder.Telegram", "13.1.0", appStore: true), .appStore),
             upToDate(app("WhatsApp", "net.whatsapp.WhatsApp", "26.41.74", appStore: true), .appStore),
             upToDate(app("Xcode", "com.apple.dt.Xcode", "27.1", appStore: true), .appStore),
-            upToDate(app("Stremio", "com.westbridge.stremio5-mac", "5.1.30"), .homebrew, note: "The installed version is newer than Homebrew's 5.1.26"),
+            upToDate(app("Stremio", "com.westbridge.stremio5-mac", "5.1.30", architectures: ["x86_64"]), .homebrew,
+                     note: "The installed version is newer than Homebrew's 5.1.26"),
             AppCheckResult(app: app("LogiPluginService", "com.logi.pluginservice", "6.4.2.3414", folder: "/Applications/Utilities"),
                            status: .needsConfirmation(CaskMatch(token: "logi-options+", confidence: .low, evidence: [.bundleIDHint])),
                            decidedBy: .homebrew),

@@ -90,9 +90,15 @@ public struct AppInventory: Sendable {
         let hasElectronFeed = fm.fileExists(atPath: electron.path)
         // Only apps with no other update feed are worth reading for a Tauri updater.
         var tauri: [String]?
-        if !isAppStore, feed == nil, !hasElectronFeed, let executable = (plist["CFBundleExecutable"] as? String)?.nonEmpty {
-            let endpoints = TauriDetector.updateEndpoints(executable: contents.appendingPathComponent("MacOS/\(executable)"))
-            tauri = endpoints.isEmpty ? nil : endpoints
+        var architectures: [String]?
+        if !isWrapped, let executable = (plist["CFBundleExecutable"] as? String)?.nonEmpty {
+            let binary = contents.appendingPathComponent("MacOS/\(executable)")
+            let found = MachOArchitectures.of(binary)
+            architectures = found.isEmpty ? nil : found
+            if !isAppStore, feed == nil, !hasElectronFeed {
+                let endpoints = TauriDetector.updateEndpoints(executable: binary)
+                tauri = endpoints.isEmpty ? nil : endpoints
+            }
         }
 
         return InstalledApp(
@@ -108,6 +114,7 @@ public struct AppInventory: Sendable {
             sparklePublicEDKey: (plist["SUPublicEDKey"] as? String)?.nonEmpty,
             electronUpdateConfig: hasElectronFeed ? electron : nil,
             tauriUpdateEndpoints: tauri,
+            architectures: architectures,
             minimumSystemVersion: (plist["LSMinimumSystemVersion"] as? String)?.nonEmpty,
             modificationDate: modified
         )

@@ -178,6 +178,12 @@ struct DetailView: View {
                     }
                 }
             }
+            if let runsOn {
+                GridRow {
+                    label("Runs on")
+                    Text(runsOn).foregroundStyle(result.app.isIntelOnly && model.isAppleSilicon ? .orange : .secondary)
+                }
+            }
             GridRow {
                 label("Signed by")
                 Text(signatureText).foregroundStyle(.secondary)
@@ -217,6 +223,17 @@ struct DetailView: View {
         case let (s?, _): s
         case let (nil, b?): b
         default: "–"
+        }
+    }
+
+    private var runsOn: String? {
+        guard let archs = result.app.architectures, !archs.isEmpty else { return nil }
+        let arm = archs.contains("arm64"), intel = archs.contains("x86_64")
+        switch (arm, intel) {
+        case (true, true): return String(localized: "Apple silicon and Intel")
+        case (true, false): return String(localized: "Apple silicon")
+        case (false, true): return model.isAppleSilicon ? String(localized: "Intel only, through Rosetta") : String(localized: "Intel")
+        default: return nil
         }
     }
 

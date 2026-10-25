@@ -34,6 +34,8 @@ public struct Cask: Sendable, Hashable, Codable, Identifiable {
     public let installsPkg: Bool
     /// The cask runs a vendor installer app, or nests archives, so Burnish only opens the download page.
     public let needsManualInstall: Bool
+    /// Homebrew says the app needs Rosetta: there's no Apple silicon build.
+    public let requiresRosetta: Bool
 
     public var versionPair: VersionPair { VersionPair.fromCask(version) }
     public var isLatestVersion: Bool { version.lowercased() == "latest" }
@@ -135,6 +137,8 @@ extension Cask {
         self.token = token
         self.names = Self.strings(fields["name"])
         self.homepage = (fields["homepage"] as? String).flatMap(URL.init(string:))
+        let arch = (fields["depends_on"] as? [String: Any])?["arch"] as? [[String: Any]] ?? []
+        self.requiresRosetta = (fields["caveats_rosetta"] as? Bool ?? false) || (!arch.isEmpty && arch.allSatisfy { $0["type"] as? String == "intel" })
         self.version = version
         self.sha256 = (sha == nil || sha == "no_check") ? nil : sha?.lowercased()
         self.url = (fields["url"] as? String).flatMap(URL.init(string:))

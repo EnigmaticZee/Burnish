@@ -79,7 +79,8 @@ public actor UpdateChecker {
         }
 
         let matcher = casks.map { CaskMatcher(catalog: $0.catalog, user: options.userOverrides, community: options.communityOverrides) }
-        let decision = DecisionOptions(appStoreLookups: options.appStoreLookups, ignoreRules: options.ignoreRules, appRules: options.appRules)
+        let decision = DecisionOptions(appStoreLookups: options.appStoreLookups, ignoreRules: options.ignoreRules,
+                                       appRules: options.appRules, appleSilicon: platform.isARM)
         let appRules = options.appRules
         let system = system
         let platform = platform

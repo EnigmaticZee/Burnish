@@ -8,7 +8,7 @@ public actor CaskDataStore {
     public static let sourceURL = URL(string: "https://formulae.brew.sh/api/cask.json")!
     public static let refreshInterval: TimeInterval = 24 * 60 * 60
     /// Bump when `Cask` changes shape so the compact index is rebuilt from the raw file.
-    static let indexSchema = 4
+    static let indexSchema = 5
 
     public struct Loaded: Sendable {
         public let catalog: CaskCatalog

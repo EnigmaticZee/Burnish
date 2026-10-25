@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import Versions
 @testable import Inventory
 
 struct FakeSignatures: SignatureReading {
@@ -255,5 +256,32 @@ func makeApp(_ name: String, in dir: URL, plist: [String: Any], receipt: Bool = 
         let webKitOnly = dir.appendingPathComponent("webkit")
         try binary(["/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit", endpoint]).write(to: webKitOnly)
         #expect(TauriDetector.updateEndpoints(executable: webKitOnly).isEmpty, "a WebKit app that isn't Tauri")
+    }
+}
+
+@Suite struct ArchitectureDetection {
+    func be(_ v: UInt32) -> [UInt8] { [UInt8(v >> 24), UInt8(v >> 16 & 0xFF), UInt8(v >> 8 & 0xFF), UInt8(v & 0xFF)] }
+    func le(_ v: UInt32) -> [UInt8] { be(v).reversed() }
+
+    @Test func readsUniversalAndThinHeaders() {
+        let universal = be(0xCAFE_BABE) + be(2) + be(0x0100_0007) + [UInt8](repeating: 0, count: 16) + be(0x0100_000C) + [UInt8](repeating: 0, count: 16)
+        #expect(MachOArchitectures.parse(Data(universal)) == ["x86_64", "arm64"])
+        #expect(MachOArchitectures.parse(Data(le(0xFEED_FACF) + le(0x0100_0007))) == ["x86_64"])
+        #expect(MachOArchitectures.parse(Data(le(0xFEED_FACF) + le(0x0100_000C))) == ["arm64"])
+        #expect(MachOArchitectures.parse(Data("#!/bin/sh\n".utf8)).isEmpty, "scripts aren't binaries")
+    }
+
+    @Test func intelOnlyMeansNoAppleSiliconCode() {
+        func app(_ archs: [String]?) -> InstalledApp {
+            InstalledApp(bundleID: "x", name: "X", url: URL(fileURLWithPath: "/Applications/X.app"), version: VersionPair(short: "1"), architectures: archs)
+        }
+        #expect(app(["x86_64"]).isIntelOnly)
+        #expect(!app(["x86_64", "arm64"]).isIntelOnly)
+        #expect(!app(["arm64"]).isIntelOnly)
+        #expect(!app(nil).isIntelOnly, "unknown isn't Intel-only")
+    }
+
+    @Test func readsThisMachinesOwnTools() {
+        #expect(MachOArchitectures.of(URL(fileURLWithPath: "/bin/ls")).contains("arm64") || MachOArchitectures.of(URL(fileURLWithPath: "/bin/ls")).contains("x86_64"))
     }
 }

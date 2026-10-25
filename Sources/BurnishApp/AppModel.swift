@@ -215,6 +215,11 @@ final class AppModel {
 
     var outdated: [AppCheckResult] { results.filter(\.status.isOutdated) }
 
+    var isAppleSilicon: Bool { Platform.current.isARM }
+
+    /// Apps that run through Rosetta on this Mac.
+    var intelOnlyCount: Int { isAppleSilicon ? results.filter(\.app.isIntelOnly).count : 0 }
+
     func results(in tab: StatusTab) -> [AppCheckResult] { results.filter { $0.status.tab == tab } }
 
     func count(_ tab: StatusTab) -> Int { results.reduce(0) { $0 + ($1.status.tab == tab ? 1 : 0) } }

@@ -27,6 +27,7 @@ func hints(_ app: InstalledApp) -> String {
     if app.sparkleFeedURL != nil { h.append("sparkle") } else if app.sparklePublicEDKey != nil { h.append("sparkle(runtime feed)") }
     if app.electronUpdateConfig != nil { h.append("electron") }
     if app.tauriUpdateEndpoints != nil { h.append("tauri") }
+    if app.isIntelOnly { h.append("intel-only") }
     if let token = app.caskroomToken { h.append("caskroom:\(token)") }
     return h.joined(separator: " ")
 }

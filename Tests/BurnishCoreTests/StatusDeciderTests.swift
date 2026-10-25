@@ -278,3 +278,24 @@ func findings(cask: Cask, for app: InstalledApp) -> SourceFindings {
         #expect(rules.byApp.isEmpty)
     }
 }
+
+@Suite struct RosettaNotes {
+    func intelApp() -> InstalledApp {
+        InstalledApp(bundleID: "com.example.old", name: "Old", url: URL(fileURLWithPath: "/Applications/Old.app"),
+                     version: VersionPair(short: "1.0"), signature: CodeSignature(kind: .developerID, teamID: "TEAM000001"),
+                     architectures: ["x86_64"])
+    }
+
+    @Test func saysWhetherAnAppleSiliconVersionExists() {
+        #expect(StatusDecider.rosettaNote(nil).contains("retiring"))
+        let native = makeCask("old", version: "1.0", app: "Old.app")
+        #expect(StatusDecider.rosettaNote(native).contains("Apple silicon version is available"))
+    }
+
+    @Test func onlyOnAppleSilicon() {
+        let mac = StatusDecider.decide(intelApp(), findings: SourceFindings(), options: DecisionOptions(appleSilicon: true), system: SystemVersion("27.0"))
+        #expect(mac.notes.contains { $0.contains("Rosetta") })
+        let intelMac = StatusDecider.decide(intelApp(), findings: SourceFindings(), options: DecisionOptions(appleSilicon: false), system: SystemVersion("27.0"))
+        #expect(!intelMac.notes.contains { $0.contains("Rosetta") })
+    }
+}

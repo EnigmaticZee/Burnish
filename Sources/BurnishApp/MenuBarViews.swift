@@ -202,6 +202,7 @@ struct PopoverRow: View {
                 HStack(spacing: 6) {
                     VersionLine(result: result).layoutPriority(1)
                     if result.status.candidate?.isMajorUpgrade == true { Tag(text: "May be paid") }
+                    if model.isAppleSilicon, result.app.isIntelOnly { Tag(text: "Intel", symbol: "cpu") }
                 }
                 RefusalNote(result: result)
             }

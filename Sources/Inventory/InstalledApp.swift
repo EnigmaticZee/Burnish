@@ -24,6 +24,8 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
     public let electronUpdateConfig: URL?
     /// Updater endpoints compiled into a Tauri app's executable.
     public let tauriUpdateEndpoints: [String]?
+    /// Processors the executable has code for (`arm64`, `x86_64`), when it could be read.
+    public let architectures: [String]?
     public let minimumSystemVersion: String?
     public let modificationDate: Date?
 
@@ -31,8 +33,8 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
         bundleID: String, name: String, bundleNames: [String] = [], url: URL, version: VersionPair,
         signature: CodeSignature = .unsigned, isAppStore: Bool = false, isWrappedIOSApp: Bool = false,
         sparkleFeedURL: URL? = nil, sparklePublicEDKey: String? = nil, caskroomToken: String? = nil,
-        electronUpdateConfig: URL? = nil, tauriUpdateEndpoints: [String]? = nil, minimumSystemVersion: String? = nil,
-        modificationDate: Date? = nil
+        electronUpdateConfig: URL? = nil, tauriUpdateEndpoints: [String]? = nil, architectures: [String]? = nil,
+        minimumSystemVersion: String? = nil, modificationDate: Date? = nil
     ) {
         self.bundleID = bundleID
         self.name = name
@@ -47,6 +49,7 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
         self.caskroomToken = caskroomToken
         self.electronUpdateConfig = electronUpdateConfig
         self.tauriUpdateEndpoints = tauriUpdateEndpoints
+        self.architectures = architectures
         self.minimumSystemVersion = minimumSystemVersion
         self.modificationDate = modificationDate
     }
@@ -56,6 +59,12 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
     public var shortVersion: String { version.short ?? version.build ?? "" }
     public var buildVersion: String? { version.build }
     public var teamID: String? { signature.teamID }
+
+    /// Has Intel code and no Apple silicon code, so it runs through Rosetta on Apple silicon.
+    public var isIntelOnly: Bool {
+        guard let architectures, !architectures.isEmpty else { return false }
+        return !architectures.contains("arm64") && architectures.contains("x86_64")
+    }
     public var isManagedByHomebrew: Bool { caskroomToken != nil }
     /// Apple's own apps outside the App Store are updated by Software Update.
     public var isApple: Bool { bundleID.hasPrefix("com.apple.") }

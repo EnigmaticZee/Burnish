@@ -32,11 +32,15 @@ public struct DecisionOptions: Sendable {
     public var appStoreLookups = true
     public var ignoreRules = IgnoreRules()
     public var appRules = AppRules()
+    /// Intel-only apps only matter on Apple silicon.
+    public var appleSilicon = true
 
-    public init(appStoreLookups: Bool = true, ignoreRules: IgnoreRules = IgnoreRules(), appRules: AppRules = AppRules()) {
+    public init(appStoreLookups: Bool = true, ignoreRules: IgnoreRules = IgnoreRules(), appRules: AppRules = AppRules(),
+                appleSilicon: Bool = true) {
         self.appStoreLookups = appStoreLookups
         self.ignoreRules = ignoreRules
         self.appRules = appRules
+        self.appleSilicon = appleSilicon
     }
 }
 
@@ -54,6 +58,9 @@ public enum StatusDecider {
         }
         result.match = findings.match
         result.vendorUpdater = findings.vendorUpdater
+        if options.appleSilicon, app.isIntelOnly {
+            result.notes.append(Self.rosettaNote(findings.cask))
+        }
 
         // "Stay on 5.x": a newer major from a source that only lists the newest version isn't an update.
         if case let .outdated(candidate) = result.status, let cap = options.appRules.rule(for: app.bundleID).stayOnMajor,
@@ -70,6 +77,15 @@ public enum StatusDecider {
             result.status = .ignored(.version(candidate.displayVersion), candidate)
         }
         return result
+    }
+
+    /// What an Intel-only app means on Apple silicon, and whether Homebrew knows a native version.
+    static func rosettaNote(_ cask: Cask?) -> String {
+        switch cask?.requiresRosetta {
+        case false?: String(localized: "Intel only, running through Rosetta. An Apple silicon version is available.")
+        case true?: String(localized: "Intel only, running through Rosetta, and there's no Apple silicon version yet.")
+        case nil: String(localized: "Intel only, running through Rosetta, which Apple is retiring for most apps after macOS 27.")
+        }
     }
 
     static func sameVersion(_ a: String, _ b: String) -> Bool {
