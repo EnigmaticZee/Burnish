@@ -26,6 +26,24 @@ verified, and the old copy went to the Trash.
 | Full check, cold (downloads the 19 MB cask list) | — | 2.2 s |
 | Inventory scan (25 apps, with code-signature reads) | — | 0.28 s |
 | Idle memory after a check (menu bar app) | under 60 MB | 43 MB footprint |
+| 150 apps against Homebrew's full list (7,808 entries), network excluded | under 10 s | 0.71 s cold, 0.06 s warm |
 
-This Mac has 25 apps, not 150. Feed requests run eight at a time with a 10-second timeout, so the
-150-app figure still needs a run on a fuller Mac.
+The 150-app run uses apps built from real Homebrew entries, so it measures parsing, indexing,
+matching and deciding. Developer feeds add network time on top: they run eight at a time with a
+10-second timeout each, and on this Mac's 25 apps the whole warm check, network included, took
+under a second.
+
+## False alerts — the 50-app truth set
+
+`Tests/BurnishCoreTests/FalseAlertTests.swift` checks 50 installed apps whose right answer is known
+against a 51-entry cut of Homebrew's data, end to end, on every build:
+
+| Kind | Apps | Result |
+| --- | --- | --- |
+| Installed at Homebrew's version | 19 | all up to date |
+| Other channels (ESR, Beta, Canary, Dev, PTB) | 9 | 8 up to date, 1 asks for confirmation |
+| Betas ahead of Homebrew | 5 | 4 up to date, 1 asks; never offered a downgrade |
+| Lookalikes (a Firefox reskin, Telegram Desktop, VS Code Insiders, Rectangle Pro…) and an in-house app | 12 | 11 can't check, 1 asks; none matched to the wrong app |
+| Genuinely out of date | 5 | all 5 found |
+
+**False "update available" alerts: 0.** The test fails the build if that ever changes.

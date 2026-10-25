@@ -74,6 +74,10 @@ One Swift package, one target per module:
   `docs/HISTORY.md`, commit, tag `v<version>` and push the tag. The release workflow builds the
   universal app and DMG, signs the update, writes the appcast from the history entry and publishes
   the release.
+- **Before a release,** on a fresh macOS user account with a few common apps installed by hand
+  (not through Homebrew): install from the DMG, go through onboarding and App Management, run a
+  check, update one app, put it back, and confirm the old version landed in the Trash each time.
+  Note anything odd in the release notes.
 - `docs/HISTORY.md` entries are the release notes everywhere: the GitHub release and, through
   `scripts/release-notes-html.py`, the update window inside Burnish.
 
