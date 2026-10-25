@@ -19,7 +19,7 @@
 </p>
 
 > [!NOTE]
-> **Burnish is an alpha.** Detection has been tested on a handful of Macs, not hundreds. It's careful by design (it would rather say "can't check" than guess), but if it ever matches an app to the wrong thing, **Wrong Match? → Report a Wrong Match on GitHub** in the app opens a ready-made issue.
+> **Burnish is in beta.** Detection has been tested on a handful of Macs, not hundreds. It's careful by design (it would rather say "can't check" than guess), but if it ever matches an app to the wrong thing, **Wrong Match? → Report a Wrong Match on GitHub** in the app opens a ready-made issue.
 
 ## Why Burnish
 
@@ -146,7 +146,7 @@ Build it with `swift build -c release --product burnish`.
 
 ## Roadmap
 
-**In the alpha**
+**In the beta**
 
 ✅ Updates from the App Store, Sparkle, Electron, Homebrew and GitHub<br>
 ✅ Safe one-click and Update All installs, with the old version kept in the Trash<br>

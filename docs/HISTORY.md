@@ -1,5 +1,29 @@
 # Version history
 
+## 0.2.0-beta — 2026-10-25
+Now accepting returns.
+
+- **Put back the version you had before.** Every update already left the old copy in the Trash;
+  now Burnish remembers which one and brings it back in one click, after checking it as carefully
+  as a fresh download. It then skips the version you rolled back from, so Update All doesn't undo
+  the undo.
+- **A history for every app.** Updates found, installs, hand-offs and refusals, newest first, kept
+  on your Mac.
+- **A desktop widget.** How many updates are waiting, and in the medium size, which ones.
+- **Apps with their own updater get it.** Office opens Microsoft AutoUpdate, Adobe apps open
+  Creative Cloud, and Setapp and JetBrains apps open Setapp and Toolbox, instead of a download
+  page.
+- **Tauri apps get checked too.** Burnish finds the update address compiled into the app and asks
+  it; the app installs the update itself. They used to wait in *Can't check*, looking left out.
+- **App Store updates in one trip.** With several waiting, one click opens the App Store's
+  Updates page, where Apple's Update All does them together.
+- **Fixed:** error messages no longer say "Feed not reachable" twice in one breath, the welcome
+  screen now lists every place Burnish talks to (it was four short), and the disk image has
+  proper art and passes strict signature checks.
+
+On the command line, `burnish restore` and `burnish history` do the same as the app. Every word
+Burnish shows now lives in a string catalog, ready for translators once the interface settles.
+
 ## 0.1.0-alpha — 2026-10-25
 First light. Burnish is ready for people who like to try things early.
 
