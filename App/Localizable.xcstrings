@@ -441,6 +441,9 @@
     "Feed not reachable (%@)" : {
 
     },
+    "Follow Settings" : {
+
+    },
     "Found %@ (%@)" : {
       "localizations" : {
         "en" : {
@@ -523,6 +526,12 @@
     "Ignoring version %@" : {
 
     },
+    "Include beta releases" : {
+
+    },
+    "Install automatically" : {
+
+    },
     "Installed" : {
 
     },
@@ -561,6 +570,9 @@
 
     },
     "It may have unsaved work. Save it and quit %@ yourself, then choose Try Again." : {
+
+    },
+    "Just tell me" : {
 
     },
     "Keep Burnish up to date automatically" : {
@@ -791,6 +803,9 @@
     "Report a Wrong Match on GitHub…" : {
 
     },
+    "Rules for this app" : {
+
+    },
     "Run brew upgrade --cask %@" : {
 
     },
@@ -852,6 +867,9 @@
 
     },
     "Status" : {
+
+    },
+    "Stay on %lld.x" : {
 
     },
     "Stop Ignoring" : {
@@ -1126,6 +1144,16 @@
     },
     "Version %@ can't run on this Mac" : {
 
+    },
+    "Version %@ is out; you chose to stay on %lld.x" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ is out; you chose to stay on %2$lld.x"
+          }
+        }
+      }
     },
     "Version %@ needs %@" : {
       "localizations" : {

@@ -54,7 +54,8 @@ public final class BurnishEngine: Sendable {
             appStoreLookups: settings.appStoreLookups,
             ignoreRules: await store.load(.ignoreRules, default: IgnoreRules()),
             userOverrides: await store.load(.userOverrides, default: MatchOverrides()),
-            communityOverrides: settings.communityOverrides ? await community.load() : .none
+            communityOverrides: settings.communityOverrides ? await community.load() : .none,
+            appRules: await store.load(.appRules, default: AppRules())
         )
         let report = await checker.check(apps, options: options, onResult: onResult)
         let found = report.results.filter(\.status.isOutdated).compactMap { result in

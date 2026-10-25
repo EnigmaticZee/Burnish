@@ -31,10 +31,12 @@ public struct SourceFindings: Sendable {
 public struct DecisionOptions: Sendable {
     public var appStoreLookups = true
     public var ignoreRules = IgnoreRules()
+    public var appRules = AppRules()
 
-    public init(appStoreLookups: Bool = true, ignoreRules: IgnoreRules = IgnoreRules()) {
+    public init(appStoreLookups: Bool = true, ignoreRules: IgnoreRules = IgnoreRules(), appRules: AppRules = AppRules()) {
         self.appStoreLookups = appStoreLookups
         self.ignoreRules = ignoreRules
+        self.appRules = appRules
     }
 }
 
@@ -52,6 +54,12 @@ public enum StatusDecider {
         }
         result.match = findings.match
         result.vendorUpdater = findings.vendorUpdater
+
+        // "Stay on 5.x": a newer major from a source that only lists the newest version isn't an update.
+        if case let .outdated(candidate) = result.status, let cap = options.appRules.rule(for: app.bundleID).stayOnMajor,
+           let major = Version(candidate.displayVersion)?.major, major > cap {
+            result.status = .upToDate(note: String(localized: "Version \(candidate.displayVersion) is out; you chose to stay on \(cap).x"))
+        }
 
         // Ignore rules wrap whatever was found, so the detail pane can still show it.
         if options.ignoreRules.ignoresApp(app.bundleID) {

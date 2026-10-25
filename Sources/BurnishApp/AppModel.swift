@@ -53,6 +53,8 @@ final class AppModel {
     private(set) var state = AppState()
     /// What Burnish has done with each app, for the detail pane.
     private(set) var history = UpdateHistory()
+    /// Per-app choices: automatic or not, stay on a major version, follow betas.
+    private(set) var appRules = AppRules()
     private var animationTimer: Timer?
     var animationFrame = 0
 
@@ -98,6 +100,7 @@ final class AppModel {
         state = await engine.store.load(.appState, default: AppState())
         if let report = await engine.lastReport() { apply(report) }
         history = await engine.history()
+        appRules = await engine.store.load(.appRules, default: AppRules())
         lastCheck = state.lastCheck ?? results.first?.checkedAt
     }
 
@@ -378,6 +381,15 @@ final class AppModel {
             $0.apps.remove(result.app.bundleID)
             $0.versions[result.app.bundleID] = nil
         }
+        await recheck(result)
+    }
+
+    // MARK: Per-app rules
+
+    func setRule(_ rule: AppRule, for result: AppCheckResult) async {
+        appRules.set(rule, for: result.app.bundleID)
+        let rules = appRules
+        await engine.store.save(rules, .appRules)
         await recheck(result)
     }
 

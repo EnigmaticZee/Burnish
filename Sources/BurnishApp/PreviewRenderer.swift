@@ -44,7 +44,7 @@ enum PreviewRenderer {
                 render(MainWindow().environment(model), width: 1040, height: 660, dark: false, to: folder.appendingPathComponent("tab-\(tab.rawValue).png"))
             }
             for (index, result) in model.results.prefix(40).enumerated() {
-                render(DetailView(result: result).environment(model), width: 520, height: 640, dark: false,
+                render(DetailView(result: result).environment(model), width: 520, height: 1300, dark: false,
                        to: folder.appendingPathComponent(String(format: "detail-%02d-%@.png", index, result.app.name.replacingOccurrences(of: " ", with: "_"))))
             }
             NSApp.terminate(nil)

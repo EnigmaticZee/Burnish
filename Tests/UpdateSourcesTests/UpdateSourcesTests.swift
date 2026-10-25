@@ -360,3 +360,30 @@ func fixture(_ name: String) throws -> Data {
         #expect(GitHubSource.release(release(tag: "v1.3.0", assets: ["Tool-1.3.0-windows.exe"]), forCask: c)?.downloadURL == nil)
     }
 }
+
+@Suite struct SparkleRules {
+    func item(_ short: String, _ build: String, channel: String? = nil) -> AppcastItem {
+        var item = AppcastItem()
+        item.shortVersion = short
+        item.version = build
+        item.channel = channel
+        item.enclosure = .init(url: URL(string: "https://example.com/\(short).zip"))
+        return item
+    }
+
+    @Test func staysOnTheChosenMajorAndSaysWhatsAbove() throws {
+        let source = SparkleSource(client: MockHTTPClient(), system: SystemVersion("27.0"), isARM: true)
+        let items = [item("6.0", "600"), item("5.9", "590"), item("5.8", "580")]
+        let result = try source.select(from: items, preferences: .init(maximumMajor: 5))
+        #expect(result.release?.version.short == "5.9", "the newest 5.x")
+        #expect(result.newerButIncompatible == "Version 6.0 is out; you chose to stay on 5.x")
+        #expect(try source.select(from: items).release?.version.short == "6.0")
+    }
+
+    @Test func betasOnlyWhenAsked() throws {
+        let source = SparkleSource(client: MockHTTPClient(), system: SystemVersion("27.0"), isARM: true)
+        let items = [item("2.1b1", "211", channel: "beta"), item("2.0", "200")]
+        #expect(try source.select(from: items).release?.version.short == "2.0")
+        #expect(try source.select(from: items, preferences: .init(includeBeta: true)).release?.version.short == "2.1b1")
+    }
+}

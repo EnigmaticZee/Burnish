@@ -255,3 +255,26 @@ func findings(cask: Cask, for app: InstalledApp) -> SourceFindings {
         #expect(result.status == .cantCheck(reason: "Feed not reachable (Timed out)"))
     }
 }
+
+@Suite struct AppRuleDecisions {
+    @Test func stayingOnAMajorVersionTurnsTheNextMajorIntoANote() {
+        let app = makeApp("Tool", "com.example.tool", "5.4")
+        var findings = SourceFindings()
+        findings.electron = .found(Release(source: .electron, version: VersionPair(short: "6.0"), basis: .shortVersion,
+                                           downloadURL: URL(string: "https://example.com/t.zip")))
+        var rules = AppRules()
+        rules.set(AppRule(stayOnMajor: 5), for: "com.example.tool")
+        let result = StatusDecider.decide(app, findings: findings, options: DecisionOptions(appRules: rules), system: SystemVersion("27.0"))
+        #expect(result.status == .upToDate(note: "Version 6.0 is out; you chose to stay on 5.x"))
+
+        let free = StatusDecider.decide(app, findings: findings, options: DecisionOptions(), system: SystemVersion("27.0"))
+        #expect(free.status.isOutdated, "without the rule it's an update")
+    }
+
+    @Test func aDefaultRuleIsNotStored() {
+        var rules = AppRules()
+        rules.set(AppRule(followBeta: true), for: "a")
+        rules.set(AppRule(), for: "a")
+        #expect(rules.byApp.isEmpty)
+    }
+}

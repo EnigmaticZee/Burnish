@@ -4,6 +4,7 @@ import CaskIndex
 import Store
 import SwiftUI
 import UpdateSources
+import Versions
 
 /// Versions, source and match confidence, release notes, and every action for one app.
 struct DetailView: View {
@@ -21,6 +22,7 @@ struct DetailView: View {
                 HallmarksSection(result: result)
                 notes
                 ReleaseNotesSection(result: result)
+                RulesSection(result: result)
                 HistorySection(result: result, putBack: model.restorableVersion(result).map { _ in { confirmingPutBack = true } })
             }
             .padding(20)
@@ -517,5 +519,44 @@ struct HallmarksSection: View {
         case .notAvailable: String(localized: "Not offered by this source")
         case .caution: String(localized: "Worth knowing")
         }
+    }
+}
+
+/// Choices for this app alone: install automatically or just tell me, stay on a major version,
+/// follow betas. Nothing to choose for App Store apps or Apple's own.
+struct RulesSection: View {
+    @Environment(AppModel.self) private var model
+    let result: AppCheckResult
+
+    var body: some View {
+        if !result.app.isAppStore, !result.app.isApple {
+            let rule = model.appRules.rule(for: result.app.bundleID)
+            let installedMajor = (result.app.version.short ?? result.app.version.build).flatMap(Version.init)?.major
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Rules for this app").font(.headline)
+                Picker("Updates", selection: binding(rule, \.updates)) {
+                    ForEach(AppRule.Updates.allCases, id: \.self) { Text(verbatim: $0.label).tag($0) }
+                }
+                .fixedSize()
+                // Rapid-release apps (Firefox 158, Chrome 156) have no major worth staying on.
+                if let major = rule.stayOnMajor ?? installedMajor, (1..<50).contains(major) {
+                    Toggle("Stay on \(major).x", isOn: Binding(
+                        get: { rule.stayOnMajor != nil },
+                        set: { on in update(rule) { $0.stayOnMajor = on ? major : nil } }))
+                }
+                Toggle("Include beta releases", isOn: binding(rule, \.followBeta))
+            }
+            .font(.callout)
+        }
+    }
+
+    private func binding<Value>(_ rule: AppRule, _ path: WritableKeyPath<AppRule, Value>) -> Binding<Value> {
+        Binding(get: { rule[keyPath: path] }, set: { value in update(rule) { $0[keyPath: path] = value } })
+    }
+
+    private func update(_ rule: AppRule, _ change: (inout AppRule) -> Void) {
+        var changed = rule
+        change(&changed)
+        Task { await model.setRule(changed, for: result) }
     }
 }

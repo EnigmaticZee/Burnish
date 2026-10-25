@@ -11,13 +11,15 @@ public struct CheckOptions: Sendable {
     public var ignoreRules: IgnoreRules
     public var userOverrides: MatchOverrides
     public var communityOverrides: MatchOverrides
+    public var appRules: AppRules
 
     public init(appStoreLookups: Bool = true, ignoreRules: IgnoreRules = IgnoreRules(),
-                userOverrides: MatchOverrides = .none, communityOverrides: MatchOverrides = .none) {
+                userOverrides: MatchOverrides = .none, communityOverrides: MatchOverrides = .none, appRules: AppRules = AppRules()) {
         self.appStoreLookups = appStoreLookups
         self.ignoreRules = ignoreRules
         self.userOverrides = userOverrides
         self.communityOverrides = communityOverrides
+        self.appRules = appRules
     }
 }
 
@@ -77,7 +79,8 @@ public actor UpdateChecker {
         }
 
         let matcher = casks.map { CaskMatcher(catalog: $0.catalog, user: options.userOverrides, community: options.communityOverrides) }
-        let decision = DecisionOptions(appStoreLookups: options.appStoreLookups, ignoreRules: options.ignoreRules)
+        let decision = DecisionOptions(appStoreLookups: options.appStoreLookups, ignoreRules: options.ignoreRules, appRules: options.appRules)
+        let appRules = options.appRules
         let system = system
         let platform = platform
         let github = github
@@ -92,7 +95,8 @@ public actor UpdateChecker {
                         case .failure: findings.appStore = .failed(String(localized: "App Store not reachable"))
                         }
                     } else if !app.isApple {
-                        await Self.gather(&findings, app: app, client: client, system: system, platform: platform, matcher: matcher, github: github)
+                        await Self.gather(&findings, app: app, rule: appRules.rule(for: app.bundleID), client: client, system: system,
+                                          platform: platform, matcher: matcher, github: github)
                         findings.vendorUpdater = VendorUpdaters.updater(for: app)
                         // A Tauri app installs its own signed updates, so Update opens the app.
                         if findings.tauriSucceeded, findings.vendorUpdater == nil {
@@ -118,12 +122,14 @@ public actor UpdateChecker {
     }
 
     static func gather(
-        _ findings: inout SourceFindings, app: InstalledApp, client: HTTPClient, system: SystemVersion,
+        _ findings: inout SourceFindings, app: InstalledApp, rule: AppRule = AppRule(), client: HTTPClient, system: SystemVersion,
         platform: Platform, matcher: CaskMatcher?, github: GitHubSource
     ) async {
         if let feed = app.sparkleFeedURL {
+            let preferences = SparkleSource.Preferences(maximumMajor: rule.stayOnMajor, includeBeta: rule.followBeta)
             do {
-                findings.sparkle = .found(try await SparkleSource(client: client, system: system, isARM: platform.isARM).check(feed: feed))
+                findings.sparkle = .found(try await SparkleSource(client: client, system: system, isARM: platform.isARM)
+                    .check(feed: feed, preferences: preferences))
             } catch {
                 findings.sparkle = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }
@@ -145,6 +151,10 @@ public actor UpdateChecker {
         guard let matcher, let match = matcher.match(app) else { return }
         findings.match = match
         findings.cask = matcher.catalog.cask(match.token)
+        // Following betas: Homebrew keeps them as a separate entry, such as `firefox@beta`.
+        if rule.followBeta, !match.token.contains("@"), let beta = matcher.catalog.cask("\(match.token)@beta") {
+            findings.cask = beta
+        }
         // GitHub only matters when the developer feeds didn't already decide.
         if match.canRaiseAlert, !findings.sparkleSucceeded, !findings.electronSucceeded, !findings.tauriSucceeded,
            let cask = findings.cask, let repo = HomebrewSource.githubRepository(for: cask) {
