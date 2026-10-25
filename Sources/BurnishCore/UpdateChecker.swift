@@ -62,6 +62,7 @@ public actor UpdateChecker {
         }()
         let appStoreApps = apps.filter(\.isAppStore)
         let storefront = storefront
+        let client = client
         async let storeLookup: Result<[String: Release], Error> = {
             guard options.appStoreLookups, !appStoreApps.isEmpty else { return .success([:]) }
             do { return .success(try await AppStoreSource(client: client, country: storefront).lookup(appStoreApps)) } catch { return .failure(error) }
@@ -77,7 +78,6 @@ public actor UpdateChecker {
 
         let matcher = casks.map { CaskMatcher(catalog: $0.catalog, user: options.userOverrides, community: options.communityOverrides) }
         let decision = DecisionOptions(appStoreLookups: options.appStoreLookups, ignoreRules: options.ignoreRules)
-        let client = client
         let system = system
         let platform = platform
         let github = github
