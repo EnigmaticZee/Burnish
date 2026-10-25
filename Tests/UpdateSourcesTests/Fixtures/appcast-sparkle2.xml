@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Example App</title>
+    <link>https://example.com/appcast.xml</link>
+    <item>
+      <title>Version 2.1.0</title>
+      <link>https://example.com/releases/2.1.0</link>
+      <pubDate>Wed, 21 Oct 2026 11:30:44 +0000</pubDate>
+      <sparkle:version>210</sparkle:version>
+      <sparkle:shortVersionString>2.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<h2>What's new</h2><ul><li>Faster <b>sync</b></li><li>Fixes a crash</li></ul><script>alert(1)</script>]]></description>
+      <description xml:lang="fr"><![CDATA[<p>Nouveautés</p>]]></description>
+      <enclosure url="https://example.com/downloads/Example-2.1.0.zip" length="1234" type="application/octet-stream" sparkle:edSignature="c2lnbmF0dXJl"/>
+      <sparkle:deltas>
+        <enclosure url="https://example.com/downloads/Example-2.0.0-2.1.0.delta" sparkle:version="210" sparkle:deltaFrom="200" length="10" type="application/octet-stream" sparkle:edSignature="ZGVsdGE="/>
+      </sparkle:deltas>
+    </item>
+    <item>
+      <title>Version 3.0 beta</title>
+      <sparkle:channel>beta</sparkle:channel>
+      <sparkle:version>300</sparkle:version>
+      <sparkle:shortVersionString>3.0b1</sparkle:shortVersionString>
+      <enclosure url="https://example.com/downloads/Example-3.0b1.zip" length="1" type="application/octet-stream" sparkle:edSignature="YmV0YQ=="/>
+    </item>
+    <item>
+      <title>Version 2.2.0</title>
+      <sparkle:version>220</sparkle:version>
+      <sparkle:shortVersionString>2.2.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>99.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://example.com/downloads/Example-2.2.0.zip" length="1" type="application/octet-stream" sparkle:edSignature="ZnV0dXJl"/>
+    </item>
+    <item>
+      <title>Windows build</title>
+      <sparkle:version>999</sparkle:version>
+      <enclosure url="https://example.com/downloads/Example.exe" sparkle:os="windows" length="1" type="application/octet-stream"/>
+    </item>
+    <item>
+      <title>Version 2.0.0</title>
+      <sparkle:version>200</sparkle:version>
+      <sparkle:shortVersionString>2.0.0</sparkle:shortVersionString>
+      <sparkle:releaseNotesLink>https://example.com/notes/2.0.0.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/downloads/Example-2.0.0.dmg" length="1" type="application/octet-stream" sparkle:edSignature="b2xk"/>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,21 @@
+version: 1.9.10
+files:
+  - url: Obsidian-1.9.10.dmg
+    sha512: ZG1nLXNoYTUxMg==
+    size: 200000000
+  - url: Obsidian-1.9.10-arm64-mac.zip
+    sha512: YXJtLXppcA==
+    size: 100000000
+    blockMapSize: 1024
+  - url: Obsidian-1.9.10-mac.zip
+    sha512: aW50ZWwtemlw
+    size: 110000000
+path: Obsidian-1.9.10.dmg
+sha512: ZG1nLXNoYTUxMg==
+releaseDate: '2026-08-27T14:36:01.000Z'
+releaseNotes: |
+  ## Improvements
+  - Faster startup
+  - New **canvas** tools
+
+  Thanks to everyone.

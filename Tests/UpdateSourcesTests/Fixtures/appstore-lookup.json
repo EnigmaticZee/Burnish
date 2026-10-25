@@ -1,0 +1,5 @@
+{"resultCount":3,"results":[
+{"bundleId":"app.pastenow.PasteNow","version":"2.35","trackId":1552536109,"trackViewUrl":"https://apps.apple.com/ca/app/pastenow/id1552536109?mt=12","minimumOsVersion":"14.6","currentVersionReleaseDate":"2026-10-13T22:46:51Z","price":0.0,"kind":"software","releaseNotes":"PasteNow 2.35 is here.\n• Support for macOS Sonoma again\n• Fixes"},
+{"bundleId":"com.apple.dt.Xcode","version":"27.1","trackId":497799835,"minimumOsVersion":"26.6","currentVersionReleaseDate":"2026-10-15T20:22:08Z","kind":"mac-software","releaseNotes":"Xcode 27.1 includes Swift 6.4."},
+{"bundleId":"com.unrelated.app","version":"9.9","trackId":1,"kind":"mac-software"}
+]}

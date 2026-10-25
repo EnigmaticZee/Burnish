@@ -1,0 +1,122 @@
+name: Build
+
+# Every push builds and tests Burnish and packs the DMG. Pushing a version tag (v0.2.0) also
+# signs the update for Burnish's own updater and publishes a GitHub Release with the DMG and the
+# Sparkle appcast.
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # build number = commit count
+      - name: Use the newest Xcode on the runner
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+          swift --version
+      - name: Test
+        run: scripts/test.sh
+      - name: Check the tag matches VERSION
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: test "v$(cat VERSION)" = "$GITHUB_REF_NAME"
+      - name: Install dmgbuild
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install --quiet dmgbuild==1.6.5
+      - name: Build universal app and DMG
+        run: DMGBUILD=.venv/bin/dmgbuild scripts/make-dmg.sh
+      - name: Sign the update and write the Sparkle appcast
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          KEY="$RUNNER_TEMP/sparkle.key"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY"
+          SIGNATURE=$(Vendor/Sparkle/bin/sign_update --ed-key-file "$KEY" dist/Burnish.dmg)
+          rm -f "$KEY"
+          VERSION="$(cat VERSION)"
+          BUILD=$(git rev-list --count HEAD)
+          REPO="https://github.com/${GITHUB_REPOSITORY}"
+          # The notes travel inside the feed, so the update window shows just them, styled.
+          NOTES=$(python3 scripts/release-notes-html.py "$VERSION")
+          cat > dist/appcast.xml <<XML
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <channel>
+              <title>Burnish</title>
+              <item>
+                <title>Burnish ${VERSION}</title>
+                <pubDate>$(date -R)</pubDate>
+                <sparkle:version>${BUILD}</sparkle:version>
+                <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
+                <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+                <description><![CDATA[${NOTES}]]></description>
+                <sparkle:fullReleaseNotesLink>${REPO}/releases</sparkle:fullReleaseNotesLink>
+                <enclosure url="${REPO}/releases/download/${GITHUB_REF_NAME}/Burnish.dmg" ${SIGNATURE} type="application/octet-stream" />
+              </item>
+            </channel>
+          </rss>
+          XML
+          cat dist/appcast.xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Burnish
+          path: |
+            dist/Burnish.dmg
+            dist/appcast.xml
+          if-no-files-found: ignore
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # to find the previous tag for the changelog link
+      - uses: actions/download-artifact@v4
+        with:
+          name: Burnish
+          path: dist
+      - name: Write release notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          REPO="https://github.com/${GITHUB_REPOSITORY}"
+          PREV=$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)
+          {
+            echo "## What's new"
+            echo
+            awk -v v="$VERSION" '$0 ~ "^## "v" " {on=1; next} /^## / {on=0} on' docs/HISTORY.md
+            echo
+            echo "## Install"
+            echo
+            echo "Download **[Burnish.dmg]($REPO/releases/download/${GITHUB_REF_NAME}/Burnish.dmg)** (macOS 14 or later, Apple silicon and Intel), open it and drag Burnish into Applications."
+            echo
+            echo "Burnish isn't notarized by Apple yet, so the first time you open it macOS asks you to confirm: open it once, click **Done**, then **System Settings → Privacy & Security → Open Anyway**. After that it updates itself."
+            echo
+            echo "## Checksum (SHA-256)"
+            echo
+            echo '```'
+            (cd dist && sha256sum Burnish.dmg)
+            echo '```'
+            if [ -n "$PREV" ]; then
+              echo
+              echo "**Full changelog:** [$PREV...${GITHUB_REF_NAME}]($REPO/compare/$PREV...${GITHUB_REF_NAME})"
+            fi
+          } > notes.md
+          cat notes.md
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/Burnish.dmg dist/appcast.xml \
+            --title "Burnish ${GITHUB_REF_NAME#v}" --notes-file notes.md --latest

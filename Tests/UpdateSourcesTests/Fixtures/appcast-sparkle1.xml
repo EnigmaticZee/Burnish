@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Old App Changelog</title>
+    <item>
+      <title>Old App 1.4.2</title>
+      <pubDate>Mon, 5 Jan 2015 10:00:00 -0800</pubDate>
+      <sparkle:releaseNotesLink>https://old.example.com/notes.html</sparkle:releaseNotesLink>
+      <enclosure url="https://old.example.com/OldApp-1.4.2.zip" sparkle:version="142" sparkle:shortVersionString="1.4.2" sparkle:dsaSignature="MC0CFQ==" length="555" type="application/octet-stream"/>
+    </item>
+    <item>
+      <title>Old App 1.4.1</title>
+      <enclosure url="https://old.example.com/OldApp-1.4.1.zip" sparkle:version="141" sparkle:shortVersionString="1.4.1" length="554" type="application/octet-stream"/>
+    </item>
+  </channel>
+</rss>

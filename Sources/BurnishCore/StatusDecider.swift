@@ -1,0 +1,185 @@
+import CaskIndex
+import Foundation
+import Inventory
+import Store
+import UpdateSources
+import Versions
+
+/// Everything the sources said about one app, gathered before deciding.
+public struct SourceFindings: Sendable {
+    public enum Outcome<Value: Sendable>: Sendable {
+        case notApplicable
+        case found(Value)
+        case failed(String)
+    }
+
+    public var appStore: Outcome<Release?> = .notApplicable
+    public var sparkle: Outcome<SparkleSource.Result> = .notApplicable
+    public var electron: Outcome<Release> = .notApplicable
+    public var match: CaskMatch?
+    public var cask: Cask?
+    public var github: Release?
+
+    public init() {}
+}
+
+public struct DecisionOptions: Sendable {
+    public var appStoreLookups = true
+    public var ignoreRules = IgnoreRules()
+
+    public init(appStoreLookups: Bool = true, ignoreRules: IgnoreRules = IgnoreRules()) {
+        self.appStoreLookups = appStoreLookups
+        self.ignoreRules = ignoreRules
+    }
+}
+
+/// The per-app detection flow: the developer's own feed first, Homebrew as the
+/// fallback, and every path ending in an honest state. Pure, so it's tested without a network.
+public enum StatusDecider {
+    public static func decide(
+        _ app: InstalledApp, findings: SourceFindings, options: DecisionOptions, system: SystemVersion, now: Date = Date()
+    ) -> AppCheckResult {
+        var result = rawDecision(app, findings: findings, options: options, system: system)
+        result.checkedAt = now
+        if let cask = findings.cask {
+            result.cask = CaskSummary(cask)
+            if cask.deprecated || cask.disabled { result.notes.append("No longer maintained in Homebrew") }
+        }
+        result.match = findings.match
+
+        // Ignore rules wrap whatever was found, so the detail pane can still show it.
+        if options.ignoreRules.ignoresApp(app.bundleID) {
+            result.status = .ignored(.app, result.status.candidate)
+        } else if case let .outdated(candidate) = result.status, let ignored = options.ignoreRules.versions[app.bundleID],
+                  Self.sameVersion(ignored, candidate.displayVersion) {
+            // "2.0" ignored from one source is still ignored when another source says "2.0.0".
+            result.status = .ignored(.version(candidate.displayVersion), candidate)
+        }
+        return result
+    }
+
+    static func sameVersion(_ a: String, _ b: String) -> Bool {
+        if a == b { return true }
+        guard let x = Version(a), let y = Version(b) else { return false }
+        return x == y
+    }
+
+    static func rawDecision(_ app: InstalledApp, findings: SourceFindings, options: DecisionOptions, system: SystemVersion) -> AppCheckResult {
+        var notes: [String] = []
+
+        // 1. Mac App Store: the receipt decides, and only the App Store updates it.
+        if app.isAppStore {
+            guard options.appStoreLookups else {
+                return AppCheckResult(app: app, status: .cantCheck(reason: "App Store checks are turned off in Settings"))
+            }
+            switch findings.appStore {
+            case .found(let release?):
+                return verdict(app, release: release, notes: notes, system: system)
+            case .found(nil):
+                return AppCheckResult(app: app, status: .cantCheck(reason: "Not found in the App Store for your region"), decidedBy: .appStore)
+            case .failed(let why):
+                return AppCheckResult(app: app, status: .cantCheck(reason: why), decidedBy: .appStore)
+            case .notApplicable:
+                return AppCheckResult(app: app, status: .cantCheck(reason: "App Store not checked"))
+            }
+        }
+
+        // Apple's own apps outside the App Store come with macOS updates.
+        if app.isApple {
+            return AppCheckResult(app: app, status: .cantCheck(reason: "Updated by Apple through Software Update"))
+        }
+
+        // 2. The developer's Sparkle feed.
+        switch findings.sparkle {
+        case .found(let feed):
+            if let release = feed.release {
+                let result = verdict(app, release: release, notes: notes, system: system, incompatibleNote: feed.newerButIncompatible)
+                if case let .cantCheck(reason) = result.status {
+                    notes.append("Developer feed: \(reason)")
+                } else {
+                    return result
+                }
+            } else {
+                return AppCheckResult(app: app, status: .upToDate(note: feed.newerButIncompatible), decidedBy: .sparkle)
+            }
+        case .failed(let why):
+            notes.append(why)
+        case .notApplicable:
+            if app.sparkleFeedURL == nil, app.sparklePublicEDKey != nil {
+                notes.append("This app sets its update feed while running, so Burnish uses Homebrew's data")
+            }
+        }
+
+        // 3. electron-builder feed.
+        switch findings.electron {
+        case .found(let release):
+            let result = verdict(app, release: release, notes: notes, system: system)
+            if case let .cantCheck(reason) = result.status {
+                notes.append("Developer feed: \(reason)")
+            } else {
+                return result
+            }
+        case .failed(let why):
+            notes.append(why)
+        case .notApplicable:
+            break
+        }
+
+        // 4. Homebrew's cask data, matched by confidence.
+        guard let match = findings.match, let cask = findings.cask else {
+            let reason = notes.first ?? "No update source found"
+            return AppCheckResult(app: app, status: .cantCheck(reason: reason), notes: Array(notes.dropFirst()))
+        }
+        guard match.canRaiseAlert else {
+            return AppCheckResult(app: app, status: .needsConfirmation(match), decidedBy: .homebrew, notes: notes)
+        }
+        if cask.isLatestVersion {
+            return AppCheckResult(app: app, status: .cantCheck(reason: "Can't compare: Homebrew lists this app's version as \"latest\""),
+                                  decidedBy: .homebrew, notes: notes)
+        }
+        var release = HomebrewSource.release(for: cask)
+        if let github = findings.github, let gv = github.version.short.flatMap(Version.init),
+           let cv = release.version.short.flatMap(Version.init) {
+            if gv > cv, UpdateComparator.isCompatible(gv, cv), github.downloadURL != nil {
+                // The developer's GitHub release is newer than Homebrew's copy of it.
+                release = github
+            } else if gv == cv, github.releaseNotes != nil {
+                release.releaseNotes = github.releaseNotes
+            }
+        }
+        if !cask.supports(macOS: system.major) {
+            let needs = cask.minimumMacOS.map { "macOS \($0) or later" } ?? "a different macOS version"
+            let shown = release.version.display
+            switch release.compare(with: app.version) {
+            case .newer:
+                return AppCheckResult(app: app, status: .upToDate(note: "Version \(shown) needs \(needs)"), decidedBy: release.source, notes: notes)
+            default:
+                break
+            }
+        }
+        return verdict(app, release: release, notes: notes, system: system)
+    }
+
+    static func verdict(_ app: InstalledApp, release: Release, notes: [String], system: SystemVersion, incompatibleNote: String? = nil) -> AppCheckResult {
+        let status: CheckStatus
+        switch release.compare(with: app.version) {
+        case .newer where !system.satisfies(minimum: release.minimumOS):
+            // The App Store and Electron feeds list releases this Mac can't run.
+            status = .upToDate(note: "Version \(release.version.display) needs macOS \(release.minimumOS ?? "") or later")
+        case .newer(let major):
+            // Sparkle's minimumAutoupdateVersion marks a manual, often paid, upgrade.
+            let manual = release.minimumAutoupdateVersion.flatMap(Version.init).map { minimum in
+                (app.version.build ?? app.version.short).flatMap(Version.init).map { $0 < minimum } ?? false
+            } ?? false
+            status = .outdated(UpdateCandidate(release: release, isMajorUpgrade: major || manual))
+        case .same:
+            status = .upToDate(note: incompatibleNote)
+        case .older:
+            // A beta build, or a source that lags: never a downgrade.
+            status = .upToDate(note: incompatibleNote ?? "The installed version is newer than \(release.source.label)'s \(release.version.display)")
+        case .cantCompare(let why):
+            status = .cantCheck(reason: why)
+        }
+        return AppCheckResult(app: app, status: status, decidedBy: release.source, notes: notes)
+    }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <item>
+      <title>Version 5.0</title>
+      <link>https://example.com/buy</link>
+      <sparkle:version>500</sparkle:version>
+      <sparkle:shortVersionString>5.0</sparkle:shortVersionString>
+      <sparkle:informationalUpdate><sparkle:belowVersion>500</sparkle:belowVersion></sparkle:informationalUpdate>
+      <sparkle:criticalUpdate/>
+    </item>
+  </channel>
+</rss>
