@@ -50,3 +50,15 @@ public struct AppRule: Codable, Sendable, Equatable {
 extension StoreKey {
     public static var appRules: StoreKey<AppRules> { StoreKey<AppRules>("app-rules.json") }
 }
+
+/// An update feed for an app that doesn't say where it updates from, listed by a contributor in
+/// the repository's community file: a Sparkle appcast or a GitHub repository ("owner/name").
+public struct CommunityFeed: Codable, Sendable, Equatable {
+    public var sparkle: URL?
+    public var github: String?
+
+    public init(sparkle: URL? = nil, github: String? = nil) {
+        self.sparkle = sparkle
+        self.github = github
+    }
+}

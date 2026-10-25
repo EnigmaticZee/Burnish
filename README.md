@@ -122,7 +122,7 @@ Burnish finds their updates and hands them to the App Store, which installs them
 <details>
 <summary><b>Why does it say "Can't check" for some apps?</b></summary>
 <br>
-Some apps have no public update source Burnish can read, or set their update feed only while running. Burnish says so rather than guessing. If an app is in Homebrew under a different name, <b>Wrong Match? → Choose a Different Homebrew App</b> fixes it for you, and <a href="overrides/README.md">community match fixes</a> fix it for everyone.
+Some apps have no public update source Burnish can read, or set their update feed only while running. Burnish says so rather than guessing. If an app is in Homebrew under a different name, <b>Wrong Match? → Choose a Different Homebrew App</b> fixes it for you, and <a href="overrides/README.md">community match fixes</a> fix it for everyone. Know where an app announces its updates? Add it to the <a href="overrides/README.md#update-feeds">community feeds</a> and Burnish can watch it for everyone.
 </details>
 
 <details>

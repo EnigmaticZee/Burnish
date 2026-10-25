@@ -51,6 +51,9 @@ extension AppCheckResult {
             return homebrew == .upgradeWithBrew ? .brewUpgrade(token: token) : .managedByHomebrew(token: token)
         }
         if let vendorUpdater { return .openUpdater(vendorUpdater) }
+        if release.listedByCommunity == true {
+            return .openDownloadPage(downloadPage, reason: String(localized: "Found through a community-listed feed, so the install is yours to do"))
+        }
         if !app.signature.canBeAutoUpdated {
             return .openDownloadPage(downloadPage, reason: String(localized: "Burnish only replaces apps signed by their developer"))
         }

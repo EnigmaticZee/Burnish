@@ -56,6 +56,9 @@ public struct Release: Sendable, Hashable, Codable {
     /// Sparkle's `minimumAutoupdateVersion`: below this build the developer wants a manual
     /// (often paid) upgrade, so Burnish treats it as a major upgrade and doesn't install it.
     public var minimumAutoupdateVersion: String?
+    /// Found through a feed a contributor listed, not one the app or Homebrew names. Burnish
+    /// reads it to spot updates and leaves the install to the person (install rule 1).
+    public var listedByCommunity: Bool?
 
     /// `ComparisonBasis` as a Codable value.
     public enum Basis: String, Sendable, Codable {

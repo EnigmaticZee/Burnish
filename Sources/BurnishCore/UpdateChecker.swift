@@ -4,6 +4,7 @@ import Inventory
 import Net
 import Store
 import UpdateSources
+import Versions
 import os
 
 public struct CheckOptions: Sendable {
@@ -12,14 +13,17 @@ public struct CheckOptions: Sendable {
     public var userOverrides: MatchOverrides
     public var communityOverrides: MatchOverrides
     public var appRules: AppRules
+    public var communityFeeds: [String: CommunityFeed]
 
     public init(appStoreLookups: Bool = true, ignoreRules: IgnoreRules = IgnoreRules(),
-                userOverrides: MatchOverrides = .none, communityOverrides: MatchOverrides = .none, appRules: AppRules = AppRules()) {
+                userOverrides: MatchOverrides = .none, communityOverrides: MatchOverrides = .none, appRules: AppRules = AppRules(),
+                communityFeeds: [String: CommunityFeed] = [:]) {
         self.appStoreLookups = appStoreLookups
         self.ignoreRules = ignoreRules
         self.userOverrides = userOverrides
         self.communityOverrides = communityOverrides
         self.appRules = appRules
+        self.communityFeeds = communityFeeds
     }
 }
 
@@ -82,6 +86,7 @@ public actor UpdateChecker {
         let decision = DecisionOptions(appStoreLookups: options.appStoreLookups, ignoreRules: options.ignoreRules,
                                        appRules: options.appRules, appleSilicon: platform.isARM)
         let appRules = options.appRules
+        let communityFeeds = options.communityFeeds
         let system = system
         let platform = platform
         let github = github
@@ -96,8 +101,8 @@ public actor UpdateChecker {
                         case .failure: findings.appStore = .failed(String(localized: "App Store not reachable"))
                         }
                     } else if !app.isApple {
-                        await Self.gather(&findings, app: app, rule: appRules.rule(for: app.bundleID), client: client, system: system,
-                                          platform: platform, matcher: matcher, github: github)
+                        await Self.gather(&findings, app: app, rule: appRules.rule(for: app.bundleID), communityFeed: communityFeeds[app.bundleID],
+                                          client: client, system: system, platform: platform, matcher: matcher, github: github)
                         findings.vendorUpdater = VendorUpdaters.updater(for: app)
                         // A Tauri app installs its own signed updates, so Update opens the app.
                         if findings.tauriSucceeded, findings.vendorUpdater == nil {
@@ -123,7 +128,8 @@ public actor UpdateChecker {
     }
 
     static func gather(
-        _ findings: inout SourceFindings, app: InstalledApp, rule: AppRule = AppRule(), client: HTTPClient, system: SystemVersion,
+        _ findings: inout SourceFindings, app: InstalledApp, rule: AppRule = AppRule(), communityFeed: CommunityFeed? = nil,
+        client: HTTPClient, system: SystemVersion,
         platform: Platform, matcher: CaskMatcher?, github: GitHubSource
     ) async {
         if let feed = app.sparkleFeedURL {
@@ -149,7 +155,10 @@ public actor UpdateChecker {
                 findings.tauri = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }
         }
-        guard let matcher, let match = matcher.match(app) else { return }
+        guard let matcher, let match = matcher.match(app) else {
+            await askCommunityFeed(&findings, app: app, feed: communityFeed, client: client, system: system, platform: platform, github: github)
+            return
+        }
         findings.match = match
         findings.cask = matcher.catalog.cask(match.token)
         // Following betas: Homebrew keeps them as a separate entry, such as `firefox@beta`.
@@ -164,6 +173,40 @@ public actor UpdateChecker {
             } catch {
                 // A repository with no releases is normal; a rate limit or an outage is worth a note.
                 if error != .noRelease { findings.githubFailure = error.errorDescription }
+            }
+        }
+        if !match.canRaiseAlert {
+            await askCommunityFeed(&findings, app: app, feed: communityFeed, client: client, system: system, platform: platform, github: github)
+        }
+    }
+
+    /// A feed a contributor listed, for an app that names none and that Homebrew can't match with
+    /// confidence. Burnish reads it to spot updates; the install stays with the person.
+    static func askCommunityFeed(
+        _ findings: inout SourceFindings, app: InstalledApp, feed: CommunityFeed?, client: HTTPClient,
+        system: SystemVersion, platform: Platform, github: GitHubSource
+    ) async {
+        guard let feed, app.sparkleFeedURL == nil, app.electronUpdateConfig == nil, !findings.tauriSucceeded else { return }
+        if let url = feed.sparkle {
+            do {
+                var result = try await SparkleSource(client: client, system: system, isARM: platform.isARM).check(feed: url)
+                result.release?.listedByCommunity = true
+                findings.sparkle = .found(result)
+            } catch {
+                findings.sparkle = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
+            }
+        } else if let parts = feed.github?.split(separator: "/"), parts.count == 2 {
+            let repo = GitHubRepository(owner: String(parts[0]), name: String(parts[1]))
+            do {
+                let latest = try await github.latestRelease(of: repo)
+                guard let version = latest.versionString else { return }
+                var release = Release(source: .github, version: VersionPair(short: version), basis: .shortVersion,
+                                      downloadPage: latest.page, releaseNotes: latest.body.map { ReleaseNotes(text: $0, format: .markdown) },
+                                      date: latest.publishedAt, needsManualInstall: true)
+                release.listedByCommunity = true
+                findings.community = .found(release)
+            } catch {
+                if error != .noRelease { findings.community = .failed(error.errorDescription ?? String(localized: "GitHub not reachable")) }
             }
         }
     }

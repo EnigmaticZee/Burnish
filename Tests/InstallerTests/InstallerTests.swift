@@ -859,3 +859,14 @@ actor Counter {
         #expect(try DownloadVerifier.sha256Hex(of: url) == "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824")
     }
 }
+
+@Suite struct CommunityFeedInstalls {
+    @Test func aReleaseFromACommunityListedFeedIsNeverInstalled() async throws {
+        let h = try Harness()
+        let app = try h.installed()
+        let data = try h.serveZip()
+        var release = try h.sparkleRelease(signing: data)
+        release.listedByCommunity = true
+        h.expectRefused(await h.install(app, release), .trustedOrigin)
+    }
+}

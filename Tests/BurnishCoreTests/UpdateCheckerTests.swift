@@ -147,3 +147,44 @@ final class Collected: @unchecked Sendable {
         #expect(await CommunityOverrides(client: client, store: StateStore(directory: dir)).load() == .none)
     }
 }
+
+@Suite struct CommunityFeeds {
+    @Test func readsSafeFeedsAndDropsTheRest() async {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("burnish-feeds-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let client = MockHTTPClient()
+        client.respond(to: CommunityOverrides.sourceURL.absoluteString, text: """
+        {"schema":1,"overrides":{},"feeds":{
+          "com.a.sparkle":{"sparkle":"https://a.example.com/appcast.xml"},
+          "com.b.github":{"github":"owner/repo"},
+          "com.c.http":{"sparkle":"http://insecure.example.com/appcast.xml"},
+          "com.d.bad":{"github":"not-a-repo"}}}
+        """)
+        let feeds = await CommunityOverrides(client: client, store: StateStore(directory: dir)).feeds()
+        #expect(Set(feeds.keys) == ["com.a.sparkle", "com.b.github"])
+    }
+
+    @Test func aListedFeedSpotsTheUpdateButLeavesTheInstallToYou() async throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("burnish-feeds-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let client = MockHTTPClient()
+        client.respond(to: CaskDataStore.sourceURL.absoluteString, text: "[]")
+        client.respond(to: "https://feeds.example.com/appcast.xml", text: """
+        <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel><item>
+        <sparkle:version>300</sparkle:version><sparkle:shortVersionString>3.0</sparkle:shortVersionString>
+        <enclosure url="https://feeds.example.com/Niche-3.0.zip" length="1" type="application/octet-stream"/>
+        </item></channel></rss>
+        """)
+        let platform = Platform(isARM: true, macOSMajor: 27)
+        let checker = UpdateChecker(client: client, caskStore: CaskDataStore(directory: dir, client: client, platform: platform),
+                                    system: SystemVersion("27.0"), platform: platform, storefront: nil)
+        let app = makeApp("Niche", "com.example.niche", "2.0", build: "200")
+        let feeds = ["com.example.niche": CommunityFeed(sparkle: URL(string: "https://feeds.example.com/appcast.xml"))]
+        let report = await checker.check([app], options: CheckOptions(communityFeeds: feeds))
+        let result = try #require(report.results.first)
+        #expect(result.status.candidate?.displayVersion == "3.0")
+        #expect(result.status.candidate?.release.listedByCommunity == true)
+        guard case .openDownloadPage = result.action(homebrew: .showOnly) else { Issue.record("must not install from a community feed"); return }
+        #expect(result.hallmarks(homebrew: .showOnly).first?.state == .notAvailable)
+    }
+}

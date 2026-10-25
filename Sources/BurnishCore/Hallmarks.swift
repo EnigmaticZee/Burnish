@@ -100,6 +100,10 @@ extension AppCheckResult {
                             detail: String(localized: "Burnish only installs downloads that arrive over HTTPS."))
         }
         let place = host.map { String(localized: "From \($0), over HTTPS.") } ?? ""
+        if release.listedByCommunity == true {
+            return Hallmark(kind: .source, state: .notAvailable, title: String(localized: "A feed listed by the community"),
+                            detail: String(localized: "Burnish reads it to spot updates and leaves the install to you."))
+        }
         switch release.source {
         case .sparkle, .electron, .tauri:
             return Hallmark(kind: .source, state: .confirmed, title: String(localized: "The developer's own update feed"), detail: place)

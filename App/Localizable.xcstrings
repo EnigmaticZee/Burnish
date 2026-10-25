@@ -174,6 +174,9 @@
     "3 days" : {
 
     },
+    "A feed listed by the community" : {
+
+    },
     "A file with the same name is already in the Trash" : {
 
     },
@@ -317,6 +320,9 @@
 
     },
     "Burnish only replaces apps signed by their developer, and this copy isn't" : {
+
+    },
+    "Burnish reads it to spot updates and leaves the install to you." : {
 
     },
     "Burnish updated itself to %@." : {
@@ -509,6 +515,9 @@
         }
       }
     },
+    "Found through a community-listed feed, so the install is yours to do" : {
+
+    },
     "From %@, over HTTPS." : {
 
     },
@@ -516,6 +525,9 @@
 
     },
     "GitHub" : {
+
+    },
+    "GitHub not reachable" : {
 
     },
     "GitHub not reachable (%@)" : {

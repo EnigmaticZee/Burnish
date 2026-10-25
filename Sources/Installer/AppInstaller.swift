@@ -105,7 +105,7 @@ public struct AppInstaller: Sendable {
         }
         guard let url = release.downloadURL else { return refuse(.manualOnly, String(localized: "The source doesn't offer a download")) }
         // Rule 1: only the app's own feed or Homebrew's data, and only over HTTPS.
-        guard url.scheme?.lowercased() == "https", url.host?.isEmpty == false,
+        guard release.listedByCommunity != true, url.scheme?.lowercased() == "https", url.host?.isEmpty == false,
               [.sparkle, .homebrew, .electron, .github].contains(release.source)
         else { return refuse(.trustedOrigin, String(localized: "The download doesn't come from a trusted HTTPS source")) }
         // Rule 2: an app that pins an EdDSA key only takes signed updates.

@@ -17,6 +17,8 @@ public struct SourceFindings: Sendable {
     public var sparkle: Outcome<SparkleSource.Result> = .notApplicable
     public var electron: Outcome<Release> = .notApplicable
     public var tauri: Outcome<Release> = .notApplicable
+    /// A GitHub repository a contributor listed for the app.
+    public var community: Outcome<Release> = .notApplicable
     public var match: CaskMatch?
     public var cask: Cask?
     public var github: Release?
@@ -164,6 +166,17 @@ public enum StatusDecider {
             } else {
                 return result
             }
+        case .failed(let why):
+            notes.append(why)
+        case .notApplicable:
+            break
+        }
+
+        // 3c. A feed listed in the community file.
+        switch findings.community {
+        case .found(let release):
+            let result = verdict(app, release: release, notes: notes, system: system)
+            if case .cantCheck = result.status {} else { return result }
         case .failed(let why):
             notes.append(why)
         case .notApplicable:
