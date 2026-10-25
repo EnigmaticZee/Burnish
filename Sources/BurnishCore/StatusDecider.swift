@@ -21,6 +21,8 @@ public struct SourceFindings: Sendable {
     public var github: Release?
     /// Why GitHub couldn't be asked (rate limit, network). Homebrew's data still decides.
     public var githubFailure: String?
+    /// The developer's own updater for this app, when it's installed.
+    public var vendorUpdater: VendorUpdater?
 
     public init() {}
 }
@@ -48,6 +50,7 @@ public enum StatusDecider {
             if cask.deprecated || cask.disabled { result.notes.append(String(localized: "No longer maintained in Homebrew")) }
         }
         result.match = findings.match
+        result.vendorUpdater = findings.vendorUpdater
 
         // Ignore rules wrap whatever was found, so the detail pane can still show it.
         if options.ignoreRules.ignoresApp(app.bundleID) {
@@ -129,7 +132,9 @@ public enum StatusDecider {
 
         // 4. Homebrew's cask data, matched by confidence.
         guard let match = findings.match, let cask = findings.cask else {
-            let reason = notes.first ?? String(localized: "No update source found")
+            let reason = notes.first
+                ?? findings.vendorUpdater.map { String(localized: "Updates come through \($0.name)") }
+                ?? String(localized: "No update source found")
             return AppCheckResult(app: app, status: .cantCheck(reason: reason), notes: Array(notes.dropFirst()))
         }
         guard match.canRaiseAlert else {

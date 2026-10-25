@@ -16,6 +16,8 @@ public enum UpdateAction: Sendable, Equatable {
     case openDownloadPage(URL?, reason: String)
     /// `brew upgrade --cask`, when turned on in Settings.
     case brewUpgrade(token: String)
+    /// The developer's own updater (Microsoft AutoUpdate, Creative Cloud, Setapp, Toolbox).
+    case openUpdater(VendorUpdater)
     /// Shown, but left to `brew upgrade --cask`.
     case managedByHomebrew(token: String)
     case none
@@ -26,6 +28,7 @@ public enum UpdateAction: Sendable, Equatable {
         case .openAppStore: String(localized: "App Store")
         case .openDownloadPage: String(localized: "Download")
         case .managedByHomebrew: String(localized: "Homebrew")
+        case .openUpdater(let updater): updater.shortName
         case .none: ""
         }
     }
@@ -47,6 +50,7 @@ extension AppCheckResult {
         if let token = app.caskroomToken {
             return homebrew == .upgradeWithBrew ? .brewUpgrade(token: token) : .managedByHomebrew(token: token)
         }
+        if let vendorUpdater { return .openUpdater(vendorUpdater) }
         if !app.signature.canBeAutoUpdated {
             return .openDownloadPage(downloadPage, reason: String(localized: "Burnish only replaces apps signed by their developer"))
         }

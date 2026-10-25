@@ -255,7 +255,7 @@ struct AppStoreBanner: View {
 }
 
 enum UpdateAllHelp {
-    static let text = String(localized: "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store for App Store apps")
+    static let text = String(localized: "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store and developers' own updaters for the rest")
 }
 
 enum Permissions {

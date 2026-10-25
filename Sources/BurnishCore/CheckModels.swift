@@ -115,6 +115,8 @@ public struct AppCheckResult: Sendable, Hashable, Codable, Identifiable {
     /// Short, plain notes for the detail pane ("Feed not reachable; used Homebrew's data").
     public var notes: [String]
     public var checkedAt: Date
+    /// The developer's own updater, which Update opens instead of installing.
+    public var vendorUpdater: VendorUpdater?
 
     public init(app: InstalledApp, status: CheckStatus, decidedBy: SourceKind? = nil, match: CaskMatch? = nil,
                 cask: CaskSummary? = nil, notes: [String] = [], checkedAt: Date = Date()) {

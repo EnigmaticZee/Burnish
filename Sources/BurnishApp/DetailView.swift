@@ -71,6 +71,9 @@ struct DetailView: View {
             }
             Divider()
             Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([result.app.url]) }
+            if let updater = result.vendorUpdater {
+                Button("Open \(updater.name)") { NSWorkspace.shared.open(updater.url) }
+            }
             if let homepage = result.homepage {
                 Button("Open Developer's Site") { NSWorkspace.shared.open(homepage) }
             }

@@ -93,6 +93,7 @@ public actor UpdateChecker {
                         }
                     } else if !app.isApple {
                         await Self.gather(&findings, app: app, client: client, system: system, platform: platform, matcher: matcher, github: github)
+                        findings.vendorUpdater = VendorUpdaters.updater(for: app)
                     }
                     let result = StatusDecider.decide(app, findings: findings, options: decision, system: system)
                     await onResult(result)

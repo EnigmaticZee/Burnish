@@ -41,6 +41,8 @@ Most Macs collect apps from everywhere: direct downloads, the App Store, Homebre
 
 Homebrew's data has no bundle IDs to join on, so Burnish scores every candidate. A match only raises an alert when a bundle ID and the app's name agree, or the file name and display name both match. When several versions of one app share a bundle ID (stable, beta, ESR), the one whose version line fits the installed copy wins, and a tie means Burnish asks you.
 
+Some apps are meant to be updated by their developer's own tool: Microsoft AutoUpdate for Office and Teams, Adobe Creative Cloud, Setapp for apps installed through it, JetBrains Toolbox for its IDEs. When that tool is on your Mac, Burnish's **Update** opens it instead of downloading anything, and **Update All** opens each one once.
+
 Apps you installed with `brew install --cask` show as **Managed by Homebrew**; Burnish leaves them to `brew upgrade` unless you turn on Homebrew updates in Settings, so the two never fight.
 
 ## Eight promises

@@ -124,7 +124,18 @@ struct BurnishCLI {
             }
             let action = result.action(homebrew: settings.homebrewHandling)
             guard action == .install else {
-                print("\(result.app.name) \(candidate.displayVersion) is available, but Burnish won't install it itself: \(action)")
+                switch action {
+                case .openUpdater(let updater):
+                    print("\(result.app.name) \(candidate.displayVersion) is available through \(updater.name): \(updater.path)")
+                case .openAppStore:
+                    print("\(result.app.name) \(candidate.displayVersion) is available in the App Store.")
+                case .openDownloadPage(let page, let reason):
+                    print("\(result.app.name) \(candidate.displayVersion) is available. \(reason): \(page?.absoluteString ?? "no download page")")
+                case .brewUpgrade(let token), .managedByHomebrew(let token):
+                    print("\(result.app.name) \(candidate.displayVersion) is available: brew upgrade --cask \(token)")
+                default:
+                    print("\(result.app.name) \(candidate.displayVersion) is available, but Burnish won't install it itself.")
+                }
                 return
             }
             print("Updating \(result.app.name) \(result.app.version.display) → \(candidate.displayVersion) from \(candidate.source.label)")

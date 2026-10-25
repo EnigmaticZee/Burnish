@@ -469,7 +469,7 @@
     "Installed by Homebrew" : {
 
     },
-    "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store for App Store apps" : {
+    "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store and developers' own updaters for the rest" : {
 
     },
     "Is %@ the app Homebrew calls “%@” (%@)?" : {
@@ -588,6 +588,12 @@
 
     },
     "Only when I ask" : {
+
+    },
+    "Open %@" : {
+
+    },
+    "Open %@, which keeps this app up to date" : {
 
     },
     "Open App Store" : {
@@ -956,6 +962,9 @@
 
     },
     "Updates" : {
+
+    },
+    "Updates come through %@" : {
 
     },
     "Use This App" : {

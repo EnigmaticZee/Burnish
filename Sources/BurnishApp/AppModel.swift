@@ -220,7 +220,7 @@ final class AppModel {
     }
 
     /// Update All has something to do: an install Burnish can run, or App Store updates to hand over.
-    var canUpdateAll: Bool { isOnline && (!updateAllCandidates.isEmpty || !appStoreUpdates.isEmpty) }
+    var canUpdateAll: Bool { isOnline && (!updateAllCandidates.isEmpty || !appStoreUpdates.isEmpty || !vendorUpdates.isEmpty) }
 
     func isInstalling(_ result: AppCheckResult) -> Bool {
         if case .running = installStates[result.id] { return true }
@@ -246,6 +246,8 @@ final class AppModel {
             if let url { NSWorkspace.shared.open(url) }
         case .openDownloadPage(let url, _):
             if let url { NSWorkspace.shared.open(url) }
+        case .openUpdater(let updater):
+            NSWorkspace.shared.open(updater.url)
         case .brewUpgrade(let token):
             installStates[result.id] = .running(.replacing)
             do {
@@ -261,10 +263,21 @@ final class AppModel {
         }
     }
 
-    /// Installs everything Burnish can, then sends any App Store updates to the App Store.
+    /// Installs everything Burnish can, then hands the rest to the App Store and to each
+    /// developer's own updater, opening each one once.
     func updateAll() async {
         for result in updateAllCandidates { await update(result) }
         if !appStoreUpdates.isEmpty { openAppStoreUpdates() }
+        for updater in vendorUpdates { NSWorkspace.shared.open(updater.url) }
+    }
+
+    /// The vendor updaters with something waiting, each once.
+    var vendorUpdates: [VendorUpdater] {
+        var seen = Set<String>()
+        return outdated.compactMap { result -> VendorUpdater? in
+            guard case let .openUpdater(updater) = action(for: result), seen.insert(updater.path).inserted else { return nil }
+            return updater
+        }
     }
 
     /// One App Store update opens its own page; several open the Updates page, where Apple's Update
