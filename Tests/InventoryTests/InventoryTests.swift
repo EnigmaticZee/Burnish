@@ -218,3 +218,42 @@ func makeApp(_ name: String, in dir: URL, plist: [String: Any], receipt: Bool = 
         #expect(!CodeSignature(kind: .appStore, teamID: "59GAB85EFG").canBeAutoUpdated)
     }
 }
+
+@Suite struct TauriDetection {
+    func binary(_ parts: [String]) -> Data {
+        var data = Data(repeating: 0, count: 64)
+        for part in parts { data.append(Data(part.utf8)); data.append(0) }
+        return data
+    }
+
+    @Test func findsTheUpdaterEndpointsAndNothingElse() {
+        let data = binary([
+            "https://docs.rs/serde/latest/serde/", "tauri", "tauri://localhost",
+            "https://releases.example.com/{{target}}/{{arch}}/{{current_version}}",
+            "https://cdn.example.com/app/latest.json", "https://example.com/privacy",
+        ])
+        #expect(TauriDetector.endpoints(in: data) == [
+            "https://releases.example.com/{{target}}/{{arch}}/{{current_version}}",
+            "https://cdn.example.com/app/latest.json",
+        ])
+    }
+
+    @Test func onlyReadsBinariesThatLinkWebKitAndMentionTauri() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("burnish-tauri-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let endpoint = "https://releases.example.com/{{target}}/{{arch}}/{{current_version}}"
+
+        let tauriApp = dir.appendingPathComponent("tauri")
+        try binary(["/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit", "tauri", endpoint]).write(to: tauriApp)
+        #expect(TauriDetector.updateEndpoints(executable: tauriApp) == [endpoint])
+
+        let noWebKit = dir.appendingPathComponent("plain")
+        try binary(["tauri", endpoint]).write(to: noWebKit)
+        #expect(TauriDetector.updateEndpoints(executable: noWebKit).isEmpty, "no WebKit, no full read")
+
+        let webKitOnly = dir.appendingPathComponent("webkit")
+        try binary(["/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit", endpoint]).write(to: webKitOnly)
+        #expect(TauriDetector.updateEndpoints(executable: webKitOnly).isEmpty, "a WebKit app that isn't Tauri")
+    }
+}

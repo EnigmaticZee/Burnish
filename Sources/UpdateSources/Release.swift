@@ -6,6 +6,7 @@ public enum SourceKind: String, Sendable, Codable, CaseIterable, Comparable {
     case appStore
     case sparkle
     case electron
+    case tauri
     case homebrew
     case github
 
@@ -14,6 +15,7 @@ public enum SourceKind: String, Sendable, Codable, CaseIterable, Comparable {
         case .appStore: String(localized: "App Store")
         case .sparkle: String(localized: "Developer feed")
         case .electron: String(localized: "Developer feed")
+        case .tauri: String(localized: "Developer feed")
         case .homebrew: String(localized: "Homebrew")
         case .github: String(localized: "GitHub")
         }

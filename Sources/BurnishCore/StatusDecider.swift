@@ -16,6 +16,7 @@ public struct SourceFindings: Sendable {
     public var appStore: Outcome<Release?> = .notApplicable
     public var sparkle: Outcome<SparkleSource.Result> = .notApplicable
     public var electron: Outcome<Release> = .notApplicable
+    public var tauri: Outcome<Release> = .notApplicable
     public var match: CaskMatch?
     public var cask: Cask?
     public var github: Release?
@@ -117,6 +118,21 @@ public enum StatusDecider {
 
         // 3. electron-builder feed.
         switch findings.electron {
+        case .found(let release):
+            let result = verdict(app, release: release, notes: notes, system: system)
+            if case let .cantCheck(reason) = result.status {
+                notes.append(String(localized: "Developer feed: \(reason)"))
+            } else {
+                return result
+            }
+        case .failed(let why):
+            notes.append(why)
+        case .notApplicable:
+            break
+        }
+
+        // 3b. Tauri updater endpoints, read from the app's executable.
+        switch findings.tauri {
         case .found(let release):
             let result = verdict(app, release: release, notes: notes, system: system)
             if case let .cantCheck(reason) = result.status {

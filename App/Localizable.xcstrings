@@ -590,7 +590,13 @@
     "Only when I ask" : {
 
     },
+    "Open" : {
+
+    },
     "Open %@" : {
+
+    },
+    "Open %@ to install the update; it checks the update's signature itself" : {
 
     },
     "Open %@, which keeps this app up to date" : {

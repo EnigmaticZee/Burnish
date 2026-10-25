@@ -22,6 +22,8 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
     public var caskroomToken: String?
     /// `Contents/Resources/app-update.yml` for apps built with electron-builder.
     public let electronUpdateConfig: URL?
+    /// Updater endpoints compiled into a Tauri app's executable.
+    public let tauriUpdateEndpoints: [String]?
     public let minimumSystemVersion: String?
     public let modificationDate: Date?
 
@@ -29,7 +31,8 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
         bundleID: String, name: String, bundleNames: [String] = [], url: URL, version: VersionPair,
         signature: CodeSignature = .unsigned, isAppStore: Bool = false, isWrappedIOSApp: Bool = false,
         sparkleFeedURL: URL? = nil, sparklePublicEDKey: String? = nil, caskroomToken: String? = nil,
-        electronUpdateConfig: URL? = nil, minimumSystemVersion: String? = nil, modificationDate: Date? = nil
+        electronUpdateConfig: URL? = nil, tauriUpdateEndpoints: [String]? = nil, minimumSystemVersion: String? = nil,
+        modificationDate: Date? = nil
     ) {
         self.bundleID = bundleID
         self.name = name
@@ -43,6 +46,7 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
         self.sparklePublicEDKey = sparklePublicEDKey
         self.caskroomToken = caskroomToken
         self.electronUpdateConfig = electronUpdateConfig
+        self.tauriUpdateEndpoints = tauriUpdateEndpoints
         self.minimumSystemVersion = minimumSystemVersion
         self.modificationDate = modificationDate
     }

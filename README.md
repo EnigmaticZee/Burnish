@@ -36,6 +36,7 @@ Most Macs collect apps from everywhere: direct downloads, the App Store, Homebre
 | Mac App Store | The App Store receipt inside the app | Apple's public lookup, batched by bundle ID |
 | Sparkle | `SUFeedURL` in the app's Info.plist | The developer's appcast |
 | Electron | `app-update.yml` inside the app | The developer's `latest-mac.yml` |
+| Tauri | The updater address compiled into the app | The developer's update server; the app installs it, checking its own signature |
 | Homebrew | Matched to Homebrew's cask list by bundle ID, file name and name | `formulae.brew.sh` |
 | GitHub Releases | A Homebrew download hosted on GitHub | The newest stable release |
 

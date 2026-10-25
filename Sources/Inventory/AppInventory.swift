@@ -86,6 +86,14 @@ public struct AppInventory: Sendable {
         let receipt = contents.appendingPathComponent("_MASReceipt/receipt")
         let electron = contents.appendingPathComponent("Resources/app-update.yml")
         let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+        let isAppStore = isWrapped || fm.fileExists(atPath: receipt.path)
+        let hasElectronFeed = fm.fileExists(atPath: electron.path)
+        // Only apps with no other update feed are worth reading for a Tauri updater.
+        var tauri: [String]?
+        if !isAppStore, feed == nil, !hasElectronFeed, let executable = (plist["CFBundleExecutable"] as? String)?.nonEmpty {
+            let endpoints = TauriDetector.updateEndpoints(executable: contents.appendingPathComponent("MacOS/\(executable)"))
+            tauri = endpoints.isEmpty ? nil : endpoints
+        }
 
         return InstalledApp(
             bundleID: bundleID,
@@ -94,11 +102,12 @@ public struct AppInventory: Sendable {
             url: url,
             version: VersionPair(short: short, build: build),
             signature: signatureReader.signature(of: url),
-            isAppStore: isWrapped || fm.fileExists(atPath: receipt.path),
+            isAppStore: isAppStore,
             isWrappedIOSApp: isWrapped,
             sparkleFeedURL: feed,
             sparklePublicEDKey: (plist["SUPublicEDKey"] as? String)?.nonEmpty,
-            electronUpdateConfig: fm.fileExists(atPath: electron.path) ? electron : nil,
+            electronUpdateConfig: hasElectronFeed ? electron : nil,
+            tauriUpdateEndpoints: tauri,
             minimumSystemVersion: (plist["LSMinimumSystemVersion"] as? String)?.nonEmpty,
             modificationDate: modified
         )

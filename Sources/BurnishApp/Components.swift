@@ -146,6 +146,8 @@ struct UpdateControl: View {
         switch action {
         case .install: String(localized: "Download, verify and install \(result.status.candidate?.displayVersion ?? "")")
         case .openAppStore: String(localized: "Open in the App Store")
+        case .openUpdater(let updater) where updater.path == result.app.url.path:
+            String(localized: "Open \(updater.name) to install the update; it checks the update's signature itself")
         case .openUpdater(let updater): String(localized: "Open \(updater.name), which keeps this app up to date")
         case .openDownloadPage(_, let reason): reason
         case .brewUpgrade(let token): String(localized: "Run brew upgrade --cask \(token)")

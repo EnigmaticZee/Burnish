@@ -236,3 +236,22 @@ func findings(cask: Cask, for app: InstalledApp) -> SourceFindings {
         guard case .openDownloadPage = result.action(homebrew: .showOnly) else { Issue.record("expected download page"); return }
     }
 }
+
+@Suite struct TauriDecisions {
+    @Test func aTauriFeedDecidesBeforeHomebrew() {
+        let app = makeApp("Notebook", "com.example.notebook", "1.4.0")
+        var findings = SourceFindings()
+        findings.tauri = .found(Release(source: .tauri, version: VersionPair(short: "1.5.0"), basis: .shortVersion, needsManualInstall: true))
+        let result = StatusDecider.decide(app, findings: findings, options: DecisionOptions(), system: SystemVersion("27.0"))
+        #expect(result.decidedBy == .tauri)
+        #expect(result.status.candidate?.displayVersion == "1.5.0")
+    }
+
+    @Test func aFailedTauriFeedFallsBackAndSaysSo() {
+        let app = makeApp("Notebook", "com.example.notebook", "1.4.0")
+        var findings = SourceFindings()
+        findings.tauri = .failed("Feed not reachable (Timed out)")
+        let result = StatusDecider.decide(app, findings: findings, options: DecisionOptions(), system: SystemVersion("27.0"))
+        #expect(result.status == .cantCheck(reason: "Feed not reachable (Timed out)"))
+    }
+}

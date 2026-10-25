@@ -94,6 +94,10 @@ public actor UpdateChecker {
                     } else if !app.isApple {
                         await Self.gather(&findings, app: app, client: client, system: system, platform: platform, matcher: matcher, github: github)
                         findings.vendorUpdater = VendorUpdaters.updater(for: app)
+                        // A Tauri app installs its own signed updates, so Update opens the app.
+                        if findings.tauriSucceeded, findings.vendorUpdater == nil {
+                            findings.vendorUpdater = VendorUpdater(name: app.name, shortName: String(localized: "Open"), path: app.url.path)
+                        }
                     }
                     let result = StatusDecider.decide(app, findings: findings, options: decision, system: system)
                     await onResult(result)
@@ -131,11 +135,18 @@ public actor UpdateChecker {
                 findings.electron = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }
         }
+        if let endpoints = app.tauriUpdateEndpoints, !endpoints.isEmpty, !findings.sparkleSucceeded, !findings.electronSucceeded {
+            do {
+                findings.tauri = .found(try await TauriSource(client: client, isARM: platform.isARM).check(endpoints: endpoints, installed: app.version))
+            } catch {
+                findings.tauri = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
+            }
+        }
         guard let matcher, let match = matcher.match(app) else { return }
         findings.match = match
         findings.cask = matcher.catalog.cask(match.token)
         // GitHub only matters when the developer feeds didn't already decide.
-        if match.canRaiseAlert, !findings.sparkleSucceeded, !findings.electronSucceeded,
+        if match.canRaiseAlert, !findings.sparkleSucceeded, !findings.electronSucceeded, !findings.tauriSucceeded,
            let cask = findings.cask, let repo = HomebrewSource.githubRepository(for: cask) {
             do {
                 findings.github = GitHubSource.release(try await github.latestRelease(of: repo), forCask: cask)
@@ -155,6 +166,11 @@ extension SourceFindings {
 
     var electronSucceeded: Bool {
         if case .found = electron { return true }
+        return false
+    }
+
+    var tauriSucceeded: Bool {
+        if case .found = tauri { return true }
         return false
     }
 }
