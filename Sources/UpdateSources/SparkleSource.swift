@@ -58,7 +58,8 @@ public struct SparkleSource: Sendable {
         }
     }
 
-    public func check(feed: URL, preferences: Preferences = Preferences()) async throws(Failure) -> Result {
+    /// `installed` lets the result list the versions in between, for "what you missed".
+    public func check(feed: URL, preferences: Preferences = Preferences(), installed: VersionPair? = nil) async throws(Failure) -> Result {
         guard feed.scheme?.lowercased() == "https" else { throw .notHTTPS }
         let response: HTTPResponse
         do {
@@ -68,13 +69,14 @@ public struct SparkleSource: Sendable {
         }
         guard response.isSuccess else { throw .unreachable("HTTP \(response.status)") }
         guard let items = try? AppcastParser.parse(response.body) else { throw .unreadable }
-        return try select(from: items, preferences: preferences)
+        return try select(from: items, preferences: preferences, installed: installed)
     }
 
-    func select(from items: [AppcastItem], preferences: Preferences = Preferences()) throws(Failure) -> Result {
+    func select(from items: [AppcastItem], preferences: Preferences = Preferences(), installed: VersionPair? = nil) throws(Failure) -> Result {
         var best: (AppcastItem, Version)?
         var newestIncompatible: (AppcastItem, Version)?
         var newestAboveCap: (AppcastItem, Version)?
+        var usable: [(AppcastItem, Version)] = []
 
         for item in items {
             // Items on a named channel (beta) are opt-in, inside the app or through a Burnish rule.
@@ -91,6 +93,7 @@ public struct SparkleSource: Sendable {
                 && system.satisfies(maximum: item.maximumSystemVersion)
                 && (isARM || !item.hardwareRequirements.contains("arm64"))
             if runsHere {
+                usable.append((item, version))
                 if best == nil || version > best!.1 { best = (item, version) }
             } else if newestIncompatible == nil || version > newestIncompatible!.1 {
                 newestIncompatible = (item, version)
@@ -110,18 +113,35 @@ public struct SparkleSource: Sendable {
             if note != nil { return Result(release: nil, newerButIncompatible: note) }
             throw .noUsableItem
         }
-        return Result(release: release(from: item), newerButIncompatible: note)
+        var chosen = release(from: item)
+        if let installed, let bestVersion = best?.1 {
+            let missed = usable
+                .filter { $0.1 < bestVersion }
+                .filter { candidate in
+                    let pair = VersionPair(short: candidate.0.effectiveShortVersion, build: candidate.0.effectiveVersion)
+                    if case .newer = UpdateComparator.compare(installed: installed, available: pair, basis: .bundleVersion) { return true }
+                    return false
+                }
+                .sorted { $0.1 > $1.1 }
+                .prefix(10)
+                .map { MissedRelease(version: $0.0.effectiveShortVersion ?? $0.0.effectiveVersion ?? "", date: $0.0.pubDate, notes: notes(of: $0.0)) }
+            chosen.missed = missed.isEmpty ? nil : Array(missed)
+        }
+        return Result(release: chosen, newerButIncompatible: note)
+    }
+
+    func notes(of item: AppcastItem) -> ReleaseNotes? {
+        if let html = AppcastItem.localized(item.descriptions, language: language) {
+            return ReleaseNotes(text: html, format: .html, link: AppcastItem.localized(item.releaseNotesLinks, language: language))
+        }
+        if let link = AppcastItem.localized(item.releaseNotesLinks, language: language) ?? item.fullReleaseNotesLink {
+            return ReleaseNotes(text: nil, format: .html, link: link)
+        }
+        return nil
     }
 
     func release(from item: AppcastItem) -> Release {
-        let notes: ReleaseNotes?
-        if let html = AppcastItem.localized(item.descriptions, language: language) {
-            notes = ReleaseNotes(text: html, format: .html, link: AppcastItem.localized(item.releaseNotesLinks, language: language))
-        } else if let link = AppcastItem.localized(item.releaseNotesLinks, language: language) ?? item.fullReleaseNotesLink {
-            notes = ReleaseNotes(text: nil, format: .html, link: link)
-        } else {
-            notes = nil
-        }
+        let notes = notes(of: item)
         let page = item.link.flatMap { ["http", "https"].contains($0.scheme?.lowercased()) ? $0 : nil }
         return Release(
             source: .sparkle,

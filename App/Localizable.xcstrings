@@ -1,72 +1,58 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "%@ and %lld more" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ and %2$lld more"
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ and %lld more": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ and %2$lld more"
           }
         }
       }
     },
-    "%@ didn't quit" : {
-
-    },
-    "%@ doesn't pin one, so the checks below carry the weight." : {
-
-    },
-    "%@ expects signed updates and this one isn't, so Burnish will refuse it." : {
-
-    },
-    "%@ goes to the Trash, and Burnish skips that version until a newer one comes out." : {
-
-    },
-    "%@ has moved or changed since Burnish checked it. Check again." : {
-
-    },
-    "%@ · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@"
+    "%@ didn't quit": {},
+    "%@ doesn't pin one, so the checks below carry the weight.": {},
+    "%@ expects signed updates and this one isn't, so Burnish will refuse it.": {},
+    "%@ goes to the Trash, and Burnish skips that version until a newer one comes out.": {},
+    "%@ has moved or changed since Burnish checked it. Check again.": {},
+    "%@ · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@"
           }
         }
       }
     },
-    "%@ · %@ · no longer maintained" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@ · no longer maintained"
+    "%@ · %@ · no longer maintained": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@ · no longer maintained"
           }
         }
       }
     },
-    "%@ — no Team ID, so Burnish won't replace it" : {
-
-    },
-    "%@'s signature changed since Burnish checked it. Check again." : {
-
-    },
-    "%lld app updates" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld app update"
+    "%@ — no Team ID, so Burnish won't replace it": {},
+    "%@'s signature changed since Burnish checked it. Check again.": {},
+    "%lld app updates": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld app update"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld app updates"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld app updates"
                 }
               }
             }
@@ -74,21 +60,21 @@
         }
       }
     },
-    "%lld apps have updates." : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld app has an update."
+    "%lld apps have updates.": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld app has an update."
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld apps have updates."
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld apps have updates."
                 }
               }
             }
@@ -96,24 +82,22 @@
         }
       }
     },
-    "%lld apps only run on Intel chips, through Rosetta, which Apple is retiring for most apps after macOS 27." : {
-
-    },
-    "%lld more waiting" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld more waiting"
+    "%lld apps only run on Intel chips, through Rosetta, which Apple is retiring for most apps after macOS 27.": {},
+    "%lld improvements": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld improvement"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld more waiting"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld improvements"
                 }
               }
             }
@@ -121,21 +105,21 @@
         }
       }
     },
-    "%lld updates" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld update"
+    "%lld more waiting": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more waiting"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld updates"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more waiting"
                 }
               }
             }
@@ -143,21 +127,21 @@
         }
       }
     },
-    "%lld updates are waiting in the App Store." : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld update is waiting in the App Store."
+    "%lld security fixes": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld security fix"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld updates are waiting in the App Store."
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld security fixes"
                 }
               }
             }
@@ -165,187 +149,21 @@
         }
       }
     },
-    "1 day" : {
-
-    },
-    "1 week" : {
-
-    },
-    "3 days" : {
-
-    },
-    "A feed listed by the community" : {
-
-    },
-    "A file with the same name is already in the Trash" : {
-
-    },
-    "A major upgrade: %@" : {
-
-    },
-    "A security update: %@" : {
-
-    },
-    "A way back" : {
-
-    },
-    "Accepted by Gatekeeper" : {
-
-    },
-    "All set" : {
-
-    },
-    "Allow Burnish to update apps" : {
-
-    },
-    "Also check apps in ~/Applications" : {
-
-    },
-    "App Management Settings…" : {
-
-    },
-    "App Store" : {
-
-    },
-    "App Store apps update in the App Store" : {
-
-    },
-    "App Store checks are turned off in Settings" : {
-
-    },
-    "App Store lookup failed: %@" : {
-
-    },
-    "App Store not checked" : {
-
-    },
-    "App Store not reachable" : {
-
-    },
-    "Apple" : {
-
-    },
-    "Apple delivers, checks and installs App Store updates." : {
-
-    },
-    "Apple silicon" : {
-
-    },
-    "Apple silicon and Intel" : {
-
-    },
-    "Apple's App Store lookup, with your App Store apps' bundle IDs" : {
-
-    },
-    "Apple's public lookup." : {
-
-    },
-    "Apps" : {
-
-    },
-    "Apps Burnish can't find an update source for show here, with the reason." : {
-
-    },
-    "Apps and versions you ignore show here." : {
-
-    },
-    "Apps installed with Homebrew" : {
-
-    },
-    "Apps with no update waiting show here." : {
-
-    },
-    "At most one notification a day." : {
-
-    },
-    "Automatic" : {
-
-    },
-    "Automatic updates" : {
-
-    },
-    "Automatic updates are off" : {
-
-    },
-    "Build numbers don't line up (installed %@, feed %@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Build numbers don't line up (installed %1$@, feed %2$@)"
-          }
-        }
-      }
-    },
-    "Burnish" : {
-
-    },
-    "Burnish can find updates without it. It never force-quits an app, always keeps the old version in the Trash, and only installs updates signed by the same developer as the copy you have." : {
-
-    },
-    "Burnish can't open this kind of download" : {
-
-    },
-    "Burnish doesn't install this one itself" : {
-
-    },
-    "Burnish hasn't checked yet." : {
-
-    },
-    "Burnish keeps your apps up to date" : {
-
-    },
-    "Burnish lives in the menu bar and checks once a day." : {
-
-    },
-    "Burnish needs App Management to replace apps." : {
-
-    },
-    "Burnish needs an administrator to update %@." : {
-
-    },
-    "Burnish needs the App Management permission to replace apps. Turn it on in System Settings → Privacy & Security → App Management." : {
-
-    },
-    "Burnish never installs an older version." : {
-
-    },
-    "Burnish only alerts you about updates once it's sure which app this is." : {
-
-    },
-    "Burnish only installs downloads that arrive over HTTPS." : {
-
-    },
-    "Burnish only replaces apps signed by their developer" : {
-
-    },
-    "Burnish only replaces apps signed by their developer, and this copy isn't" : {
-
-    },
-    "Burnish reads it to spot updates and leaves the install to you." : {
-
-    },
-    "Burnish updated itself to %@." : {
-
-    },
-    "Burnish's own update feed, about once a day" : {
-
-    },
-    "Burnish, %lld updates" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Burnish, %lld update"
+    "%lld shiny new things": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld shiny new thing"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Burnish, %lld updates"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld shiny new things"
                 }
               }
             }
@@ -353,895 +171,21 @@
         }
       }
     },
-    "By default Burnish shows their status and leaves updating to `brew upgrade --cask`, so the two never fight." : {
-
-    },
-    "Cached cask list is unreadable" : {
-
-    },
-    "Can't check" : {
-
-    },
-    "Can't check: %@" : {
-
-    },
-    "Can't compare: Homebrew lists this app's version as \"latest\"" : {
-
-    },
-    "Cancel" : {
-
-    },
-    "Cancel Update" : {
-
-    },
-    "Check Now" : {
-
-    },
-    "Check for Burnish Updates…" : {
-
-    },
-    "Check for updates" : {
-
-    },
-    "Checked %@" : {
-
-    },
-    "Checked %@." : {
-
-    },
-    "Checked %lld of %lld apps" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Checked %1$lld of %2$lld apps"
-          }
-        }
-      }
-    },
-    "Checked by whoever installs it" : {
-
-    },
-    "Checked during the install" : {
-
-    },
-    "Checked: %@." : {
-
-    },
-    "Checking your apps" : {
-
-    },
-    "Checking…" : {
-
-    },
-    "Choose a Different Homebrew App…" : {
-
-    },
-    "Confirmed" : {
-
-    },
-    "Continue" : {
-
-    },
-    "Couldn't change Open Burnish at login: %@" : {
-
-    },
-    "Date" : {
-
-    },
-    "Developer ID %@" : {
-
-    },
-    "Developer feed" : {
-
-    },
-    "Developer feed: %@" : {
-
-    },
-    "Development certificate (not distributed)" : {
-
-    },
-    "Didn't install %@: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Didn't install %1$@: %2$@"
-          }
-        }
-      }
-    },
-    "Don't wait" : {
-
-    },
-    "Done" : {
-
-    },
-    "Done, relaunched" : {
-
-    },
-    "Download" : {
-
-    },
-    "Download Page" : {
-
-    },
-    "Download it from the developer" : {
-
-    },
-    "Download, verify and install %@" : {
-
-    },
-    "Downloading" : {
-
-    },
-    "Downloading %@" : {
-
-    },
-    "Downloading %lld%%" : {
-
-    },
-    "Downloads corrections from Burnish's GitHub repository once a day." : {
-
-    },
-    "Each app's own update feed, its release notes, and the download itself" : {
-
-    },
-    "Every app has a source" : {
-
-    },
-    "Everything's up to date" : {
-
-    },
-    "Everything's up to date." : {
-
-    },
-    "Feed not reachable" : {
-
-    },
-    "Feed not reachable (%@)" : {
-
-    },
-    "Follow Settings" : {
-
-    },
-    "Found %@ (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Found %1$@ (%2$@)"
-          }
-        }
-      }
-    },
-    "Found through a community-listed feed, so the install is yours to do" : {
-
-    },
-    "From %@, over HTTPS." : {
-
-    },
-    "Gatekeeper" : {
-
-    },
-    "GitHub" : {
-
-    },
-    "GitHub not reachable" : {
-
-    },
-    "GitHub not reachable (%@)" : {
-
-    },
-    "GitHub's hourly limit was reached; try again later" : {
-
-    },
-    "GitHub, for apps whose downloads live there, and for community match fixes" : {
-
-    },
-    "Hallmarks" : {
-
-    },
-    "Hide" : {
-
-    },
-    "History" : {
-
-    },
-    "Homebrew" : {
-
-    },
-    "Homebrew checks the download against its published checksum." : {
-
-    },
-    "Homebrew doesn't carry release notes." : {
-
-    },
-    "Homebrew isn't installed in the usual place" : {
-
-    },
-    "Homebrew match" : {
-
-    },
-    "Homebrew needs your password for this one. Run `brew upgrade --cask %@` in Terminal." : {
-
-    },
-    "Homebrew's app list couldn't be loaded" : {
-
-    },
-    "Homebrew's app list isn't available yet (%@)" : {
-
-    },
-    "Homebrew's app list, once a day" : {
-
-    },
-    "Homebrew's catalogue" : {
-
-    },
-    "How many apps have updates waiting, and which." : {
-
-    },
-    "Ignore App" : {
-
-    },
-    "Ignore This Version" : {
-
-    },
-    "Ignored" : {
-
-    },
-    "Ignoring version %@" : {
-
-    },
-    "Include beta releases" : {
-
-    },
-    "Install app updates automatically" : {
-
-    },
-    "Install automatically" : {
-
-    },
-    "Installed" : {
-
-    },
-    "Installed by %@" : {
-
-    },
-    "Installed by %@ itself" : {
-
-    },
-    "Installed by Homebrew" : {
-
-    },
-    "Installed by the App Store" : {
-
-    },
-    "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store and developers' own updaters for the rest" : {
-
-    },
-    "Installs on its own after the next check" : {
-
-    },
-    "Installs on its own from %@" : {
-
-    },
-    "Intel" : {
-
-    },
-    "Intel only, running through Rosetta, and there's no Apple silicon version yet." : {
-
-    },
-    "Intel only, running through Rosetta, which Apple is retiring for most apps after macOS 27." : {
-
-    },
-    "Intel only, running through Rosetta. An Apple silicon version is available." : {
-
-    },
-    "Intel only, through Rosetta" : {
-
-    },
-    "Is %@ the app Homebrew calls “%@” (%@)?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Is %1$@ the app Homebrew calls “%2$@” (%3$@)?"
-          }
-        }
-      }
-    },
-    "Is this Homebrew's %@?" : {
-
-    },
-    "It checks the apps in /Applications and ~/Applications against each app's own update feed, the App Store and Homebrew's public app list." : {
-
-    },
-    "It may be paid, so it's never part of Update All." : {
-
-    },
-    "It may have unsaved work. Save it and quit %@ yourself, then choose Try Again." : {
-
-    },
-    "Just tell me" : {
-
-    },
-    "Keep Burnish up to date automatically" : {
-
-    },
-    "Latest" : {
-
-    },
-    "Location" : {
-
-    },
-    "Look up App Store apps with Apple" : {
-
-    },
-    "Looking for updates" : {
-
-    },
-    "Mac App Store" : {
-
-    },
-    "Major upgrade, may be paid" : {
-
-    },
-    "Major upgrades may be paid, so they wait for you" : {
-
-    },
-    "Managed by Homebrew" : {
-
-    },
-    "Managed by Homebrew. Burnish leaves updates to `brew upgrade --cask %@` unless you turn that on in Settings." : {
-
-    },
-    "Managed by Homebrew: update it with brew upgrade" : {
-
-    },
-    "Matched by %@" : {
-
-    },
-    "Matches the published checksum" : {
-
-    },
-    "May be paid" : {
-
-    },
-    "Missing the developer's signature" : {
-
-    },
-    "More" : {
-
-    },
-    "Name" : {
-
-    },
-    "Needs confirmation" : {
-
-    },
-    "Newer than yours: %@" : {
-
-    },
-    "No" : {
-
-    },
-    "No App Selected" : {
-
-    },
-    "No account, no analytics, nothing about your apps leaves this Mac except what it takes to ask for updates:" : {
-
-    },
-    "No checksum published" : {
-
-    },
-    "No internet connection" : {
-
-    },
-    "No longer maintained in Homebrew" : {
-
-    },
-    "No update" : {
-
-    },
-    "No update signing key" : {
-
-    },
-    "No update source found" : {
-
-    },
-    "Not This App" : {
-
-    },
-    "Not an HTTPS address: %@" : {
-
-    },
-    "Not checked yet" : {
-
-    },
-    "Not found in the App Store for your region" : {
-
-    },
-    "Not offered by this source" : {
-
-    },
-    "Not over HTTPS" : {
-
-    },
-    "Not signed by a developer (Burnish won't replace it)" : {
-
-    },
-    "Nothing here yet" : {
-
-    },
-    "Nothing ignored" : {
-
-    },
-    "Nothing to confirm" : {
-
-    },
-    "Notify me when updates are found" : {
-
-    },
-    "Once a day" : {
-
-    },
-    "Once a week" : {
-
-    },
-    "Only apps that aren't open, never major upgrades, with every check. Security updates skip the wait, and each app can choose for itself in its rules." : {
-
-    },
-    "Only when I ask" : {
-
-    },
-    "Open" : {
-
-    },
-    "Open %@" : {
-
-    },
-    "Open %@ to install the update; it checks the update's signature itself" : {
-
-    },
-    "Open %@, which keeps this app up to date" : {
-
-    },
-    "Open App Store" : {
-
-    },
-    "Open Burnish" : {
-
-    },
-    "Open Burnish at login" : {
-
-    },
-    "Open Burnish to check your apps" : {
-
-    },
-    "Open Developer's Site" : {
-
-    },
-    "Open Settings" : {
-
-    },
-    "Open System Settings" : {
-
-    },
-    "Open in browser" : {
-
-    },
-    "Open in the App Store" : {
-
-    },
-    "Open the developer's site" : {
-
-    },
-    "Opened in Installer" : {
-
-    },
-    "Opened the %@ installer package in Installer" : {
-
-    },
-    "Other…" : {
-
-    },
-    "Privacy" : {
-
-    },
-    "Put Back" : {
-
-    },
-    "Put Back %@…" : {
-
-    },
-    "Put back %@ %@?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Put back %1$@ %2$@?"
-          }
-        }
-      }
-    },
-    "Put back %@. %@ went to the Trash and is skipped." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Put back %1$@. %2$@ went to the Trash and is skipped."
-          }
-        }
-      }
-    },
-    "Quit Burnish" : {
-
-    },
-    "Redirected to a non-HTTPS address: %@" : {
-
-    },
-    "Relaunching" : {
-
-    },
-    "Released" : {
-
-    },
-    "Replacing" : {
-
-    },
-    "Replacing %@ needs an administrator, and that didn't work (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Replacing %1$@ needs an administrator, and that didn't work (%2$@)"
-          }
-        }
-      }
-    },
-    "Report a Wrong Match on GitHub…" : {
-
-    },
-    "Rules for this app" : {
-
-    },
-    "Run brew upgrade --cask %@" : {
-
-    },
-    "Runs on" : {
-
-    },
-    "Same developer as your copy" : {
-
-    },
-    "Search Homebrew…" : {
-
-    },
-    "Search apps" : {
-
-    },
-    "Search by name or token" : {
-
-    },
-    "Security update" : {
-
-    },
-    "Sends the bundle IDs of your App Store apps to Apple's public lookup." : {
-
-    },
-    "Set to tell you only" : {
-
-    },
-    "Settings…" : {
-
-    },
-    "Several Homebrew entries fit %@. Which one is installed?" : {
-
-    },
-    "Show Burnish's Data" : {
-
-    },
-    "Show Details" : {
-
-    },
-    "Show in Finder" : {
-
-    },
-    "Show, don't update" : {
-
-    },
-    "Signature didn't match the installed app" : {
-
-    },
-    "Signed by" : {
-
-    },
-    "Signed by %@, with the same bundle ID." : {
-
-    },
-    "Signed by the developer" : {
-
-    },
-    "Sort" : {
-
-    },
-    "Sort by name or by date" : {
-
-    },
-    "Source" : {
-
-    },
-    "Status" : {
-
-    },
-    "Stay on %lld.x" : {
-
-    },
-    "Stop Ignoring" : {
-
-    },
-    "Team %@" : {
-
-    },
-    "The Mac App Store" : {
-
-    },
-    "The app checks the update's signature with the key it ships with." : {
-
-    },
-    "The app is open" : {
-
-    },
-    "The copy failed, so the old version was put back" : {
-
-    },
-    "The copy failed. The old version is in the Trash as %@" : {
-
-    },
-    "The copy in the Trash is a different app (%@)" : {
-
-    },
-    "The copy in the Trash is the version you already have" : {
-
-    },
-    "The developer asks for this upgrade to be downloaded by hand" : {
-
-    },
-    "The developer didn't publish notes for this version." : {
-
-    },
-    "The developer marked this one as important." : {
-
-    },
-    "The developer's GitHub releases" : {
-
-    },
-    "The developer's own update feed" : {
-
-    },
-    "The developer's own updater handles and checks it." : {
-
-    },
-    "The download couldn't be opened" : {
-
-    },
-    "The download couldn't be opened (%@)" : {
-
-    },
-    "The download doesn't come from a trusted HTTPS source" : {
-
-    },
-    "The download doesn't contain %@" : {
-
-    },
-    "The download doesn't match its published checksum" : {
-
-    },
-    "The download failed (%@)" : {
-
-    },
-    "The download isn't newer than the installed version" : {
-
-    },
-    "The download must carry a signature made with the key %@ trusts." : {
-
-    },
-    "The download must match it byte for byte." : {
-
-    },
-    "The earlier version is no longer in the Trash" : {
-
-    },
-    "The earlier version's signature isn't valid" : {
-
-    },
-    "The feed gave no version" : {
-
-    },
-    "The feed's build is newer but its version is older" : {
-
-    },
-    "The installed version is newer than %@'s %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "The installed version is newer than %1$@'s %2$@"
-          }
-        }
-      }
-    },
-    "The installed version isn't readable" : {
-
-    },
-    "The installer package couldn't be saved (%@)" : {
-
-    },
-    "The installer package isn't signed by the same developer as the installed app" : {
-
-    },
-    "The new copy has a different bundle ID" : {
-
-    },
-    "The new copy has a different bundle ID (%@)" : {
-
-    },
-    "The new copy isn't signed" : {
-
-    },
-    "The new copy still has to be code-signed by the same developer." : {
-
-    },
-    "The new copy's signature isn't valid" : {
-
-    },
-    "The new copy's signature isn't valid (%@)" : {
-
-    },
-    "The new version couldn't be moved into place, so the old one was put back" : {
-
-    },
-    "The new version couldn't be moved into place. The old version is in the Trash; drag it back to %@." : {
-
-    },
-    "The new version needs macOS %@ or later" : {
-
-    },
-    "The old version couldn't be moved to the Trash (%@)" : {
-
-    },
-    "The repository has no published release" : {
-
-    },
-    "The server answered %lld" : {
-
-    },
-    "The source doesn't offer a download" : {
-
-    },
-    "The source gave no version" : {
-
-    },
-    "The source has no version number (\"latest\")" : {
-
-    },
-    "The update feed couldn't be read" : {
-
-    },
-    "The update feed isn't HTTPS" : {
-
-    },
-    "The update feed lists no release for this Mac" : {
-
-    },
-    "The update isn't newer than the installed version" : {
-
-    },
-    "The update isn't signed by its developer" : {
-
-    },
-    "The update's signature doesn't match the developer's key" : {
-
-    },
-    "There's no earlier version to put back" : {
-
-    },
-    "There's no update to install" : {
-
-    },
-    "This app sets its update feed while running, so Burnish uses Homebrew's data" : {
-
-    },
-    "This download asks you to accept a licence agreement first" : {
-
-    },
-    "This update comes from the developer's page" : {
-
-    },
-    "This update has to be downloaded from the developer's page" : {
-
-    },
-    "Timed out" : {
-
-    },
-    "Try Again" : {
-
-    },
-    "Twice a day" : {
-
-    },
-    "Unexpected cask list format" : {
-
-    },
-    "Unknown" : {
-
-    },
-    "Unreadable version \"%@\"" : {
-
-    },
-    "Unsigned (Burnish won't replace it)" : {
-
-    },
-    "Up to date" : {
-
-    },
-    "Up to date. %@" : {
-
-    },
-    "Update" : {
-
-    },
-    "Update All" : {
-
-    },
-    "Update available" : {
-
-    },
-    "Update provider \"%@\" isn't supported" : {
-
-    },
-    "Update with `brew upgrade --cask %@`, or turn on Homebrew updates in Settings." : {
-
-    },
-    "Update with brew upgrade" : {
-
-    },
-    "Updated %@ → %@ automatically." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Updated %1$@ → %2$@ automatically."
-          }
-        }
-      }
-    },
-    "Updated %@ → %@." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Updated %1$@ → %2$@."
-          }
-        }
-      }
-    },
-    "Updated %lld apps" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Updated %lld app"
+    "%lld squashed bugs": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld squashed bug"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Updated %lld apps"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld squashed bugs"
                 }
               }
             }
@@ -1249,202 +193,636 @@
         }
       }
     },
-    "Updated by Apple through Software Update" : {
-
-    },
-    "Updated to %@ with Homebrew" : {
-
-    },
-    "Updates" : {
-
-    },
-    "Updates come through %@" : {
-
-    },
-    "Use This App" : {
-
-    },
-    "Use community match fixes" : {
-
-    },
-    "Using data from %@" : {
-
-    },
-    "Verifying" : {
-
-    },
-    "Version %@ can't run on this Mac" : {
-
-    },
-    "Version %@ is out; you chose to stay on %lld.x" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Version %1$@ is out; you chose to stay on %2$lld.x"
+    "%lld updates": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld update"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld updates"
+                }
+              }
+            }
           }
         }
       }
     },
-    "Version %@ needs %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Version %1$@ needs %2$@"
+    "%lld updates are waiting in the App Store.": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld update is waiting in the App Store."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld updates are waiting in the App Store."
+                }
+              }
+            }
           }
         }
       }
     },
-    "Version %@ needs macOS %@ or later" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Version %1$@ needs macOS %2$@ or later"
+    "1 day": {},
+    "1 week": {},
+    "3 days": {},
+    "A feed listed by the community": {},
+    "A file with the same name is already in the Trash": {},
+    "A major upgrade: %@": {},
+    "A security update: %@": {},
+    "A way back": {},
+    "Accepted by Gatekeeper": {},
+    "All set": {},
+    "Allow Burnish to update apps": {},
+    "Also check apps in ~/Applications": {},
+    "App Management Settings…": {},
+    "App Store": {},
+    "App Store apps update in the App Store": {},
+    "App Store checks are turned off in Settings": {},
+    "App Store lookup failed: %@": {},
+    "App Store not checked": {},
+    "App Store not reachable": {},
+    "Apple": {},
+    "Apple delivers, checks and installs App Store updates.": {},
+    "Apple silicon": {},
+    "Apple silicon and Intel": {},
+    "Apple's App Store lookup, with your App Store apps' bundle IDs": {},
+    "Apple's public lookup.": {},
+    "Apps": {},
+    "Apps Burnish can't find an update source for show here, with the reason.": {},
+    "Apps and versions you ignore show here.": {},
+    "Apps installed with Homebrew": {},
+    "Apps with no update waiting show here.": {},
+    "At most one notification a day.": {},
+    "Automatic": {},
+    "Automatic updates": {},
+    "Automatic updates are off": {},
+    "Build numbers don't line up (installed %@, feed %@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Build numbers don't line up (installed %1$@, feed %2$@)"
           }
         }
       }
     },
-    "Version formats don't line up (installed %@, source %@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Version formats don't line up (installed %1$@, source %2$@)"
+    "Burnish": {},
+    "Burnish can find updates without it. It never force-quits an app, always keeps the old version in the Trash, and only installs updates signed by the same developer as the copy you have.": {},
+    "Burnish can't open this kind of download": {},
+    "Burnish doesn't install this one itself": {},
+    "Burnish hasn't checked yet.": {},
+    "Burnish keeps your apps up to date": {},
+    "Burnish lives in the menu bar and checks once a day.": {},
+    "Burnish needs App Management to replace apps.": {},
+    "Burnish needs an administrator to update %@.": {},
+    "Burnish needs the App Management permission to replace apps. Turn it on in System Settings → Privacy & Security → App Management.": {},
+    "Burnish never installs an older version.": {},
+    "Burnish only alerts you about updates once it's sure which app this is.": {},
+    "Burnish only installs downloads that arrive over HTTPS.": {},
+    "Burnish only replaces apps signed by their developer": {},
+    "Burnish only replaces apps signed by their developer, and this copy isn't": {},
+    "Burnish reads it to spot updates and leaves the install to you.": {},
+    "Burnish updated itself to %@.": {},
+    "Burnish's own update feed, about once a day": {},
+    "Burnish, %lld updates": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Burnish, %lld update"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Burnish, %lld updates"
+                }
+              }
+            }
           }
         }
       }
     },
-    "Wait after a release" : {
-
+    "By default Burnish shows their status and leaves updating to `brew upgrade --cask`, so the two never fight.": {},
+    "Cached cask list is unreadable": {},
+    "Can't check": {},
+    "Can't check: %@": {},
+    "Can't compare: Homebrew lists this app's version as \"latest\"": {},
+    "Cancel": {},
+    "Cancel Update": {},
+    "Check Now": {},
+    "Check for Burnish Updates…": {},
+    "Check for updates": {},
+    "Checked %@": {},
+    "Checked %@.": {},
+    "Checked %lld of %lld apps": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Checked %1$lld of %2$lld apps"
+          }
+        }
+      }
     },
-    "Waiting for the app to quit" : {
-
+    "Checked by whoever installs it": {},
+    "Checked during the install": {},
+    "Checked: %@.": {},
+    "Checking your apps": {},
+    "Checking…": {},
+    "Choose a Different Homebrew App…": {},
+    "Confirmed": {},
+    "Continue": {},
+    "Couldn't change Open Burnish at login: %@": {},
+    "Date": {},
+    "Developer ID %@": {},
+    "Developer feed": {},
+    "Developer feed: %@": {},
+    "Development certificate (not distributed)": {},
+    "Didn't install %@: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Didn't install %1$@: %2$@"
+          }
+        }
+      }
     },
-    "Waits for you: %@" : {
-
+    "Don't wait": {},
+    "Done": {},
+    "Done, relaunched": {},
+    "Download": {},
+    "Download Page": {},
+    "Download it from the developer": {},
+    "Download, verify and install %@": {},
+    "Downloading": {},
+    "Downloading %@": {},
+    "Downloading %lld%%": {},
+    "Downloads corrections from Burnish's GitHub repository once a day.": {},
+    "Each app's own update feed, its release notes, and the download itself": {},
+    "Every app has a source": {},
+    "Everything's up to date": {},
+    "Everything's up to date.": {},
+    "Feed not reachable": {},
+    "Feed not reachable (%@)": {},
+    "Follow Settings": {},
+    "Found %@ (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Found %1$@ (%2$@)"
+          }
+        }
+      }
     },
-    "Welcome to Burnish" : {
-
+    "Found through a community-listed feed, so the install is yours to do": {},
+    "From %@, over HTTPS.": {},
+    "Full release notes": {},
+    "Gatekeeper": {},
+    "GitHub": {},
+    "GitHub not reachable": {},
+    "GitHub not reachable (%@)": {},
+    "GitHub's hourly limit was reached; try again later": {},
+    "GitHub, for apps whose downloads live there, and for community match fixes": {},
+    "Hallmarks": {},
+    "Hide": {},
+    "History": {},
+    "Homebrew": {},
+    "Homebrew checks the download against its published checksum.": {},
+    "Homebrew doesn't carry release notes.": {},
+    "Homebrew isn't installed in the usual place": {},
+    "Homebrew match": {},
+    "Homebrew needs your password for this one. Run `brew upgrade --cask %@` in Terminal.": {},
+    "Homebrew's app list couldn't be loaded": {},
+    "Homebrew's app list isn't available yet (%@)": {},
+    "Homebrew's app list, once a day": {},
+    "Homebrew's catalogue": {},
+    "How many apps have updates waiting, and which.": {},
+    "Ignore App": {},
+    "Ignore This Version": {},
+    "Ignored": {},
+    "Ignoring version %@": {},
+    "Include beta releases": {},
+    "Install app updates automatically": {},
+    "Install automatically": {},
+    "Installed": {},
+    "Installed by %@": {},
+    "Installed by %@ itself": {},
+    "Installed by Homebrew": {},
+    "Installed by the App Store": {},
+    "Installs everything Burnish can update itself, except major upgrades that may be paid, then opens the App Store and developers' own updaters for the rest": {},
+    "Installs on its own after the next check": {},
+    "Installs on its own from %@": {},
+    "Intel": {},
+    "Intel only, running through Rosetta, and there's no Apple silicon version yet.": {},
+    "Intel only, running through Rosetta, which Apple is retiring for most apps after macOS 27.": {},
+    "Intel only, running through Rosetta. An Apple silicon version is available.": {},
+    "Intel only, through Rosetta": {},
+    "Is %@ the app Homebrew calls “%@” (%@)?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Is %1$@ the app Homebrew calls “%2$@” (%3$@)?"
+          }
+        }
+      }
     },
-    "What Burnish vouches for, now and during the install." : {
-
+    "Is this Homebrew's %@?": {},
+    "It checks the apps in /Applications and ~/Applications against each app's own update feed, the App Store and Homebrew's public app list.": {},
+    "It may be paid, so it's never part of Update All.": {},
+    "It may have unsaved work. Save it and quit %@ yourself, then choose Try Again.": {},
+    "Just tell me": {},
+    "Keep Burnish up to date automatically": {},
+    "Latest": {},
+    "Location": {},
+    "Look up App Store apps with Apple": {},
+    "Looking for updates": {},
+    "Mac App Store": {},
+    "Major upgrade, may be paid": {},
+    "Major upgrades may be paid, so they wait for you": {},
+    "Managed by Homebrew": {},
+    "Managed by Homebrew. Burnish leaves updates to `brew upgrade --cask %@` unless you turn that on in Settings.": {},
+    "Managed by Homebrew: update it with brew upgrade": {},
+    "Matched by %@": {},
+    "Matches the published checksum": {},
+    "May be paid": {},
+    "Missing the developer's signature": {},
+    "More": {},
+    "Name": {},
+    "Needs confirmation": {},
+    "Newer than yours: %@": {},
+    "No": {},
+    "No App Selected": {},
+    "No account, no analytics, nothing about your apps leaves this Mac except what it takes to ask for updates:": {},
+    "No checksum published": {},
+    "No internet connection": {},
+    "No longer maintained in Homebrew": {},
+    "No notes for this version.": {},
+    "No update": {},
+    "No update signing key": {},
+    "No update source found": {},
+    "Not This App": {},
+    "Not an HTTPS address: %@": {},
+    "Not checked yet": {},
+    "Not found in the App Store for your region": {},
+    "Not offered by this source": {},
+    "Not over HTTPS": {},
+    "Not signed by a developer (Burnish won't replace it)": {},
+    "Nothing here yet": {},
+    "Nothing ignored": {},
+    "Nothing to confirm": {},
+    "Notify me when updates are found": {},
+    "Once a day": {},
+    "Once a week": {},
+    "Only apps that aren't open, never major upgrades, with every check. Security updates skip the wait, and each app can choose for itself in its rules.": {},
+    "Only when I ask": {},
+    "Open": {},
+    "Open %@": {},
+    "Open %@ to install the update; it checks the update's signature itself": {},
+    "Open %@, which keeps this app up to date": {},
+    "Open App Store": {},
+    "Open Burnish": {},
+    "Open Burnish at login": {},
+    "Open Burnish to check your apps": {},
+    "Open Developer's Site": {},
+    "Open Settings": {},
+    "Open System Settings": {},
+    "Open in browser": {},
+    "Open in the App Store": {},
+    "Open the developer's site": {},
+    "Opened in Installer": {},
+    "Opened the %@ installer package in Installer": {},
+    "Other…": {},
+    "Privacy": {},
+    "Put Back": {},
+    "Put Back %@…": {},
+    "Put back %@ %@?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Put back %1$@ %2$@?"
+          }
+        }
+      }
     },
-    "What's New" : {
-
+    "Put back %@. %@ went to the Trash and is skipped.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Put back %1$@. %2$@ went to the Trash and is skipped."
+          }
+        }
+      }
     },
-    "When Burnish isn't sure which Homebrew entry is an app, it asks here." : {
-
+    "Quick read": {},
+    "Quit Burnish": {},
+    "Read the notes": {},
+    "Redirected to a non-HTTPS address: %@": {},
+    "Relaunching": {},
+    "Release notes": {},
+    "Released": {},
+    "Replacing": {},
+    "Replacing %@ needs an administrator, and that didn't work (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Replacing %1$@ needs an administrator, and that didn't work (%2$@)"
+          }
+        }
+      }
     },
-    "Which Homebrew app is %@?" : {
-
+    "Report a Wrong Match on GitHub…": {},
+    "Rules for this app": {},
+    "Run brew upgrade --cask %@": {},
+    "Runs on": {},
+    "Same developer as your copy": {},
+    "Search Homebrew…": {},
+    "Search apps": {},
+    "Search by name or token": {},
+    "Security update": {},
+    "Sends the bundle IDs of your App Store apps to Apple's public lookup.": {},
+    "Set to tell you only": {},
+    "Settings…": {},
+    "Several Homebrew entries fit %@. Which one is installed?": {},
+    "Show Burnish's Data": {},
+    "Show Details": {},
+    "Show in Finder": {},
+    "Show, don't update": {},
+    "Signature didn't match the installed app": {},
+    "Signed by": {},
+    "Signed by %@, with the same bundle ID.": {},
+    "Signed by the developer": {},
+    "Sort": {},
+    "Sort by name or by date": {},
+    "Sorted from the developer's notes by Burnish; the full notes are below.": {},
+    "Source": {},
+    "Status": {},
+    "Stay on %lld.x": {},
+    "Stop Ignoring": {},
+    "Summary": {},
+    "Team %@": {},
+    "The Mac App Store": {},
+    "The app checks the update's signature with the key it ships with.": {},
+    "The app is open": {},
+    "The copy failed, so the old version was put back": {},
+    "The copy failed. The old version is in the Trash as %@": {},
+    "The copy in the Trash is a different app (%@)": {},
+    "The copy in the Trash is the version you already have": {},
+    "The developer asks for this upgrade to be downloaded by hand": {},
+    "The developer didn't publish notes for this version.": {},
+    "The developer marked this one as important.": {},
+    "The developer's GitHub releases": {},
+    "The developer's own update feed": {},
+    "The developer's own updater handles and checks it.": {},
+    "The download couldn't be opened": {},
+    "The download couldn't be opened (%@)": {},
+    "The download doesn't come from a trusted HTTPS source": {},
+    "The download doesn't contain %@": {},
+    "The download doesn't match its published checksum": {},
+    "The download failed (%@)": {},
+    "The download isn't newer than the installed version": {},
+    "The download must carry a signature made with the key %@ trusts.": {},
+    "The download must match it byte for byte.": {},
+    "The earlier version is no longer in the Trash": {},
+    "The earlier version's signature isn't valid": {},
+    "The feed gave no version": {},
+    "The feed's build is newer but its version is older": {},
+    "The installed version is newer than %@'s %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "The installed version is newer than %1$@'s %2$@"
+          }
+        }
+      }
     },
-    "Worth knowing" : {
-
+    "The installed version isn't readable": {},
+    "The installer package couldn't be saved (%@)": {},
+    "The installer package isn't signed by the same developer as the installed app": {},
+    "The new copy has a different bundle ID": {},
+    "The new copy has a different bundle ID (%@)": {},
+    "The new copy isn't signed": {},
+    "The new copy still has to be code-signed by the same developer.": {},
+    "The new copy's signature isn't valid": {},
+    "The new copy's signature isn't valid (%@)": {},
+    "The new version couldn't be moved into place, so the old one was put back": {},
+    "The new version couldn't be moved into place. The old version is in the Trash; drag it back to %@.": {},
+    "The new version needs macOS %@ or later": {},
+    "The old version couldn't be moved to the Trash (%@)": {},
+    "The repository has no published release": {},
+    "The server answered %lld": {},
+    "The source doesn't offer a download": {},
+    "The source gave no version": {},
+    "The source has no version number (\"latest\")": {},
+    "The update feed couldn't be read": {},
+    "The update feed isn't HTTPS": {},
+    "The update feed lists no release for this Mac": {},
+    "The update isn't newer than the installed version": {},
+    "The update isn't signed by its developer": {},
+    "The update's signature doesn't match the developer's key": {},
+    "There's no earlier version to put back": {},
+    "There's no update to install": {},
+    "This app sets its update feed while running, so Burnish uses Homebrew's data": {},
+    "This download asks you to accept a licence agreement first": {},
+    "This update comes from the developer's page": {},
+    "This update has to be downloaded from the developer's page": {},
+    "Timed out": {},
+    "Try Again": {},
+    "Twice a day": {},
+    "Unexpected cask list format": {},
+    "Unknown": {},
+    "Unreadable version \"%@\"": {},
+    "Unsigned (Burnish won't replace it)": {},
+    "Up to date": {},
+    "Up to date. %@": {},
+    "Update": {},
+    "Update All": {},
+    "Update available": {},
+    "Update provider \"%@\" isn't supported": {},
+    "Update with `brew upgrade --cask %@`, or turn on Homebrew updates in Settings.": {},
+    "Update with brew upgrade": {},
+    "Updated %@ → %@ automatically.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Updated %1$@ → %2$@ automatically."
+          }
+        }
+      }
     },
-    "Wrong Match?" : {
-
+    "Updated %@ → %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Updated %1$@ → %2$@."
+          }
+        }
+      }
     },
-    "Yes, That's It" : {
-
+    "Updated %lld apps": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Updated %lld app"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Updated %lld apps"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "You're offline" : {
-
+    "Updated by Apple through Software Update": {},
+    "Updated to %@ with Homebrew": {},
+    "Updates": {},
+    "Updates come through %@": {},
+    "Use This App": {},
+    "Use community match fixes": {},
+    "Using data from %@": {},
+    "Verifying": {},
+    "Version %@": {},
+    "Version %@ can't run on this Mac": {},
+    "Version %@ is out; you chose to stay on %lld.x": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Version %1$@ is out; you chose to stay on %2$lld.x"
+          }
+        }
+      }
     },
-    "Your current version goes to the Trash, and Put Back returns it." : {
-
+    "Version %@ needs %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Version %1$@ needs %2$@"
+          }
+        }
+      }
     },
-    "a different macOS version" : {
-
+    "Version %@ needs macOS %@ or later": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Version %1$@ needs macOS %2$@ or later"
+          }
+        }
+      }
     },
-    "and %lld more" : {
-
+    "Version formats don't line up (installed %@, source %@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Version formats don't line up (installed %1$@, source %2$@)"
+          }
+        }
+      }
     },
-    "brew upgrade failed" : {
-
+    "Wait after a release": {},
+    "Waiting for the app to quit": {},
+    "Waits for you: %@": {},
+    "Welcome to Burnish": {},
+    "What Burnish vouches for, now and during the install.": {},
+    "What's New": {},
+    "When Burnish isn't sure which Homebrew entry is an app, it asks here.": {},
+    "Which Homebrew app is %@?": {},
+    "Worth knowing": {},
+    "Wrong Match?": {},
+    "Yes, That's It": {},
+    "You also skipped %lld versions": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "You also skipped %lld version"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "You also skipped %lld versions"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "brew upgrade failed: %@" : {
-
-    },
-    "bundle ID" : {
-
-    },
-    "checksum" : {
-
-    },
-    "community fix" : {
-
-    },
-    "confirmed" : {
-
-    },
-    "developer's signature" : {
-
-    },
-    "file name" : {
-
-    },
-    "high confidence" : {
-
-    },
-    "installed by Homebrew" : {
-
-    },
-    "installer" : {
-
-    },
-    "just now" : {
-
-    },
-    "low confidence" : {
-
-    },
-    "macOS %@ or later" : {
-
-    },
-    "macOS Gatekeeper didn't accept the earlier version" : {
-
-    },
-    "macOS Gatekeeper didn't accept the new copy (it may not be notarised)" : {
-
-    },
-    "macOS asks before one app replaces another. To install updates, turn on Burnish in System Settings → Privacy & Security → App Management." : {
-
-    },
-    "macOS checks the new copy the way it checks anything you download." : {
-
-    },
-    "medium confidence" : {
-
-    },
-    "name" : {
-
-    },
-    "newer version" : {
-
-    },
-    "not signed by the same developer" : {
-
-    },
-    "same developer" : {
-
-    },
-    "trusted source" : {
-
-    },
-    "update waiting" : {
-
-    },
-    "updates waiting" : {
-
-    },
-    "way back" : {
-
-    },
-    "your choice" : {
-
-    }
+    "You're offline": {},
+    "Your current version goes to the Trash, and Put Back returns it.": {},
+    "a different macOS version": {},
+    "and %lld more": {},
+    "brew upgrade failed": {},
+    "brew upgrade failed: %@": {},
+    "bundle ID": {},
+    "checksum": {},
+    "community fix": {},
+    "confirmed": {},
+    "developer's signature": {},
+    "file name": {},
+    "high confidence": {},
+    "installed by Homebrew": {},
+    "installer": {},
+    "just now": {},
+    "low confidence": {},
+    "macOS %@ or later": {},
+    "macOS Gatekeeper didn't accept the earlier version": {},
+    "macOS Gatekeeper didn't accept the new copy (it may not be notarised)": {},
+    "macOS asks before one app replaces another. To install updates, turn on Burnish in System Settings → Privacy & Security → App Management.": {},
+    "macOS checks the new copy the way it checks anything you download.": {},
+    "medium confidence": {},
+    "name": {},
+    "newer version": {},
+    "not signed by the same developer": {},
+    "same developer": {},
+    "trusted source": {},
+    "update waiting": {},
+    "updates waiting": {},
+    "way back": {},
+    "your choice": {}
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

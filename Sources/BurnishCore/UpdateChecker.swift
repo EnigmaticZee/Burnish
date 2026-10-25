@@ -136,7 +136,7 @@ public actor UpdateChecker {
             let preferences = SparkleSource.Preferences(maximumMajor: rule.stayOnMajor, includeBeta: rule.followBeta)
             do {
                 findings.sparkle = .found(try await SparkleSource(client: client, system: system, isARM: platform.isARM)
-                    .check(feed: feed, preferences: preferences))
+                    .check(feed: feed, preferences: preferences, installed: app.version))
             } catch {
                 findings.sparkle = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }

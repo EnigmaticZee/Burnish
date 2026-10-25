@@ -387,3 +387,58 @@ func fixture(_ name: String) throws -> Data {
         #expect(try source.select(from: items, preferences: .init(includeBeta: true)).release?.version.short == "2.1b1")
     }
 }
+
+@Suite struct QuickReadDigest {
+    @Test func sortsLinesByHeadingAndWords() throws {
+        let doc = ReleaseNotesDocument.markdown("""
+        ## New
+        - Dark mode for the editor
+        - Export to PDF
+        ## Bug Fixes
+        - Fixed a crash when opening large files
+        - Sync no longer stalls on slow networks
+        - Typo in the About window
+        ## Security
+        - Patched CVE-2026-1234 in the image parser
+        """)
+        let digest = try #require(ReleaseDigest.make(doc))
+        #expect(digest.counts[.new] == 2)
+        #expect(digest.counts[.fix] == 3, "the typo line counts as a fix by its heading")
+        #expect(digest.counts[.security] == 1)
+        #expect(digest.highlights.map(\.kind) == [.security, .new, .fix], "security first, at most three")
+        #expect(digest.highlights.first?.text == "Patched CVE-2026-1234 in the image parser")
+        #expect(digest.headline == "1 security fixes, 2 shiny new things, and 3 squashed bugs" || digest.headline.contains("2 shiny new things"))
+    }
+
+    @Test func noSummaryWhenThereIsNothingToSort() {
+        #expect(ReleaseDigest.make(ReleaseNotesDocument.plainText("Thanks for using our app!")) == nil)
+        #expect(ReleaseDigest.make(ReleaseNotesDocument.markdown("- Fixed one thing")) == nil, "one line isn't worth summarising")
+    }
+
+    @Test func longLinesAreShortenedAtAWord() {
+        let long = String(repeating: "word ", count: 40)
+        let short = ReleaseDigest.shortened(long)
+        #expect(short.count <= 101 && short.hasSuffix("…"))
+    }
+}
+
+@Suite struct WhatYouMissed {
+    func item(_ short: String, _ build: String, notes: String) -> AppcastItem {
+        var item = AppcastItem()
+        item.shortVersion = short
+        item.version = build
+        item.descriptions = ["": "<p>\(notes)</p>"]
+        item.enclosure = .init(url: URL(string: "https://example.com/\(short).zip"))
+        return item
+    }
+
+    @Test func listsTheVersionsInBetweenNewestFirst() throws {
+        let source = SparkleSource(client: MockHTTPClient(), system: SystemVersion("27.0"), isARM: true, language: nil)
+        let items = [item("1.3", "130", notes: "Three"), item("1.2", "120", notes: "Two"), item("1.1", "110", notes: "One"), item("1.0", "100", notes: "Zero")]
+        let result = try source.select(from: items, installed: VersionPair(short: "1.0", build: "100"))
+        #expect(result.release?.version.short == "1.3")
+        #expect(result.release?.missed?.map(\.version) == ["1.2", "1.1"], "the installed version and the newest aren't repeated")
+        #expect(result.release?.missed?.first?.notes?.text?.contains("Two") == true)
+        #expect(try source.select(from: items, installed: VersionPair(short: "1.2", build: "120")).release?.missed == nil, "one version behind")
+    }
+}

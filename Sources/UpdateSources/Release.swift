@@ -59,6 +59,8 @@ public struct Release: Sendable, Hashable, Codable {
     /// Found through a feed a contributor listed, not one the app or Homebrew names. Burnish
     /// reads it to spot updates and leaves the install to the person (install rule 1).
     public var listedByCommunity: Bool?
+    /// Versions between the installed one and this, newest first, when the feed lists them.
+    public var missed: [MissedRelease]?
 
     /// `ComparisonBasis` as a Codable value.
     public enum Basis: String, Sendable, Codable {
@@ -121,6 +123,20 @@ public struct ReleaseNotes: Sendable, Hashable, Codable {
         self.link = link
     }
 
+}
+
+/// A version the person skipped, for "what you missed".
+public struct MissedRelease: Sendable, Hashable, Codable, Identifiable {
+    public var id: String { version }
+    public let version: String
+    public let date: Date?
+    public let notes: ReleaseNotes?
+
+    public init(version: String, date: Date?, notes: ReleaseNotes?) {
+        self.version = version
+        self.date = date
+        self.notes = notes
+    }
 }
 
 /// The macOS version this Mac runs, for minimum-system checks.

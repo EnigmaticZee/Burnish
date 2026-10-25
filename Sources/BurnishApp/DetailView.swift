@@ -309,19 +309,29 @@ struct ReleaseNotesSection: View {
     let result: AppCheckResult
     @State private var fetched: ReleaseNotesDocument?
     @State private var loading = false
+    @State private var showFull = false
 
     var body: some View {
         if let release = result.status.candidate?.release {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text("What's New").font(.headline)
                 if let doc = fetched ?? release.releaseNotes.flatMap(ReleaseNotesDocument.from), !doc.isEmpty {
-                    ReleaseNotesView(document: doc)
+                    let digest = ReleaseDigest.make(doc)
+                    if let digest { QuickRead(digest: digest) }
+                    DisclosureGroup(isExpanded: $showFull) {
+                        ReleaseNotesView(document: doc).padding(.top, 6)
+                    } label: {
+                        Text(digest == nil ? "Release notes" : "Full release notes").font(.callout.weight(.medium))
+                    }
                 } else if loading {
                     ProgressView().controlSize(.small)
                 } else if release.source == .homebrew {
                     Text("Homebrew doesn't carry release notes.").foregroundStyle(.secondary)
                 } else {
                     Text("The developer didn't publish notes for this version.").foregroundStyle(.secondary)
+                }
+                if let missed = release.missed, !missed.isEmpty {
+                    MissedVersions(missed: missed)
                 }
                 if let link = release.releaseNotes?.link ?? release.downloadPage, ["http", "https"].contains(link.scheme ?? "") {
                     Link(release.source == .homebrew ? "Open the developer's site" : "Open in browser", destination: link)
@@ -334,10 +344,84 @@ struct ReleaseNotesSection: View {
 
     private func fetchIfNeeded(_ release: Release) async {
         fetched = nil
+        showFull = false
         guard release.source == .sparkle, release.releaseNotes?.text == nil, let link = release.releaseNotes?.link else { return }
         loading = true
         fetched = await model.engine.releaseNotes(at: link)
         loading = false
+    }
+}
+
+/// The summary card: a count of what changed and the first line of each kind, marked as
+/// Burnish's reading of the developer's notes rather than the notes themselves.
+struct QuickRead: View {
+    let digest: ReleaseDigest
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Text("Quick read")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 7).padding(.vertical, 2)
+                    .background(Capsule().fill(Color(red: 0.80, green: 0.51, blue: 0.17).opacity(0.18)))
+                    .foregroundStyle(Color(red: 0.70, green: 0.42, blue: 0.10))
+                Text("Summary").font(.caption).foregroundStyle(.secondary)
+            }
+            Text(verbatim: digest.headline).font(.callout.weight(.semibold))
+            ForEach(digest.highlights, id: \.self) { line in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: Self.symbol(line.kind)).foregroundStyle(.secondary).frame(width: 16)
+                    Text(verbatim: line.text).font(.callout).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Text("Sorted from the developer's notes by Burnish; the full notes are below.")
+                .font(.caption2).foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 10).fill(.quaternary.opacity(0.35)))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.quaternary, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+    }
+
+    static func symbol(_ kind: ReleaseDigest.Kind) -> String {
+        switch kind {
+        case .security: "lock.shield"
+        case .new: "plus.circle"
+        case .fix: "ladybug"
+        case .improvement: "arrow.up.circle"
+        }
+    }
+}
+
+/// "What you missed": every version between the installed one and the newest, with its notes.
+struct MissedVersions: View {
+    let missed: [MissedRelease]
+
+    var body: some View {
+        DisclosureGroup {
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(missed) { release in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("Version \(release.version)").font(.callout.weight(.semibold))
+                            if let date = release.date {
+                                Text(date.formatted(date: .abbreviated, time: .omitted)).font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        if let doc = release.notes.flatMap(ReleaseNotesDocument.from), !doc.isEmpty {
+                            ReleaseNotesView(document: doc)
+                        } else if let link = release.notes?.link {
+                            Link("Read the notes", destination: link).font(.callout)
+                        } else {
+                            Text("No notes for this version.").font(.callout).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+            .padding(.top, 6)
+        } label: {
+            Text("You also skipped \(missed.count) versions").font(.callout.weight(.medium))
+        }
     }
 }
 

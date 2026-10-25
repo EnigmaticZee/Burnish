@@ -155,7 +155,8 @@ enum DemoData {
     static func results() -> [AppCheckResult] {
         let notes = ReleaseNotes(text: """
         <h3>What's new</h3>
-        <ul><li><b>Faster startup</b> on Apple silicon</li><li>Sharper icons in the sidebar</li><li>Fixes a crash when reconnecting a display</li></ul>
+        <ul><li><b>Faster startup</b> on Apple silicon</li><li>New per-network filtering rules</li><li>Fixes a crash when reconnecting a display</li>
+        <li>Fixed DNS settings resetting after sleep</li><li>Security: updated the certificate store</li></ul>
         """, format: .html, link: URL(string: "https://example.com/notes"))
         var results: [AppCheckResult] = [
             outdated(app("Google Chrome", "com.google.Chrome", "155.0.8059.86"), "156.0.8078.48", .homebrew, token: "google-chrome", daysAgo: 1),
@@ -165,6 +166,15 @@ enum DemoData {
             outdated(app("Figma", "com.figma.Desktop", "126.9.16"), "126.10.11", .homebrew, token: "figma", daysAgo: 4),
             outdated(app("Slack", "com.tinyspeck.slackmacgap", "4.51.140", appStore: true), "4.52.182", .appStore, daysAgo: 3),
         ]
+        // Adguard is two versions behind, for "what you missed".
+        if let i = results.firstIndex(where: { $0.app.name == "Adguard" }), case let .outdated(candidate) = results[i].status {
+            var release = candidate.release
+            release.missed = [
+                MissedRelease(version: "2.20.1.1", date: Date().addingTimeInterval(-86400 * 9),
+                              notes: ReleaseNotes(text: "<ul><li>Fixed filters not updating on Wi-Fi changes</li></ul>", format: .html)),
+            ]
+            results[i].status = .outdated(UpdateCandidate(release: release, isMajorUpgrade: candidate.isMajorUpgrade))
+        }
         func upToDate(_ a: InstalledApp, _ source: SourceKind, note: String? = nil) -> AppCheckResult {
             AppCheckResult(app: a, status: .upToDate(note: note), decidedBy: source)
         }
