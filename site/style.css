@@ -243,7 +243,16 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 .marquee { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
 .marquee-track { display: flex; gap: 12px; width: max-content; list-style: none; margin: 0; padding: 0; animation: marquee 38s linear infinite; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
-.marquee-track li { white-space: nowrap; padding: 9px 18px; border-radius: 999px; font-weight: 600; font-size: 0.95rem; color: var(--ink-2); background: var(--card); border: 1px solid var(--card-line); }
+.marquee-track li {
+  display: flex; align-items: center; gap: 9px; white-space: nowrap; padding: 9px 18px 9px 14px; border-radius: 999px;
+  font-weight: 600; font-size: 0.95rem; color: var(--ink-2); background: var(--card); border: 1px solid var(--card-line);
+  transition: color 0.25s, border-color 0.25s;
+}
+.marquee-track li:hover { color: var(--ink); border-color: color-mix(in srgb, var(--brass) 45%, transparent); }
+.marquee-track svg { flex: none; width: 19px; height: 19px; }
+.marquee-track .mark { fill: currentColor; }
+.marquee-track .glyph { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.marquee-track li:hover svg { color: var(--brass); }
 
 /* Screenshot */
 
