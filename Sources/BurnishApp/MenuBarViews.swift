@@ -212,15 +212,14 @@ struct PopoverRow: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .contentShape(Rectangle())
-        .contextMenu {
-            Button("Show Details") {
-                NSApp.activate(ignoringOtherApps: true)
-                model.selectedID = result.id
-                openWindow(id: "main")
-            }
-            Button("Ignore This Version") { Task { await model.ignoreVersion(result) } }
-            Button("Ignore App") { Task { await model.ignoreApp(result) } }
+        // Clicking a row (not its button) opens that app's details.
+        .onTapGesture {
+            NSApp.activate(ignoringOtherApps: true)
+            model.selectedID = result.id
+            model.showDetails = true
+            openWindow(id: "main")
         }
+        .contextMenu { RowActions(result: result) }
     }
 }
 

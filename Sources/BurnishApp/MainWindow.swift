@@ -8,7 +8,8 @@ enum SortOrder: String, CaseIterable, Identifiable {
     var label: String { self == .name ? String(localized: "Name") : String(localized: "Date") }
 }
 
-/// Sidebar with the five tabs and counts, a sortable list, and the detail pane.
+/// Sidebar with the five tabs and counts and a sortable list. An app's details open in an
+/// inspector only when one is picked, so the list keeps its room the rest of the time.
 struct MainWindow: View {
     @Environment(AppModel.self) private var model
     @State private var search = ""
@@ -23,17 +24,26 @@ struct MainWindow: View {
                     .tag(tab)
             }
             .navigationSplitViewColumnWidth(min: 200, ideal: 215)
-        } content: {
-            ResultList(tab: model.selectedTab ?? .updates, search: search, sort: sort)
-                .navigationSplitViewColumnWidth(min: 320, ideal: 380)
         } detail: {
-            if let id = model.selectedID, let result = model.results.first(where: { $0.id == id }) {
-                DetailView(result: result)
-            } else {
-                ContentUnavailableView("No App Selected", systemImage: "app.dashed")
+            VStack(spacing: 0) {
+                banners
+                ResultList(tab: model.selectedTab ?? .updates, search: search, sort: sort)
+            }
+            .inspector(isPresented: $model.showDetails) {
+                Group {
+                    if let id = model.selectedID, let result = model.results.first(where: { $0.id == id }) {
+                        DetailView(result: result)
+                    } else {
+                        ContentUnavailableView("No App Selected", systemImage: "app.dashed")
+                    }
+                }
+                .inspectorColumnWidth(min: 380, ideal: 440, max: 640)
             }
         }
         .searchable(text: $search, placement: .sidebar, prompt: "Search apps")
+        .onChange(of: model.selectedID) { _, id in
+            if id != nil { model.showDetails = true }
+        }
         .toolbar {
             ToolbarItemGroup {
                 Picker("Sort", selection: $sort) {
@@ -54,27 +64,36 @@ struct MainWindow: View {
                 }
                 .disabled(!model.canUpdateAll)
                 .help(UpdateAllHelp.text)
+                Button {
+                    model.showDetails.toggle()
+                } label: {
+                    Label("Details", systemImage: "sidebar.trailing")
+                }
+                .help("Show or hide the selected app's details")
+                .disabled(model.selectedID == nil)
             }
         }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            VStack(spacing: 0) {
-                if let offline = model.offlineBanner { Banner(text: offline, symbol: "wifi.slash") }
-                if model.needsAppManagement {
-                    Banner(text: String(localized: "Burnish needs App Management to replace apps."), symbol: "lock", action: (String(localized: "Open Settings"), Permissions.openAppManagement))
-                }
-                AppStoreBanner()
-                if model.intelOnlyCount > 0 {
-                    Banner(text: String(localized: "\(model.intelOnlyCount) apps only run on Intel chips, through Rosetta, which Apple is retiring for most apps after macOS 27."),
-                           symbol: "cpu")
-                }
-                if model.isChecking {
-                    Banner(text: String(localized: "Checked \(model.checkedCount) of \(model.totalCount) apps"), symbol: "arrow.clockwise")
-                }
-            }
-        }
-        .frame(minWidth: 820, minHeight: 480)
+        .frame(minWidth: 720, minHeight: 480)
         .onAppear { NSApp.setActivationPolicy(.regular) }
         .onDisappear { NSApp.setActivationPolicy(.accessory) }
+    }
+
+    /// Notices sit above the list, in its column, never over the sidebar.
+    @ViewBuilder
+    private var banners: some View {
+        if let offline = model.offlineBanner { Banner(text: offline, symbol: "wifi.slash") }
+        if model.needsAppManagement {
+            Banner(text: String(localized: "Burnish needs App Management to replace apps."), symbol: "lock",
+                   action: (String(localized: "Open Settings"), Permissions.openAppManagement))
+        }
+        AppStoreBanner()
+        if model.intelOnlyCount > 0 {
+            Banner(text: String(localized: "\(model.intelOnlyCount) apps only run on Intel chips, through Rosetta, which Apple is retiring for most apps after macOS 27."),
+                   symbol: "cpu")
+        }
+        if model.isChecking {
+            Banner(text: String(localized: "Checked \(model.checkedCount) of \(model.totalCount) apps"), symbol: "arrow.clockwise")
+        }
     }
 }
 
@@ -97,7 +116,9 @@ struct ResultList: View {
             } else {
                 List(items, selection: $model.selectedID) { result in
                     ResultRow(result: result).tag(result.id)
+                        .contextMenu { RowActions(result: result) }
                 }
+                .onExitCommand { model.showDetails = false }
             }
         }
         .navigationTitle(tab.title)
@@ -180,5 +201,35 @@ struct ResultRow: View {
         case .upToDate(let note): note
         case .outdated: nil
         }
+    }
+}
+
+/// The same actions wherever an app's row appears: update, details, ignore, Finder.
+struct RowActions: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.openWindow) private var openWindow
+    let result: AppCheckResult
+
+    var body: some View {
+        if result.status.isOutdated, model.action(for: result) != .none {
+            Button(model.action(for: result).buttonTitle) { Task { await model.update(result) } }
+            Divider()
+        }
+        Button("Show Details") {
+            NSApp.activate(ignoringOtherApps: true)
+            model.selectedID = result.id
+            model.showDetails = true
+            openWindow(id: "main")
+        }
+        if case .ignored = result.status {
+            Button("Stop Ignoring") { Task { await model.stopIgnoring(result) } }
+        } else {
+            if result.status.candidate != nil {
+                Button("Ignore This Version") { Task { await model.ignoreVersion(result) } }
+            }
+            Button("Ignore App") { Task { await model.ignoreApp(result) } }
+        }
+        Divider()
+        Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([result.app.url]) }
     }
 }

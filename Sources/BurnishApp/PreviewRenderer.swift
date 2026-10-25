@@ -34,6 +34,7 @@ enum PreviewRenderer {
                 render(PopoverView().environment(model), width: 360, height: nil, dark: dark, to: folder.appendingPathComponent("popover\(suffix).png"))
                 model.selectedTab = .updates
                 model.selectedID = model.outdated.first?.id
+                model.showDetails = true
                 render(MainWindow().environment(model), width: 1040, height: 660, dark: dark, to: folder.appendingPathComponent("main\(suffix).png"))
                 render(SettingsView().environment(model), width: 480, height: nil, dark: dark, to: folder.appendingPathComponent("settings\(suffix).png"))
                 render(OnboardingView().environment(model), width: 480, height: 460, dark: dark, to: folder.appendingPathComponent("onboarding\(suffix).png"))
@@ -41,6 +42,7 @@ enum PreviewRenderer {
             for tab in StatusTab.allCases {
                 model.selectedTab = tab
                 model.selectedID = model.results(in: tab).first?.id
+                model.showDetails = tab == .updates
                 render(MainWindow().environment(model), width: 1040, height: 660, dark: false, to: folder.appendingPathComponent("tab-\(tab.rawValue).png"))
             }
             for (index, result) in model.results.prefix(40).enumerated() {

@@ -47,6 +47,8 @@ final class AppModel {
     /// Set after Burnish updated itself, for a one-time note in the popover.
     var justUpdatedTo: String?
     var selectedID: String?
+    /// The main window's details inspector.
+    var showDetails = false
     var settings = Settings() {
         didSet { if settings != oldValue, !isLoading { settingsChanged(from: oldValue) } }
     }
