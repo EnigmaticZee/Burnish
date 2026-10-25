@@ -96,7 +96,7 @@ jobs:
           {
             echo "## What's new"
             echo
-            awk -v v="$VERSION" '$0 ~ "^## "v" " {on=1; next} /^## / {on=0} on' docs/HISTORY.md
+            python3 scripts/release-notes-html.py --markdown "$VERSION"
             echo
             echo "## Install"
             echo

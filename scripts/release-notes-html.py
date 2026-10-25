@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Turns one version's entry in docs/HISTORY.md into the small page Burnish's update window shows.
 
-Usage: python3 scripts/release-notes-html.py <version>   (prints HTML)
+Usage: python3 scripts/release-notes-html.py <version>              (prints HTML)
+       python3 scripts/release-notes-html.py --markdown <version>   (GitHub release notes)
 
 The appcast carries this page inline, so the update window shows just the notes, styled for light
 and dark, without loading a web page. Handles what HISTORY.md uses: paragraphs, "- " bullets
-(with wrapped lines), **bold**, *italics*, `code` and [links](https://...).
+(with wrapped lines), "+ " lines for the short version, **bold**, *italics*, `code` and
+[links](https://...).
 """
 import html
 import re
@@ -39,7 +41,49 @@ def inline(text):
     return text
 
 
+def short_version(lines):
+    """The "+ " lines: a few plain sentences for people who only skim."""
+    short, in_short = [], False
+    for line in lines:
+        if line.startswith("+ "):
+            short.append(line[2:].strip())
+            in_short = True
+        elif in_short and line.startswith("  ") and line.strip():
+            short[-1] += " " + line.strip()
+        else:
+            in_short = False
+    return short
+
+
+def full_notes(lines):
+    """Everything except the short version."""
+    out, in_short = [], False
+    for line in lines:
+        if line.startswith("+ "):
+            in_short = True
+            continue
+        if in_short and line.startswith("  ") and line.strip():
+            continue
+        in_short = False
+        out.append(line)
+    return out
+
+
+def markdown(lines):
+    """The GitHub release: the short version first, then the full notes."""
+    short = short_version(lines)
+    rest = "\n".join(full_notes(lines)).strip()
+    if not short:
+        return rest
+    head, _, tail = rest.partition("\n\n")
+    tail = tail.strip()
+    listed = "\n".join(f"- {item}" for item in short)
+    return f"{head}\n\n**The short version**\n\n{listed}\n\n**The full notes**\n\n{tail}".rstrip()
+
+
 def body(lines):
+    short = short_version(lines)
+    lines = full_notes(lines)
     blocks, para, items = [], [], []
 
     def flush_para():
@@ -67,6 +111,10 @@ def body(lines):
             para.append(line.strip())
     flush_para()
     flush_list()
+    if short:
+        # The headline, then the short version, then the full notes.
+        summary = "<p class=\"label\">The short version</p><ul class=\"short\">" + "".join(f"<li>{inline(i)}</li>" for i in short) + "</ul><p class=\"label\">The full notes</p>"
+        blocks.insert(1 if blocks else 0, summary)
     return "\n".join(blocks)
 
 
@@ -77,11 +125,16 @@ p:first-child { font-weight: 600; }
 ul { padding-left: 18px; margin: 8px 0; }
 li { margin: 6px 0; }
 code { font: 12px ui-monospace, Menlo, monospace; }
+.label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8a7560; margin: 14px 0 4px; }
+ul.short li { margin: 4px 0; }
 a { color: #b0641e; }
 @media (prefers-color-scheme: dark) { body { color: #f2f2f7; } a { color: #f0a868; } }
 """
 
 if __name__ == "__main__":
+    if sys.argv[1] == "--markdown":
+        print(markdown(section(sys.argv[2])))
+        sys.exit()
     version = sys.argv[1]
     print(f"<!doctype html><html><head><meta charset=\"utf-8\"><style>{STYLE}</style></head><body>")
     print(body(section(version)))

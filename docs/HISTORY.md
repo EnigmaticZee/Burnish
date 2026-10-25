@@ -3,6 +3,11 @@
 ## 0.2.0-beta — 2026-10-25
 Now accepting returns.
 
++ Changed your mind about an update? Put the old version back in one click.
++ A desktop widget keeps count of what's waiting.
++ Office, Adobe, Setapp and JetBrains apps now open their own updaters.
++ Tauri apps finally get checked, and App Store updates go in one trip.
+
 - **Put back the version you had before.** Every update already left the old copy in the Trash;
   now Burnish remembers which one and brings it back in one click, after checking it as carefully
   as a fresh download. It then skips the version you rolled back from, so Update All doesn't undo

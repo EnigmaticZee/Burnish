@@ -73,6 +73,10 @@ can't tell what changed for them, rewrite it.
   wink, and the headline can be pure play. Safety and security fixes stay plain even here.
 
 - **Open with one line** that sets the mood, like a headline: "First light." Not a paragraph.
+- **Then the short version:** three to five lines starting with `+ `, one plain sentence each, for
+  people who only skim. No bold, no jargon, fun allowed: "Changed your mind about an update? Put
+  the old version back in one click." The website shows it as a summary card with the full
+  notes folded away underneath; the GitHub release and the update window put it first.
 - **Each item:** a bold line saying what changed for the person, then a sentence or two on why it
   matters, with at most one wink.
 - **Order:** anything about safety or security first (plain), then new things, then improvements,

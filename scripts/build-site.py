@@ -54,8 +54,19 @@ def split_entry(lines):
     return headline, items, paragraphs[1:]
 
 
+def short_block(short):
+    """The short version, marked as a summary; nothing when the entry has none."""
+    if not short:
+        return ""
+    lines = "\n".join(f"            <li>{notes.inline(line)}</li>" for line in short)
+    return (f'        <div class="short">\n          <span class="short-badge">The short version</span>\n'
+            f'          <ul>\n{lines}\n          </ul>\n        </div>')
+
+
 def build(version, out):
-    headline, items, extra = split_entry(notes.section(version))
+    lines = notes.section(version)
+    short = notes.short_version(lines)
+    headline, items, extra = split_entry(notes.full_notes(lines))
     when = release_date(version)
     plain = re.sub(r"[*`]", "", headline).rstrip(".")
     values = {
@@ -64,6 +75,7 @@ def build(version, out):
         "RELEASE_DATE_ISO": when.isoformat(),
         "RELEASE_HEADLINE": notes.inline(headline),
         "RELEASE_HEADLINE_PLAIN": html.escape(plain),
+        "RELEASE_SHORT": short_block(short),
         "RELEASE_ITEMS": "\n".join(f"          <li>{notes.inline(item)}</li>" for item in items),
         "RELEASE_EXTRA": "\n".join(f'        <p class="release-extra">{notes.inline(p)}</p>' for p in extra),
         "DOWNLOAD_URL": DOWNLOAD,
