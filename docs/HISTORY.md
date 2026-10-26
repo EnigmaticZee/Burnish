@@ -1,5 +1,23 @@
 # Version history
 
+## 0.3.2-beta — 2026-10-26
+Same app, right chip.
+
++ Burnish now refuses an update that won't run on your Mac's chip.
++ An app that runs natively on Apple silicon is never swapped for one that needs Rosetta.
++ Apps Burnish can't check get a button to ask for them to be covered.
+
+- **Updates must be built for your Mac.** Before replacing anything, Burnish now reads which chips
+  the new copy is built for. It refuses one that won't run on this Mac's processor, one that would
+  trade an app running natively on Apple silicon for an Intel-only build that needs Rosetta, and
+  one whose chips it can't read, and offers the developer's download page instead. An app that's
+  already Intel-only can still update to another Intel-only version, and every update's hallmarks
+  now include *Built for this Mac*.
+- **Ask for an app to be covered.** Apps under *Can't check*, other than Apple's and App Store
+  apps, get *Request Support on GitHub*. It opens a ready-made issue with the app's name, bundle ID
+  and version, and nothing is sent until you submit it. Know where the app posts its updates? Say
+  so, and it can become a community feed for everyone.
+
 ## 0.3.1-beta — 2026-10-26
 Tidier, and better at taking a hint.
 
