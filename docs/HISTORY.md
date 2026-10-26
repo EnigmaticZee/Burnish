@@ -1,5 +1,33 @@
 # Version history
 
+## 0.3.1-beta — 2026-10-26
+Tidier, and better at taking a hint.
+
++ Updates you can install with one click now sit together, apart from the ones you download
+  yourself.
++ What's New opens right here on your Mac, not on a web page.
++ An app's details step aside when you click somewhere else.
++ Hallmarks lead with the three that matter, and the rest fold away.
++ Settings fits on the screen now, in four tabs.
+
+- **Updates are grouped by who does the work.** *Ready to install* holds everything one click and
+  Update All can do. *Major upgrades*, *Updated elsewhere* (the App Store, Homebrew or a
+  developer's own updater) and *Download yourself* follow, each sorted by name. The menu bar list
+  does the same.
+- **What's New stays on your Mac.** It used to open Burnish's releases page on GitHub. Now it opens
+  a window with this version's notes: the short version first, the full notes folded away,
+  earlier versions underneath, and nothing downloaded. It's in the menu bar's ⋯ menu and in
+  Settings too.
+- **Details know when to leave.** An app's details close when you click an empty part of the list,
+  switch tabs or switch to another app, so Escape is now optional.
+- **Hallmarks, folded.** Each update shows the three hallmarks that matter most, and anything worth
+  knowing is always one of them. *Show all* opens the rest under headings, in the order the install
+  checks them, with the way back last.
+- **Settings in four tabs.** General, Updates, Sources and Privacy, in a normal-sized window that
+  opens in front of whatever you were using, instead of one very tall column. Privacy lists every
+  place Burnish talks to.
+- **Fixed:** a hallmark pointed at "the checks below" while they sat above it.
+
 ## 0.3.0-beta — 2026-10-25
 Burnish now shows its working.
 
