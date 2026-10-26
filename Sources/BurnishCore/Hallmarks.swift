@@ -8,7 +8,7 @@ import UpdateSources
 /// plainly instead of rounding up to "safe".
 public struct Hallmark: Sendable, Hashable, Identifiable {
     public enum Kind: String, Sendable, CaseIterable {
-        case source, signature, checksum, sameDeveloper, gatekeeper, version, wayBack, installedBy
+        case source, signature, checksum, sameDeveloper, gatekeeper, runsHere, version, wayBack, installedBy
 
         /// How the history names a check that passed.
         public var checkName: String {
@@ -18,6 +18,7 @@ public struct Hallmark: Sendable, Hashable, Identifiable {
             case .checksum: String(localized: "checksum")
             case .sameDeveloper: String(localized: "same developer")
             case .gatekeeper: String(localized: "Gatekeeper")
+            case .runsHere: String(localized: "built for this Mac")
             case .version: String(localized: "newer version")
             case .wayBack: String(localized: "way back")
             case .installedBy: String(localized: "installer")
@@ -88,7 +89,7 @@ extension AppCheckResult {
         var checks: [Hallmark.Kind] = [.source]
         if release.source == .sparkle, app.sparklePublicEDKey != nil, release.edSignature != nil { checks.append(.signature) }
         if release.sha256 != nil || release.sha512 != nil { checks.append(.checksum) }
-        checks += [.sameDeveloper, .gatekeeper]
+        checks += [.sameDeveloper, .gatekeeper, .runsHere]
         return checks
     }
 
@@ -141,6 +142,8 @@ extension AppCheckResult {
                               detail: String(localized: "Signed by \(who), with the same bundle ID.")))
         marks.append(Hallmark(kind: .gatekeeper, state: .checkedAtInstall, title: String(localized: "Accepted by Gatekeeper"),
                               detail: String(localized: "macOS checks the new copy the way it checks anything you download.")))
+        marks.append(Hallmark(kind: .runsHere, state: .checkedAtInstall, title: String(localized: "Built for this Mac"),
+                              detail: String(localized: "The new copy must run on this Mac's chip and macOS version, and natively if yours does.")))
         return marks
     }
 
@@ -204,7 +207,8 @@ extension Hallmark.Kind {
         case .checksum: 4
         case .sameDeveloper: 5
         case .gatekeeper: 6
-        case .wayBack: 7
+        case .runsHere: 7
+        case .wayBack: 8
         }
     }
 
@@ -218,7 +222,8 @@ extension Hallmark.Kind {
         case .version: 4
         case .checksum: 5
         case .gatekeeper: 6
-        case .wayBack: 7
+        case .runsHere: 7
+        case .wayBack: 8
         }
     }
 }

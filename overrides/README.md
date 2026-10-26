@@ -25,7 +25,8 @@ Burnish downloads this file at most once a day from the `main` branch.
 ## Update feeds
 
 Some apps don't say where they update from and aren't in Homebrew, so Burnish can only say "Can't
-check". If you know where such an app announces its updates, add it under `feeds`:
+check". People can ask for one with **Request Support on GitHub** in the app, which opens a
+ready-made issue. If you know where such an app announces its updates, add it under `feeds`:
 
 ```json
 {

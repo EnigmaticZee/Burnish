@@ -137,6 +137,19 @@ func makeBundle(in dir: URL, name: String = "Fixture", id: String = bundleID, sh
     return app
 }
 
+/// Swaps an app's executable for a bare Mach-O header for one chip, or an empty file for nil.
+func setArchitecture(of app: URL, to arch: String?) throws {
+    let executable = app.appendingPathComponent("Contents/MacOS/Fixture")
+    var bytes: [UInt8] = []
+    if let arch {
+        let cpu: UInt32 = arch == "arm64" ? 0x0100_000C : 0x0100_0007
+        for value in [UInt32(0xFEED_FACF), cpu] { withUnsafeBytes(of: value.littleEndian) { bytes += $0 } }
+        bytes += [UInt8](repeating: 0, count: 24)
+    }
+    try FileManager.default.removeItem(at: executable)
+    try Data(bytes).write(to: executable)
+}
+
 func zip(_ app: URL, to zipURL: URL) throws {
     let p = Process()
     p.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
@@ -175,6 +188,7 @@ final class Harness {
     let packages = FakePackageSignatures()
     let opener = FakeOpener()
     var trashFailure: Error?
+    var appleSilicon = true
     var signatures: SignatureReading = FakeSignatures()
     var validator: SignatureValidating = FakeValidator()
     let key = Curve25519.Signing.PrivateKey()
@@ -241,6 +255,7 @@ final class Harness {
         )
         env.quitTimeout = 0.3
         env.pollInterval = 0.05
+        env.appleSilicon = appleSilicon
         env.userTrash = trashFolder
         return AppInstaller(environment: env)
     }
@@ -490,6 +505,49 @@ final class Harness {
         let app = try h.installed()
         let data = try h.serveZip(minimumOS: "99.0")
         h.expectRefused(await h.install(app, try h.sparkleRelease(signing: data)), .notNewer)
+    }
+
+    @Test func refusesAnUpdateBuiltOnlyForTheOtherChip() async throws {
+        let h = try Harness()
+        h.appleSilicon = false
+        let app = try h.installed()
+        let data = try h.serveZip { try setArchitecture(of: $0, to: "arm64") }
+        h.expectRefused(await h.install(app, try h.sparkleRelease(signing: data)), .wrongChip)
+    }
+
+    @Test func refusesTradingAppleSiliconForRosetta() async throws {
+        let h = try Harness()
+        let app = try h.installed()
+        let data = try h.serveZip { try setArchitecture(of: $0, to: "x86_64") }
+        h.expectRefused(await h.install(app, try h.sparkleRelease(signing: data)), .wrongChip)
+    }
+
+    @Test func refusesAnUpdateWhoseChipsCantBeRead() async throws {
+        let h = try Harness()
+        let app = try h.installed()
+        let data = try h.serveZip { try setArchitecture(of: $0, to: nil) }
+        h.expectRefused(await h.install(app, try h.sparkleRelease(signing: data)), .wrongChip)
+    }
+
+    @Test func anIntelOnlyAppCanStayIntelOnly() async throws {
+        let h = try Harness()
+        let app = try h.installed()
+        try setArchitecture(of: app.url, to: "x86_64")
+        let data = try h.serveZip { try setArchitecture(of: $0, to: "x86_64") }
+        guard case .installed = await h.install(app, try h.sparkleRelease(signing: data)) else {
+            Issue.record("an Intel-only app already runs through Rosetta here, so an Intel-only update is no worse")
+            return
+        }
+        #expect(h.installedVersion() == "1.1")
+    }
+
+    @Test func chipRules() {
+        #expect(AppInstaller.chipProblem(new: ["arm64", "x86_64"], installed: ["arm64"], appleSilicon: true) == nil)
+        #expect(AppInstaller.chipProblem(new: ["x86_64"], installed: ["x86_64"], appleSilicon: false) == nil)
+        #expect(AppInstaller.chipProblem(new: ["x86_64"], installed: nil, appleSilicon: true) == nil, "unknown before, Intel after: Rosetta was in use")
+        #expect(AppInstaller.chipProblem(new: ["x86_64"], installed: ["arm64", "x86_64"], appleSilicon: true) != nil)
+        #expect(AppInstaller.chipProblem(new: ["arm64"], installed: ["x86_64"], appleSilicon: false) != nil)
+        #expect(AppInstaller.chipProblem(new: [], installed: ["arm64"], appleSilicon: true) != nil)
     }
 
     @Test func appStoreAndHomebrewAppsAreNotTouched() async throws {

@@ -467,6 +467,10 @@ final class AppModel {
         NSWorkspace.shared.open(WrongMatchReport.url(for: result))
     }
 
+    func requestSupport(_ result: AppCheckResult) {
+        NSWorkspace.shared.open(SupportRequest.url(for: result))
+    }
+
     // MARK: Animation for the menu bar icon while checking
 
     private func startAnimation() {

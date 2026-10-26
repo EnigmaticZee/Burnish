@@ -18,6 +18,7 @@ struct DetailView: View {
             VStack(alignment: .leading, spacing: 18) {
                 header
                 confirmation
+                supportRequest
                 facts
                 HallmarksSection(result: result)
                 notes
@@ -80,6 +81,10 @@ struct DetailView: View {
             if let homepage = result.homepage {
                 Button("Open Developer's Site") { NSWorkspace.shared.open(homepage) }
             }
+            if result.canRequestSupport {
+                Divider()
+                Button("Request Support on GitHub…") { model.requestSupport(result) }
+            }
             if !result.app.isAppStore {
                 Divider()
                 Menu("Wrong Match?") {
@@ -93,6 +98,25 @@ struct DetailView: View {
             }
         }
         .fixedSize()
+    }
+
+    /// For an app Burnish can't check: ask for it to be covered, ideally with where it posts updates.
+    @ViewBuilder
+    private var supportRequest: some View {
+        if result.canRequestSupport {
+            GroupBox {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Know where \(result.app.name) announces its updates? Ask for it to be added, and say where if you can.")
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Request Support on GitHub…") { model.requestSupport(result) }
+                    Text("Opens a ready-made issue in your browser with the app's name, bundle ID and version. Nothing is sent until you submit it.")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(4)
+            }
+        }
     }
 
     private var putBackTitle: String {

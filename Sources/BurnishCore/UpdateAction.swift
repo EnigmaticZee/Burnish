@@ -143,3 +143,35 @@ public enum WrongMatchReport {
         return components.url!
     }
 }
+
+/// A prefilled GitHub issue asking for an app Burnish can't check to be covered, with what
+/// Burnish knows about it and nothing else. Answers usually become community feeds.
+public enum SupportRequest {
+    public static func url(for result: AppCheckResult) -> URL {
+        var body = """
+        **App:** \(result.app.name)
+        **Bundle ID:** `\(result.app.bundleID)`
+        **Installed version:** \(result.app.version.short ?? "-") (\(result.app.version.build ?? "-"))
+        """
+        if case let .cantCheck(reason) = result.status {
+            body += "\n**Why Burnish can't check it:** \(reason)"
+        }
+        body += "\n\n**Where it announces updates, if you know:** <!-- an appcast URL, a GitHub repository, or the developer's download page -->\n"
+        var components = URLComponents(url: Net.repository.appendingPathComponent("issues/new"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "title", value: "Support request: \(result.app.name) (\(result.app.bundleID))"),
+            URLQueryItem(name: "labels", value: "support-request"),
+            URLQueryItem(name: "body", value: body),
+        ]
+        return components.url!
+    }
+}
+
+extension AppCheckResult {
+    /// Apps Burnish can't check that the community could help with. Apple's apps and App Store
+    /// apps update through Apple, so there's nothing to add for them.
+    public var canRequestSupport: Bool {
+        guard case .cantCheck = status else { return false }
+        return !app.isApple && !app.isAppStore
+    }
+}

@@ -263,5 +263,8 @@ struct RowActions: View {
         }
         Divider()
         Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([result.app.url]) }
+        if result.canRequestSupport {
+            Button("Request Support on GitHub…") { model.requestSupport(result) }
+        }
     }
 }

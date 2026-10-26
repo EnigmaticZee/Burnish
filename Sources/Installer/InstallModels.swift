@@ -56,6 +56,8 @@ public struct InstallRefusal: Error, Sendable, Equatable, LocalizedError {
         case sameDeveloper
         /// Rule 4: the installed copy has no developer signature.
         case unsignedInstalledApp
+        /// Rule 4: the new copy doesn't run on this Mac's chip, or would trade Apple silicon for Rosetta.
+        case wrongChip
         /// Rule 5: installer packages only open in Apple's Installer.
         case package
         /// Rule 7/8: moving files failed or needed a permission.

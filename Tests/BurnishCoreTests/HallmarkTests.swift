@@ -30,6 +30,7 @@ import Versions
         #expect(s[.checksum] == .notAvailable, "Sparkle feeds rarely publish a checksum, and Burnish says so")
         #expect(s[.sameDeveloper] == .checkedAtInstall)
         #expect(s[.gatekeeper] == .checkedAtInstall)
+        #expect(s[.runsHere] == .checkedAtInstall)
         #expect(s[.wayBack] == .confirmed)
         #expect(marks.first { $0.kind == .sameDeveloper }?.detail.contains("Example Ltd") == true)
     }
@@ -60,7 +61,7 @@ import Versions
         let release = Release(source: .homebrew, version: VersionPair(short: "2.0"), basis: .shortVersion,
                               downloadURL: URL(string: "https://dl.example.com/Tool-2.0.dmg"), caskToken: "tool")
         let marks = outdated(app(), release: release, major: true).hallmarks(homebrew: .showOnly).inOrder
-        #expect(marks.map(\.kind) == [.version, .source, .sameDeveloper, .gatekeeper, .signature, .checksum, .wayBack],
+        #expect(marks.map(\.kind) == [.version, .source, .sameDeveloper, .gatekeeper, .runsHere, .signature, .checksum, .wayBack],
                 "worth knowing, confirmed, checked during the install, not offered, then the way back")
         #expect(marks.map(\.group) == marks.map(\.group).sorted())
     }
@@ -82,6 +83,6 @@ import Versions
     @Test func theHistoryRecordsOnlyTheChecksThatRan() {
         let release = Release(source: .homebrew, version: VersionPair(short: "1.1"), basis: .shortVersion,
                               downloadURL: URL(string: "https://dl.example.com/Tool.dmg"), sha256: "abc")
-        #expect(outdated(app(), release: release).installChecks(release) == [.source, .checksum, .sameDeveloper, .gatekeeper])
+        #expect(outdated(app(), release: release).installChecks(release) == [.source, .checksum, .sameDeveloper, .gatekeeper, .runsHere])
     }
 }

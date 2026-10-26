@@ -384,6 +384,9 @@
         }
       }
     },
+    "Built for this Mac" : {
+
+    },
     "Burnish" : {
 
     },
@@ -403,6 +406,9 @@
 
     },
     "Burnish checks and installs these itself; Update All does them together." : {
+
+    },
+    "Burnish couldn't tell which chips the new version is built for" : {
 
     },
     "Burnish doesn't install this one itself" : {
@@ -821,6 +827,9 @@
     "Keep replaced versions for 30 days" : {
 
     },
+    "Know where %@ announces its updates? Ask for it to be added, and say where if you can." : {
+
+    },
     "Latest" : {
 
     },
@@ -1010,6 +1019,9 @@
     "Opened the %@ installer package in Installer" : {
 
     },
+    "Opens a ready-made issue in your browser with the app's name, bundle ID and version. Nothing is sent until you submit it." : {
+
+    },
     "Other…" : {
 
     },
@@ -1080,6 +1092,9 @@
       }
     },
     "Report a Wrong Match on GitHub…" : {
+
+    },
+    "Request Support on GitHub…" : {
 
     },
     "Rules for this app" : {
@@ -1293,6 +1308,9 @@
     "The new copy isn't signed" : {
 
     },
+    "The new copy must run on this Mac's chip and macOS version, and natively if yours does." : {
+
+    },
     "The new copy still has to be code-signed by the same developer." : {
 
     },
@@ -1308,7 +1326,16 @@
     "The new version couldn't be moved into place. The old version is in the Trash; drag it back to %@." : {
 
     },
+    "The new version isn't built for this Mac's chip" : {
+
+    },
     "The new version needs macOS %@ or later" : {
+
+    },
+    "The new version only runs on Apple silicon, and this Mac has an Intel chip" : {
+
+    },
+    "The new version only runs on Intel chips, through Rosetta, but yours runs natively on Apple silicon" : {
 
     },
     "The notes" : {
@@ -1621,6 +1648,9 @@
 
     },
     "brew upgrade failed: %@" : {
+
+    },
+    "built for this Mac" : {
 
     },
     "bundle ID" : {

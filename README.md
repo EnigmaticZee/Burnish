@@ -52,7 +52,7 @@ Apps you installed with `brew install --cask` show as **Managed by Homebrew**; B
 
 Pick an app and its details slide in beside the list:
 
-- **Hallmarks.** Where the download comes from and each check it must pass: the developer's signature, the published checksum, the same developer as your copy, Gatekeeper. A check the source can't offer says so instead of quietly passing.
+- **Hallmarks.** Where the download comes from and each check it must pass: the developer's signature, the published checksum, the same developer as your copy, Gatekeeper, and a build for your Mac's chip. The three that matter most show first; a check the source can't offer says so instead of quietly passing.
 - **A quick read.** The developer's notes sorted into security fixes, new things, fixes and improvements, marked as a summary and built only from what the developer wrote. The full notes sit folded underneath, and if you skipped versions, so do theirs.
 - **Its own rules.** Install this app's updates automatically or only announce them, stay on the major version you have, or include betas where the developer publishes them.
 - **Intel only?** Apps built only for Intel chips are flagged, since Rosetta is going away for most apps after macOS 27.
@@ -68,7 +68,7 @@ Burnish replaces other apps on your Mac, so every install keeps all eight of the
 1. **Only trusted sources.** The download comes from the app's own update feed or Homebrew's data, over HTTPS.
 2. **The developer's signature.** If the app pins a Sparkle signing key, the update must be signed with it.
 3. **The published checksum.** If the source gives one, the file must match it exactly.
-4. **The same developer.** The new copy must pass Gatekeeper and be signed by an Apple-issued certificate for the same team as the copy you have, with the same bundle ID. Apps without a developer signature are never replaced.
+4. **The same developer, built for your Mac.** The new copy must pass Gatekeeper and be signed by an Apple-issued certificate for the same team as the copy you have, with the same bundle ID. It must run on your Mac's chip and macOS version, and natively on Apple silicon if your copy does, so an update never swaps a native app for one that needs Rosetta. Apps without a developer signature are never replaced.
 5. **No installer packages run on their own.** A verified `.pkg` opens in Apple's Installer, so you see every step.
 6. **No force-quitting.** Burnish asks an app to quit and waits. If it has unsaved work, you decide.
 7. **Nothing deleted.** The old version goes to the Trash; the new one takes its place and reopens if it was running. Changed your mind? **Put Back** returns the earlier version, after checking it the same way. Turn on **Keep replaced versions for 30 days** (Settings → Updates) and it waits in Burnish's own folder instead, safe from an emptied Trash.
@@ -136,7 +136,7 @@ Burnish finds their updates and hands them to the App Store, which installs them
 <details>
 <summary><b>Why does it say "Can't check" for some apps?</b></summary>
 <br>
-Some apps have no public update source Burnish can read, or set their update feed only while running. Burnish says so rather than guessing. If an app is in Homebrew under a different name, <b>Wrong Match? → Choose a Different Homebrew App</b> fixes it for you, and <a href="overrides/README.md">community match fixes</a> fix it for everyone. Know where an app announces its updates? Add it to the <a href="overrides/README.md#update-feeds">community feeds</a> and Burnish can watch it for everyone.
+Some apps have no public update source Burnish can read, or set their update feed only while running. Burnish says so rather than guessing. If an app is in Homebrew under a different name, <b>Wrong Match? → Choose a Different Homebrew App</b> fixes it for you, and <a href="overrides/README.md">community match fixes</a> fix it for everyone. Know where an app announces its updates? Add it to the <a href="overrides/README.md#update-feeds">community feeds</a> and Burnish can watch it for everyone, or use <b>Request Support on GitHub</b> on the app in Burnish and someone else can.
 </details>
 
 <details>

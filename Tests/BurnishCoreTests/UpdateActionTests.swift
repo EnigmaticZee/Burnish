@@ -97,4 +97,18 @@ let downloadable = Release(source: .homebrew, version: VersionPair(short: "2.0")
         #expect(body.contains("`tool`"))
         #expect(!body.contains("/Applications"), "no file paths or other personal data")
     }
+
+    @Test func supportRequestsAreForAppsTheCommunityCanHelpWith() throws {
+        let r = AppCheckResult(app: makeApp("Tool", "com.x.tool", "1.0", build: "10"), status: .cantCheck(reason: "No update feed found"))
+        #expect(r.canRequestSupport)
+        let components = try #require(URLComponents(url: SupportRequest.url(for: r), resolvingAgainstBaseURL: false))
+        let body = try #require(components.queryItems?.first { $0.name == "body" }?.value)
+        #expect(body.contains("com.x.tool") && body.contains("No update feed found"))
+        #expect(!body.contains("/Applications"), "no file paths or other personal data")
+
+        let apple = AppCheckResult(app: makeApp("Final Cut Pro", "com.apple.FinalCut", "12.0"), status: .cantCheck(reason: "Updated by Apple"))
+        #expect(!apple.canRequestSupport, "Apple's apps update through Apple")
+        let fine = AppCheckResult(app: makeApp("Tool", "com.x.tool", "1.0"), status: .upToDate(note: nil))
+        #expect(!fine.canRequestSupport)
+    }
 }

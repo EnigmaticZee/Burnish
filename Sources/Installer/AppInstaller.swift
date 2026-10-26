@@ -20,6 +20,8 @@ public struct InstallerEnvironment: Sendable {
     public var files: FileOperating
     public var packageOpener: PackageOpening
     public var system: SystemVersion
+    /// Which chip this Mac has, so an update built for the other one is refused.
+    public var appleSilicon = InstallerEnvironment.runsOnAppleSilicon
     public var unpacker = Unpacker()
     /// Rule 6: ask the app to quit and wait up to 10 seconds.
     public var quitTimeout: TimeInterval = 10
@@ -43,6 +45,14 @@ public struct InstallerEnvironment: Sendable {
         self.files = files
         self.packageOpener = packageOpener
         self.system = system
+    }
+
+    public static var runsOnAppleSilicon: Bool {
+        #if arch(arm64)
+        true
+        #else
+        false
+        #endif
     }
 
     public static func live(client: HTTPClient, workDirectory: URL) -> InstallerEnvironment {
@@ -198,12 +208,32 @@ public struct AppInstaller: Sendable {
         guard env.system.satisfies(minimum: newInfo.minimumSystemVersion) else {
             return refuse(.notNewer, String(localized: "The new version needs macOS \(newInfo.minimumSystemVersion ?? "") or later"))
         }
+        if let problem = Self.chipProblem(new: newInfo.architectures, installed: app.architectures, appleSilicon: env.appleSilicon) {
+            return refuse(.wrongChip, problem)
+        }
 
         let outcome = await swap(app, with: newApp, teamID: teamID, progress: progress, askToQuit: askToQuit, refuse: refuse)
         if case .installed = outcome {
             log.info("Updated \(app.bundleID, privacy: .public) to \(newInfo.version.display, privacy: .public)")
         }
         return outcome
+    }
+
+    /// Rule 4, for this Mac: the new copy has to run on its chip, and natively if the installed copy
+    /// does, so an update never swaps an Apple silicon app for one that needs Rosetta. A binary
+    /// whose chips can't be read is refused too, since Burnish can't tell that it will open.
+    static func chipProblem(new: [String]?, installed: [String]?, appleSilicon: Bool) -> String? {
+        guard let new, !new.isEmpty else {
+            return String(localized: "Burnish couldn't tell which chips the new version is built for")
+        }
+        if new.contains(appleSilicon ? "arm64" : "x86_64") { return nil }
+        if appleSilicon, new.contains("x86_64") {
+            guard installed?.contains("arm64") == true else { return nil }
+            return String(localized: "The new version only runs on Intel chips, through Rosetta, but yours runs natively on Apple silicon")
+        }
+        return appleSilicon
+            ? String(localized: "The new version isn't built for this Mac's chip")
+            : String(localized: "The new version only runs on Apple silicon, and this Mac has an Intel chip")
     }
 
     /// Puts back the version Burnish replaced, from the copy it left in the Trash. The copy sat in
