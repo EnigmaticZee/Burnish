@@ -237,6 +237,13 @@ final class AppModel {
 
     func action(for result: AppCheckResult) -> UpdateAction { result.action(homebrew: settings.homebrewHandling) }
 
+    /// Updates split by who installs them, one-click installs first, keeping each group's order.
+    func sections(_ items: [AppCheckResult]) -> [UpdateSection] {
+        Dictionary(grouping: items) { $0.updateGroup(homebrew: settings.homebrewHandling) ?? .download }
+            .map { UpdateSection(group: $0.key, results: $0.value) }
+            .sorted { $0.group < $1.group }
+    }
+
     /// Updates Apple installs. Burnish hands them over in one trip rather than one per app.
     var appStoreUpdates: [AppCheckResult] {
         outdated.filter { if case .openAppStore = action(for: $0) { true } else { false } }
@@ -478,4 +485,10 @@ final class AppModel {
     func markOnboardingDone() {
         settings.hasCompletedOnboarding = true
     }
+}
+
+struct UpdateSection: Identifiable {
+    let group: UpdateGroup
+    let results: [AppCheckResult]
+    var id: UpdateGroup { group }
 }

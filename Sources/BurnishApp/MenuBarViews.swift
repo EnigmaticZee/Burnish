@@ -1,6 +1,5 @@
 import AppKit
 import BurnishCore
-import Net
 import SwiftUI
 
 /// The menu bar item: an outline icon, the count beside it in the normal text colour (never red),
@@ -85,7 +84,11 @@ struct PopoverView: View {
             }
             Spacer()
             Menu {
-                Button("Settings…") { NSApp.activate(ignoringOtherApps: true); openSettings() }
+                Button("Settings…") {
+                    openSettings()
+                    WindowFront.bringSettings()
+                }
+                Button("What's New in Burnish") { WhatsNew.open() }
                 Button("Check for Burnish Updates…") { SelfUpdater.shared.checkForUpdates() }
                 Divider()
                 Button("Quit Burnish") { NSApp.terminate(nil) }
@@ -116,7 +119,7 @@ struct PopoverView: View {
     private var banners: some View {
         if let version = model.justUpdatedTo {
             Banner(text: String(localized: "Burnish updated itself to \(version)."), symbol: "bell", action: (String(localized: "What's New"), {
-                NSWorkspace.shared.open(Net.repository.appendingPathComponent("releases"))
+                WhatsNew.open()
                 model.justUpdatedTo = nil
             }))
         }
@@ -137,7 +140,7 @@ struct PopoverView: View {
 
     @ViewBuilder
     private var content: some View {
-        let outdated = model.outdated
+        let outdated = model.outdated.sorted { $0.app.name.localizedCaseInsensitiveCompare($1.app.name) == .orderedAscending }
         if outdated.isEmpty {
             VStack(spacing: 8) {
                 Image(systemName: "checkmark.circle")
@@ -151,12 +154,19 @@ struct PopoverView: View {
             .padding(.vertical, 28)
         } else {
             ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(outdated) { result in
-                        PopoverRow(result: result)
-                        if result.id != outdated.last?.id { Divider().padding(.leading, 50) }
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(model.sections(outdated)) { section in
+                        UpdateGroupHeader(group: section.group, count: section.results.count, showsNote: false)
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 2)
+                            .help(section.group.note)
+                        ForEach(section.results) { result in
+                            PopoverRow(result: result)
+                            if result.id != section.results.last?.id { Divider().padding(.leading, 50) }
+                        }
                     }
                 }
+                .padding(.vertical, 4)
             }
             .frame(maxHeight: 380)
             .fixedSize(horizontal: false, vertical: outdated.count < 6)

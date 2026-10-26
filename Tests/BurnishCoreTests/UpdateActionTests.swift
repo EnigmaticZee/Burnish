@@ -27,6 +27,22 @@ let downloadable = Release(source: .homebrew, version: VersionPair(short: "2.0")
         #expect(!r.includedInUpdateAll(homebrew: .showOnly))
     }
 
+    @Test func updatesGroupByWhoInstallsThem() {
+        let tool = makeApp("Tool", "com.x.tool", "1.0")
+        #expect(outdated(tool, release: downloadable).updateGroup(homebrew: .showOnly) == .oneClick)
+        #expect(outdated(tool, release: downloadable, major: true).updateGroup(homebrew: .showOnly) == .majorUpgrade)
+        let store = Release(source: .appStore, version: VersionPair(short: "2.0"), basis: .shortVersion)
+        #expect(outdated(makeApp("Paste", "com.x.paste", "1.0", appStore: true), release: store).updateGroup(homebrew: .showOnly) == .elsewhere)
+        var page = downloadable
+        page.downloadURL = nil
+        #expect(outdated(tool, release: page).updateGroup(homebrew: .showOnly) == .download)
+        var brewed = tool
+        brewed.caskroomToken = "tool"
+        #expect(outdated(brewed, release: downloadable).updateGroup(homebrew: .showOnly) == .elsewhere)
+        #expect(outdated(brewed, release: downloadable).updateGroup(homebrew: .upgradeWithBrew) == .oneClick)
+        #expect(AppCheckResult(app: tool, status: .upToDate(note: nil), decidedBy: nil).updateGroup(homebrew: .showOnly) == nil)
+    }
+
     @Test func appStoreOpensTheStore() {
         let store = Release(source: .appStore, version: VersionPair(short: "2.0"), basis: .shortVersion, downloadPage: URL(string: "macappstore://apps.apple.com/app/id1"))
         let r = outdated(makeApp("Paste", "com.x.paste", "1.0", appStore: true), release: store)

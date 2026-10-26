@@ -582,33 +582,65 @@ struct HistorySection: View {
 struct HallmarksSection: View {
     @Environment(AppModel.self) private var model
     let result: AppCheckResult
+    @State private var showAll = false
 
     var body: some View {
-        let marks = result.hallmarks(homebrew: model.settings.homebrewHandling)
+        let marks = result.hallmarks(homebrew: model.settings.homebrewHandling).inOrder
         if !marks.isEmpty {
+            let leading = marks.leading()
             VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline) {
                     Text("Hallmarks").font(.headline)
-                    Text("What Burnish vouches for, now and during the install.").font(.caption).foregroundStyle(.secondary)
+                    Spacer()
+                    if marks.count > leading.count {
+                        Button(showAll ? String(localized: "Show fewer") : String(localized: "Show all \(marks.count)")) {
+                            withAnimation(.easeInOut(duration: 0.2)) { showAll.toggle() }
+                        }
+                        .buttonStyle(.link)
+                        .font(.callout)
+                    }
                 }
-                ForEach(marks) { mark in
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Image(systemName: Self.symbol(mark.state))
-                            .foregroundStyle(Self.tint(mark.state))
-                            .frame(width: 18)
-                            .help(Self.stateText(mark.state))
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(verbatim: mark.title).font(.callout.weight(.medium))
-                            if !mark.detail.isEmpty {
-                                Text(verbatim: mark.detail).font(.caption).foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
+                if showAll {
+                    ForEach(Hallmark.Group.allCases, id: \.self) { group in
+                        let inGroup = marks.filter { $0.group == group }
+                        if !inGroup.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(verbatim: group.title)
+                                    .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                                ForEach(inGroup) { MarkRow(mark: $0, showsDetail: true) }
                             }
                         }
                     }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityValue(Self.stateText(mark.state))
+                } else {
+                    ForEach(leading) { MarkRow(mark: $0, showsDetail: false) }
                 }
             }
+            .onChange(of: result.id) { _, _ in showAll = false }
+        }
+    }
+
+    /// One mark: its seal and title, with the explanation underneath once the list is open, or
+    /// on hover while it's folded.
+    private struct MarkRow: View {
+        let mark: Hallmark
+        let showsDetail: Bool
+
+        var body: some View {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Image(systemName: HallmarksSection.symbol(mark.state))
+                    .foregroundStyle(HallmarksSection.tint(mark.state))
+                    .frame(width: 18)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(verbatim: mark.title).font(.callout.weight(showsDetail ? .medium : .regular))
+                    if showsDetail, !mark.detail.isEmpty {
+                        Text(verbatim: mark.detail).font(.caption).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+            .help(mark.detail.isEmpty ? HallmarksSection.stateText(mark.state) : mark.detail)
+            .accessibilityElement(children: .combine)
+            .accessibilityValue(HallmarksSection.stateText(mark.state))
         }
     }
 

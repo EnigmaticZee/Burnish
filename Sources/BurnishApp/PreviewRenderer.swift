@@ -36,8 +36,12 @@ enum PreviewRenderer {
                 model.selectedID = model.outdated.first?.id
                 model.showDetails = true
                 render(MainWindow().environment(model), width: 1040, height: 660, dark: dark, to: folder.appendingPathComponent("main\(suffix).png"))
-                render(SettingsView().environment(model), width: 480, height: nil, dark: dark, to: folder.appendingPathComponent("settings\(suffix).png"))
+                for tab in SettingsTab.allCases {
+                    render(SettingsPane(tab: tab).environment(model), width: 520, height: nil, dark: dark,
+                           to: folder.appendingPathComponent("settings-\(tab.rawValue)\(suffix).png"))
+                }
                 render(OnboardingView().environment(model), width: 480, height: 460, dark: dark, to: folder.appendingPathComponent("onboarding\(suffix).png"))
+                render(WhatsNewView(), width: 540, height: 600, dark: dark, to: folder.appendingPathComponent("whats-new\(suffix).png"))
             }
             for tab in StatusTab.allCases {
                 model.selectedTab = tab

@@ -38,6 +38,8 @@ sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" App/Info.plist > "$APP
 cp App/Assets.car App/AppIcon.icns "$APP/Contents/Resources/"
 # UI text: the string catalog compiles to one .lproj per language (scripts/update-strings.sh).
 xcrun xcstringstool compile App/Localizable.xcstrings --output-directory "$APP/Contents/Resources" >/dev/null
+# Burnish's own release notes, for the What's New window.
+cp docs/HISTORY.md "$APP/Contents/Resources/"
 
 # The command-line tool, for Shortcuts, scripts and IT admins. Not next to the app's own
 # executable: on a case-insensitive disk "burnish" and "Burnish" are the same file.

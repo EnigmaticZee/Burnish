@@ -73,6 +73,53 @@ extension AppCheckResult {
     }
 }
 
+/// Where an update sits in the Updates list, so what one click installs never mixes with what
+/// you have to fetch yourself.
+public enum UpdateGroup: Int, Sendable, CaseIterable, Identifiable, Comparable {
+    /// Burnish installs it, and Update All includes it.
+    case oneClick
+    /// One click too, but possibly paid, so never part of Update All.
+    case majorUpgrade
+    /// The App Store, Homebrew or the developer's own updater installs it.
+    case elsewhere
+    /// Only the developer's download page will do.
+    case download
+
+    public var id: Int { rawValue }
+
+    public static func < (a: UpdateGroup, b: UpdateGroup) -> Bool { a.rawValue < b.rawValue }
+
+    public var title: String {
+        switch self {
+        case .oneClick: String(localized: "Ready to install")
+        case .majorUpgrade: String(localized: "Major upgrades")
+        case .elsewhere: String(localized: "Updated elsewhere")
+        case .download: String(localized: "Download yourself")
+        }
+    }
+
+    public var note: String {
+        switch self {
+        case .oneClick: String(localized: "Burnish checks and installs these itself; Update All does them together.")
+        case .majorUpgrade: String(localized: "One click each, but they may be paid, so Update All leaves them to you.")
+        case .elsewhere: String(localized: "The App Store, Homebrew or the developer's own updater installs these.")
+        case .download: String(localized: "Burnish can't install these safely, so it opens the developer's page.")
+        }
+    }
+}
+
+extension AppCheckResult {
+    public func updateGroup(homebrew: HomebrewHandling) -> UpdateGroup? {
+        guard case let .outdated(candidate) = status else { return nil }
+        switch action(homebrew: homebrew) {
+        case .install, .brewUpgrade: return candidate.isMajorUpgrade ? .majorUpgrade : .oneClick
+        case .openAppStore, .openUpdater, .managedByHomebrew: return .elsewhere
+        case .openDownloadPage: return .download
+        case .none: return nil
+        }
+    }
+}
+
 /// A prefilled GitHub issue with the bundle ID, versions and chosen cask, and nothing else.
 public enum WrongMatchReport {
     public static func url(for result: AppCheckResult) -> URL {

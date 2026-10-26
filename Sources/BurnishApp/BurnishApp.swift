@@ -24,6 +24,7 @@ struct BurnishApp: App {
         .defaultSize(width: 980, height: 620)
         .commands {
             CommandGroup(after: .appInfo) {
+                Button("What's New in Burnish") { WhatsNew.open() }
                 Button("Check for Burnish Updates…") { SelfUpdater.shared.checkForUpdates() }
             }
             CommandMenu("Apps") {
@@ -34,6 +35,11 @@ struct BurnishApp: App {
                     .disabled(!delegate.model.canUpdateAll)
             }
         }
+
+        Window("What's New in Burnish", id: WhatsNew.windowID) {
+            WhatsNewView()
+        }
+        .windowResizability(.contentSize)
 
         Window("Welcome to Burnish", id: "onboarding") {
             OnboardingView()
@@ -111,6 +117,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             return
         }
         WindowOpener.shared.request(id)
+    }
+}
+
+/// Burnish's own release notes, in a window of their own.
+@MainActor
+enum WhatsNew {
+    static let windowID = "whats-new"
+
+    static func open() {
+        WindowOpener.shared.request(windowID)
+        WindowFront.bring(id: windowID)
     }
 }
 

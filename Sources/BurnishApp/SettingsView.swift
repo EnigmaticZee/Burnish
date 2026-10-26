@@ -3,86 +3,209 @@ import BurnishCore
 import Store
 import SwiftUI
 
-/// One pane, grouped by what each control is for.
+enum SettingsTab: String, CaseIterable, Identifiable {
+    case general, updates, sources, privacy
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .general: String(localized: "General")
+        case .updates: String(localized: "Updates")
+        case .sources: String(localized: "Sources")
+        case .privacy: String(localized: "Privacy")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .general: "gearshape"
+        case .updates: "arrow.down.circle"
+        case .sources: "magnifyingglass"
+        case .privacy: "hand.raised"
+        }
+    }
+
+    /// Settings in this tab an organisation can enforce.
+    var managedKeys: Set<ManagedSettings.Key> {
+        switch self {
+        case .general: [.checkFrequency, .notificationsEnabled]
+        case .updates: [.autoUpdate, .autoUpdateWait, .homebrewHandling, .keepEarlierVersions]
+        case .sources: [.scanUserApplications, .appStoreLookups, .communityOverrides]
+        case .privacy: []
+        }
+    }
+}
+
+/// A normal-sized Settings window with a tab for each kind of choice: when Burnish checks, how
+/// it updates, where it looks, and what leaves the Mac.
 struct SettingsView: View {
+    @AppStorage("settingsTab") private var tab: SettingsTab = .general
+
+    var body: some View {
+        TabView(selection: $tab) {
+            ForEach(SettingsTab.allCases) { tab in
+                SettingsPane(tab: tab)
+                    .tabItem { Label(tab.title, systemImage: tab.symbol) }
+                    .tag(tab)
+            }
+        }
+        .modifier(RegularWhileOpen())
+    }
+}
+
+struct SettingsPane: View {
     @Environment(AppModel.self) private var model
+    let tab: SettingsTab
 
     var body: some View {
         @Bindable var model = model
         Form {
-            if !model.lockedSettings.isEmpty {
+            switch tab {
+            case .general: general
+            case .updates: updates
+            case .sources: sources
+            case .privacy: privacy
+            }
+            if !model.lockedSettings.isDisjoint(with: tab.managedKeys) {
                 Section {
-                    Label("Some settings are set by your organisation.", systemImage: "building.2")
+                    Label("Some of these are set by your organisation.", systemImage: "building.2")
                         .font(.callout).foregroundStyle(.secondary)
                 }
             }
-            Section {
-                Picker("Check for updates", selection: $model.settings.checkFrequency) {
-                    ForEach(CheckFrequency.allCases) { Text($0.label).tag($0) }
-                }
-                .disabled(locked(.checkFrequency))
-                Toggle("Notify me when updates are found", isOn: $model.settings.notificationsEnabled)
-                    .disabled(locked(.notificationsEnabled))
-                Text("At most one notification a day.").font(.caption).foregroundStyle(.secondary)
-                Toggle("Open Burnish at login", isOn: $model.settings.launchAtLogin)
-                Toggle("Keep Burnish up to date automatically", isOn: Bindable(SelfUpdater.shared).automaticallyChecks)
-            }
-            Section {
-                Toggle("Install app updates automatically", isOn: $model.settings.autoUpdate)
-                    .disabled(locked(.autoUpdate))
-                Picker("Wait after a release", selection: $model.settings.autoUpdateWait) {
-                    ForEach(AutoUpdateWait.allCases) { Text($0.label).tag($0) }
-                }
-                .disabled(!model.settings.autoUpdate || locked(.autoUpdateWait))
-                Text("Only apps that aren't open, never major upgrades, with every check. Security updates skip the wait, and each app can choose for itself in its rules.")
-                    .font(.caption).foregroundStyle(.secondary)
-            } header: {
-                Text("Automatic updates")
-            }
-            Section {
-                Toggle("Keep replaced versions for 30 days", isOn: $model.settings.keepEarlierVersions)
-                    .disabled(locked(.keepEarlierVersions))
-                Text("Burnish keeps each app's previous version in its own folder, so emptying the Trash doesn't take away Put Back. It uses disk space, and after 30 days the copy goes to the Trash.")
-                    .font(.caption).foregroundStyle(.secondary)
-            } header: {
-                Text("A way back")
-            }
-            Section {
-                Toggle("Also check apps in ~/Applications", isOn: $model.settings.scanUserApplications)
-                    .disabled(locked(.scanUserApplications))
-                Picker("Apps installed with Homebrew", selection: $model.settings.homebrewHandling) {
-                    ForEach(HomebrewHandling.allCases) { Text($0.label).tag($0) }
-                }
-                .disabled(locked(.homebrewHandling))
-                Text("By default Burnish shows their status and leaves updating to `brew upgrade --cask`, so the two never fight.")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            Section {
-                Toggle("Look up App Store apps with Apple", isOn: $model.settings.appStoreLookups)
-                    .disabled(locked(.appStoreLookups))
-                Text("Sends the bundle IDs of your App Store apps to Apple's public lookup.")
-                    .font(.caption).foregroundStyle(.secondary)
-                Toggle("Use community match fixes", isOn: $model.settings.communityOverrides)
-                    .disabled(locked(.communityOverrides))
-                Text("Downloads corrections from Burnish's GitHub repository once a day.")
-                    .font(.caption).foregroundStyle(.secondary)
-            } header: {
-                Text("Privacy")
-            } footer: {
-                HStack {
-                    Button("App Management Settings…", action: Permissions.openAppManagement)
-                    Spacer()
-                    Button("Show Burnish's Data") { NSWorkspace.shared.open(model.engine.store.directory) }
-                }
-                .padding(.top, 6)
-            }
         }
         .formStyle(.grouped)
-        .frame(width: 480)
+        .scrollDisabled(true)
+        .frame(width: 520)
         .fixedSize()
     }
 
+    @ViewBuilder
+    private var general: some View {
+        @Bindable var model = model
+        Section {
+            Picker("Check for updates", selection: $model.settings.checkFrequency) {
+                ForEach(CheckFrequency.allCases) { Text($0.label).tag($0) }
+            }
+            .disabled(locked(.checkFrequency))
+            Toggle(isOn: $model.settings.notificationsEnabled) {
+                Text("Notify me when updates are found")
+                Text("At most one notification a day.")
+            }
+            .disabled(locked(.notificationsEnabled))
+        }
+        Section {
+            Toggle("Open Burnish at login", isOn: $model.settings.launchAtLogin)
+            Toggle("Keep Burnish up to date automatically", isOn: Bindable(SelfUpdater.shared).automaticallyChecks)
+        } footer: {
+            HStack {
+                Text("Burnish \(Self.version)").foregroundStyle(.secondary)
+                Spacer()
+                Button("What's New") { WhatsNew.open() }
+            }
+            .padding(.top, 4)
+        }
+    }
+
+    @ViewBuilder
+    private var updates: some View {
+        @Bindable var model = model
+        Section("Automatic updates") {
+            Toggle(isOn: $model.settings.autoUpdate) {
+                Text("Install app updates automatically")
+                Text("Only apps that aren't open, never major upgrades, and with every check. Security updates skip the wait, and each app can choose for itself in its rules.")
+            }
+            .disabled(locked(.autoUpdate))
+            Picker("Wait after a release", selection: $model.settings.autoUpdateWait) {
+                ForEach(AutoUpdateWait.allCases) { Text($0.label).tag($0) }
+            }
+            .disabled(!model.settings.autoUpdate || locked(.autoUpdateWait))
+        }
+        Section("Homebrew") {
+            Picker(selection: $model.settings.homebrewHandling) {
+                ForEach(HomebrewHandling.allCases) { Text($0.label).tag($0) }
+            } label: {
+                Text("Apps installed with Homebrew")
+                Text("By default Burnish shows their status and leaves updating to `brew upgrade --cask`, so the two never fight.")
+            }
+            .disabled(locked(.homebrewHandling))
+        }
+        Section("A way back") {
+            Toggle(isOn: $model.settings.keepEarlierVersions) {
+                Text("Keep replaced versions for 30 days")
+                Text("Each app's previous version waits in Burnish's own folder, so emptying the Trash doesn't take away Put Back. It uses disk space; after 30 days the copy goes to the Trash.")
+            }
+            .disabled(locked(.keepEarlierVersions))
+        }
+    }
+
+    @ViewBuilder
+    private var sources: some View {
+        @Bindable var model = model
+        Section("Apps") {
+            Toggle(isOn: $model.settings.scanUserApplications) {
+                Text("Also check apps in ~/Applications")
+                Text("Burnish always checks /Applications.")
+            }
+            .disabled(locked(.scanUserApplications))
+        }
+        Section("Where Burnish asks") {
+            Toggle(isOn: $model.settings.appStoreLookups) {
+                Text("Look up App Store apps with Apple")
+                Text("Sends the bundle IDs of your App Store apps to Apple's public lookup.")
+            }
+            .disabled(locked(.appStoreLookups))
+            Toggle(isOn: $model.settings.communityOverrides) {
+                Text("Use community fixes and feeds")
+                Text("Downloads match corrections and update feeds from Burnish's GitHub repository once a day.")
+            }
+            .disabled(locked(.communityOverrides))
+        }
+    }
+
+    @ViewBuilder
+    private var privacy: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 6) {
+                request("Homebrew's app list, once a day", "shippingbox")
+                request("Apple's App Store lookup, with your App Store apps' bundle IDs", "bag")
+                request("Each app's own update feed, its release notes, and the download itself", "arrow.down.circle")
+                request("GitHub, for apps whose downloads live there, and for community fixes and feeds", "chevron.left.forwardslash.chevron.right")
+                request("Burnish's own update feed, about once a day", "bell")
+            }
+            .font(.callout)
+        } header: {
+            Text("What leaves this Mac")
+        } footer: {
+            Text("No account, no analytics, no crash reports. Logs stay on this Mac.").foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        Section {
+            LabeledContent {
+                Button("Open System Settings…", action: Permissions.openAppManagement)
+            } label: {
+                Text("App Management")
+                Text(model.needsAppManagement ? "macOS stopped Burnish replacing an app. Turn it on to install updates." : "macOS asks before one app replaces another. Finding updates works without it.")
+            }
+            LabeledContent {
+                Button("Show in Finder") { NSWorkspace.shared.open(model.engine.store.directory) }
+            } label: {
+                Text("Burnish's data")
+                Text("Settings, results and history, in Application Support on this Mac.")
+            }
+        }
+    }
+
+    private func request(_ text: LocalizedStringKey, _ symbol: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: symbol).foregroundStyle(.secondary).frame(width: 20)
+            Text(text).fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
     private func locked(_ key: ManagedSettings.Key) -> Bool { model.lockedSettings.contains(key) }
+
+    private static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
 }
 
 /// First run: what Burnish scans and sends, the App Management permission, then the first scan.

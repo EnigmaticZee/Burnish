@@ -9,7 +9,8 @@ enum SortOrder: String, CaseIterable, Identifiable {
 }
 
 /// Sidebar with the five tabs and counts and a sortable list. An app's details open in an
-/// inspector only when one is picked, so the list keeps its room the rest of the time.
+/// inspector only when one is picked, and close again on Escape, on a click in an empty part of
+/// the list, on another tab, or when you switch to another app.
 struct MainWindow: View {
     @Environment(AppModel.self) private var model
     @State private var search = ""
@@ -41,8 +42,11 @@ struct MainWindow: View {
             }
         }
         .searchable(text: $search, placement: .sidebar, prompt: "Search apps")
-        .onChange(of: model.selectedID) { _, id in
-            if id != nil { model.showDetails = true }
+        .onChange(of: model.selectedID) { _, id in model.showDetails = id != nil }
+        .onChange(of: model.showDetails) { _, shown in if !shown { model.selectedID = nil } }
+        .onChange(of: model.selectedTab) { _, _ in model.selectedID = nil }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
+            model.showDetails = false
         }
         .toolbar {
             ToolbarItemGroup {
@@ -64,18 +68,10 @@ struct MainWindow: View {
                 }
                 .disabled(!model.canUpdateAll)
                 .help(UpdateAllHelp.text)
-                Button {
-                    model.showDetails.toggle()
-                } label: {
-                    Label("Details", systemImage: "sidebar.trailing")
-                }
-                .help("Show or hide the selected app's details")
-                .disabled(model.selectedID == nil)
             }
         }
         .frame(minWidth: 720, minHeight: 480)
-        .onAppear { NSApp.setActivationPolicy(.regular) }
-        .onDisappear { NSApp.setActivationPolicy(.accessory) }
+        .modifier(RegularWhileOpen())
     }
 
     /// Notices sit above the list, in its column, never over the sidebar.
@@ -114,15 +110,31 @@ struct ResultList: View {
                     Text(emptyDescription)
                 }
             } else {
-                List(items, selection: $model.selectedID) { result in
-                    ResultRow(result: result).tag(result.id)
-                        .contextMenu { RowActions(result: result) }
+                List(selection: $model.selectedID) {
+                    if tab == .updates {
+                        ForEach(model.sections(items)) { section in
+                            Section {
+                                rows(section.results)
+                            } header: {
+                                UpdateGroupHeader(group: section.group, count: section.results.count)
+                            }
+                        }
+                    } else {
+                        rows(items)
+                    }
                 }
                 .onExitCommand { model.showDetails = false }
             }
         }
         .navigationTitle(tab.title)
         .navigationSubtitle(model.lastCheck.map { String(localized: "Checked \($0.relativeDescription)") } ?? "")
+    }
+
+    private func rows(_ results: [AppCheckResult]) -> some View {
+        ForEach(results) { result in
+            ResultRow(result: result).tag(result.id)
+                .contextMenu { RowActions(result: result) }
+        }
     }
 
     private var filtered: [AppCheckResult] {
@@ -160,6 +172,26 @@ struct ResultList: View {
         case .cantCheck: String(localized: "Apps Burnish can't find an update source for show here, with the reason.")
         case .ignored: String(localized: "Apps and versions you ignore show here.")
         }
+    }
+}
+
+/// "Ready to install · 4", and what sets the group apart.
+struct UpdateGroupHeader: View {
+    let group: UpdateGroup
+    let count: Int
+    var showsNote = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            HStack(spacing: 6) {
+                Text(verbatim: group.title).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
+                Text(count, format: .number).font(.subheadline).foregroundStyle(.secondary)
+            }
+            if showsNote {
+                Text(verbatim: group.note).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.top, 4)
     }
 }
 

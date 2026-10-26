@@ -127,7 +127,7 @@ extension AppCheckResult {
                            detail: String(localized: "\(app.name) expects signed updates and this one isn't, so Burnish will refuse it.")))
         } else {
             marks.append(Hallmark(kind: .signature, state: .notAvailable, title: String(localized: "No update signing key"),
-                                  detail: String(localized: "\(app.name) doesn't pin one, so the checks below carry the weight.")))
+                                  detail: String(localized: "\(app.name) doesn't pin one, so the other checks carry the weight.")))
         }
         if release.sha256 != nil || release.sha512 != nil {
             marks.append(Hallmark(kind: .checksum, state: .checkedAtInstall, title: String(localized: "Matches the published checksum"),
@@ -156,5 +156,84 @@ extension AppCheckResult {
         }
         return Hallmark(kind: .version, state: .confirmed, title: String(localized: "Newer than yours: \(line)"),
                         detail: String(localized: "Burnish never installs an older version."))
+    }
+}
+
+extension Hallmark {
+    /// The headings of the full list: anything worth knowing first, then what's settled, what the
+    /// install checks, what someone else checks, what this source can't offer, and last the way
+    /// back, which is about afterwards.
+    public enum Group: Int, Sendable, CaseIterable, Comparable {
+        case worthKnowing, confirmed, checkedAtInstall, handedOff, notOffered, afterwards
+
+        public static func < (a: Group, b: Group) -> Bool { a.rawValue < b.rawValue }
+
+        public var title: String {
+            switch self {
+            case .worthKnowing: String(localized: "Worth knowing")
+            case .confirmed: String(localized: "Confirmed now")
+            case .checkedAtInstall: String(localized: "Checked before it goes in")
+            case .handedOff: String(localized: "Checked by whoever installs it")
+            case .notOffered: String(localized: "Not offered by this source")
+            case .afterwards: String(localized: "If you change your mind")
+            }
+        }
+    }
+
+    public var group: Group {
+        if kind == .wayBack { return .afterwards }
+        switch state {
+        case .caution: return .worthKnowing
+        case .confirmed: return .confirmed
+        case .checkedAtInstall: return .checkedAtInstall
+        case .handedOff: return .handedOff
+        case .notAvailable: return .notOffered
+        }
+    }
+}
+
+extension Hallmark.Kind {
+    /// The order a careful person asks in: where from, which version, who installs it, the
+    /// install's own checks, then the way back.
+    var step: Int {
+        switch self {
+        case .source: 0
+        case .version: 1
+        case .installedBy: 2
+        case .signature: 3
+        case .checksum: 4
+        case .sameDeveloper: 5
+        case .gatekeeper: 6
+        case .wayBack: 7
+        }
+    }
+
+    /// Which marks earn a place up front when the list is folded.
+    var weight: Int {
+        switch self {
+        case .source: 0
+        case .installedBy: 1
+        case .sameDeveloper: 2
+        case .signature: 3
+        case .version: 4
+        case .checksum: 5
+        case .gatekeeper: 6
+        case .wayBack: 7
+        }
+    }
+}
+
+extension Array where Element == Hallmark {
+    /// Grouped under their headings, and in the order of the install within each group.
+    public var inOrder: [Hallmark] {
+        sorted { ($0.group.rawValue, $0.kind.step) < ($1.group.rawValue, $1.kind.step) }
+    }
+
+    /// The marks shown before "Show all": everything worth knowing, then the most telling of the
+    /// rest, never one the source can't offer.
+    public func leading(_ count: Int = 3) -> [Hallmark] {
+        let cautions = filter { $0.state == .caution }
+        let rest = filter { $0.state != .caution && $0.state != .notAvailable }.sorted { $0.kind.weight < $1.kind.weight }
+        return (cautions + rest.prefix(Swift.max(0, count - cautions.count))).inOrder
     }
 }

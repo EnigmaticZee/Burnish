@@ -71,7 +71,7 @@ Burnish replaces other apps on your Mac, so every install keeps all eight of the
 4. **The same developer.** The new copy must pass Gatekeeper and be signed by an Apple-issued certificate for the same team as the copy you have, with the same bundle ID. Apps without a developer signature are never replaced.
 5. **No installer packages run on their own.** A verified `.pkg` opens in Apple's Installer, so you see every step.
 6. **No force-quitting.** Burnish asks an app to quit and waits. If it has unsaved work, you decide.
-7. **Nothing deleted.** The old version goes to the Trash; the new one takes its place and reopens if it was running. Changed your mind? **Put Back** returns the earlier version, after checking it the same way. Turn on **Keep earlier versions** and it waits in Burnish's own folder for 30 days instead, safe from an emptied Trash.
+7. **Nothing deleted.** The old version goes to the Trash; the new one takes its place and reopens if it was running. Changed your mind? **Put Back** returns the earlier version, after checking it the same way. Turn on **Keep replaced versions for 30 days** (Settings → Updates) and it waits in Burnish's own folder instead, safe from an emptied Trash.
 8. **Your password stays yours.** When a folder needs admin rights, macOS asks you itself.
 
 Major upgrades (5.x → 6.x) are marked *May be paid* and never included in **Update All**.

@@ -56,6 +56,29 @@ import Versions
         #expect(s[.signature] == nil && s[.wayBack] == nil, "no install checks claimed for someone else's install")
     }
 
+    @Test func theFullListGroupsByStateInInstallOrder() {
+        let release = Release(source: .homebrew, version: VersionPair(short: "2.0"), basis: .shortVersion,
+                              downloadURL: URL(string: "https://dl.example.com/Tool-2.0.dmg"), caskToken: "tool")
+        let marks = outdated(app(), release: release, major: true).hallmarks(homebrew: .showOnly).inOrder
+        #expect(marks.map(\.kind) == [.version, .source, .sameDeveloper, .gatekeeper, .signature, .checksum, .wayBack],
+                "worth knowing, confirmed, checked during the install, not offered, then the way back")
+        #expect(marks.map(\.group) == marks.map(\.group).sorted())
+    }
+
+    @Test func theFoldedListLeadsWithWhatMatters() {
+        let signed = Release(source: .sparkle, version: VersionPair(short: "1.1", build: "110"), basis: .bundleVersion,
+                             downloadURL: URL(string: "https://updates.example.com/Tool.zip"), edSignature: "sig")
+        #expect(outdated(app(edKey: "key"), release: signed).hallmarks(homebrew: .showOnly).leading().map(\.kind)
+                == [.source, .signature, .sameDeveloper])
+
+        let major = Release(source: .homebrew, version: VersionPair(short: "2.0"), basis: .shortVersion,
+                            downloadURL: URL(string: "https://dl.example.com/Tool-2.0.dmg"), caskToken: "tool")
+        let leading = outdated(app(), release: major, major: true).hallmarks(homebrew: .showOnly).leading()
+        #expect(leading.first?.state == .caution, "anything worth knowing is never folded away")
+        #expect(!leading.contains { $0.state == .notAvailable })
+        #expect(leading.count == 3)
+    }
+
     @Test func theHistoryRecordsOnlyTheChecksThatRan() {
         let release = Release(source: .homebrew, version: VersionPair(short: "1.1"), basis: .shortVersion,
                               downloadURL: URL(string: "https://dl.example.com/Tool.dmg"), sha256: "abc")
