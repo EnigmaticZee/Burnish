@@ -94,7 +94,7 @@ macOS may also contact Apple when Burnish asks Gatekeeper to check a downloaded 
 
 ## Install
 
-1. **[Download Burnish.dmg](https://github.com/EnigmaticZee/Burnish/releases/latest/download/Burnish.dmg)**, open it and drag Burnish into Applications.
+1. **[Download Burnish.dmg](https://github.com/EnigmaticZee/Burnish/releases/latest/download/Burnish.dmg)**, open it and drag Burnish into Applications. Or with Homebrew: `brew install --cask enigmaticzee/tap/burnish`.
 2. **Open it.** Burnish is signed with a Developer ID and notarised by Apple, so it opens like any other app.
 3. **Let it update apps.** Burnish asks for **App Management** (System Settings → Privacy & Security), which macOS requires before one app can replace another. Finding updates works without it.
 
@@ -177,7 +177,7 @@ JSON and CSV reports. [docs/ADMINS.md](docs/ADMINS.md) has every key and an exam
 **Next**
 
 ✅ Signed and notarised builds, so there's no first-launch prompt<br>
-⬜ A Homebrew cask for Burnish<br>
+✅ A Homebrew cask for Burnish<br>
 ⬜ More apps matched out of the box
 
 ## Support
