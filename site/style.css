@@ -405,3 +405,54 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
   .marquee-track li[aria-hidden] { display: none; }
   .desktop { transform: none; }
 }
+
+/* Micro-interactions: small replies to the pointer. None of them is needed to read the page, and
+   the reduced-motion rule above switches every one of them off. */
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; border-radius: 6px; }
+.nav nav a { position: relative; }
+.nav nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 2px; border-radius: 2px; background: var(--brass); transform: scaleX(0); transform-origin: left; transition: transform 0.3s cubic-bezier(.2, .8, .2, 1); }
+.nav nav a:hover::after, .nav nav a:focus-visible::after { transform: scaleX(1); }
+.new-pill span[aria-hidden]:last-child { display: inline-block; transition: transform 0.3s cubic-bezier(.3, 1.4, .5, 1); }
+.new-pill:hover span[aria-hidden]:last-child { transform: translateX(4px); }
+.btn svg { transition: transform 0.35s cubic-bezier(.3, 1.5, .5, 1); }
+.btn-primary:hover svg { transform: translateY(2px); }
+.btn-ghost:hover { border-color: var(--brass); }
+.seal-line { display: inline-flex; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 0.92rem; color: var(--ink-2); }
+.seal-line .seal { width: 20px; height: 20px; fill: none; stroke: var(--brass); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; overflow: visible; transition: transform 0.45s cubic-bezier(.3, 1.6, .5, 1), filter 0.4s; }
+.seal-line .seal .tick { stroke-dasharray: 14; stroke-dashoffset: 14; transition: stroke-dashoffset 0.6s ease 0.5s; }
+.seal-line.in .seal .tick { stroke-dashoffset: 0; }
+.seal-line:hover .seal { transform: rotate(-10deg) scale(1.15); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--brass) 55%, transparent)); }
+.marquee-track li svg { transition: transform 0.3s cubic-bezier(.3, 1.5, .5, 1), color 0.25s; }
+.marquee-track li:hover svg { transform: scale(1.18) rotate(-6deg); }
+.card svg { transition: transform 0.45s cubic-bezier(.3, 1.4, .5, 1), stroke 0.3s; }
+.card:hover svg { transform: translateY(-2px) rotate(-5deg) scale(1.06); stroke: var(--copper); }
+.card h3 { transition: color 0.3s; }
+.card:hover h3 { color: var(--brass); }
+.promise-list li { transition: transform 0.35s cubic-bezier(.2, .9, .3, 1), border-color 0.3s; }
+.promise-list li:hover { transform: translateX(6px); border-color: color-mix(in srgb, var(--brass) 45%, transparent); }
+.promise-list li svg { transition: transform 0.35s cubic-bezier(.3, 1.6, .5, 1); }
+.promise-list li:hover svg { transform: scale(1.15) rotate(-6deg); }
+.release-version { display: inline-block; transition: transform 0.3s cubic-bezier(.3, 1.6, .5, 1); }
+.release:hover .release-version { transform: rotate(-3deg) scale(1.05); }
+.release-all { transition: transform 0.3s cubic-bezier(.3, 1.4, .5, 1); }
+.release-all:hover { transform: translateX(4px); text-decoration: none; }
+.full-notes[open] .release-extra, .faq details[open] p { animation: unfold 0.35s ease; }
+.steps li { transition: transform 0.35s cubic-bezier(.2, .9, .3, 1), border-color 0.3s, box-shadow 0.35s; }
+.steps li:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--brass) 45%, transparent); box-shadow: 0 18px 40px -26px rgba(120, 70, 20, 0.5); }
+.step-n { transition: transform 0.4s cubic-bezier(.3, 1.6, .5, 1); }
+.steps li:hover .step-n { transform: rotate(-8deg) scale(1.1); }
+.copy { transition: transform 0.15s, background 0.3s, color 0.3s; }
+.copy:hover { transform: translateY(-1px); }
+.copy:active { transform: scale(0.95); }
+.copy.copied { background: var(--brass); color: #fff; animation: pop 0.35s cubic-bezier(.3, 1.6, .5, 1); }
+.privacy-list li { transition: transform 0.35s cubic-bezier(.2, .9, .3, 1), border-color 0.3s; }
+.privacy-list li:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--brass) 45%, transparent); }
+.privacy-list li b { transition: color 0.3s; }
+.privacy-list li:hover b { color: var(--brass); }
+.faq summary { transition: color 0.25s, padding-left 0.3s cubic-bezier(.2, .9, .3, 1); }
+.faq summary:hover { color: var(--brass); padding-left: 6px; }
+.faq summary:hover::after { transform: scale(1.2); }
+.faq details[open] summary:hover::after { transform: rotate(45deg) scale(1.2); }
+.footer a { transition: color 0.25s; }
+.footer a:hover { color: var(--brass); }
+@keyframes pop { 0% { transform: scale(0.92); } 60% { transform: scale(1.06); } 100% { transform: none; } }
