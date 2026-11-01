@@ -17,6 +17,12 @@ func fixtureCatalog(platform: Platform = arm27) throws -> CaskCatalog {
     CaskCatalog(casks: try CaskDataStore.parse(fixtureData(), platform: platform))
 }
 
+/// The version the sample lists for a cask, so a test can install "whatever Homebrew has" and
+/// survive the sample being re-cut.
+func sampleVersion(_ token: String) throws -> String {
+    try #require(try fixtureCatalog().cask(token), "\(token) is in the sample").versionPair.short ?? ""
+}
+
 func app(
     _ file: String, _ bundleID: String, _ short: String?, build: String? = nil,
     names: [String] = [], caskroom: String? = nil
@@ -44,9 +50,9 @@ func app(
         #expect(chrome.sha256 == nil, "no_check means no checksum")
         #expect(chrome.autoUpdates)
         #expect(chrome.hintBundleIDs.contains("com.google.chrome"))
-        #expect(chrome.minimumMacOS == "13")
-        #expect(chrome.supports(macOS: 14))
-        #expect(!chrome.supports(macOS: 12))
+        #expect(chrome.minimumMacOS != nil)
+        #expect(chrome.supports(macOS: 27))
+        #expect(!chrome.supports(macOS: 10))
 
         let firefox = try #require(catalog.cask("firefox"))
         #expect(firefox.sha256?.count == 64)
@@ -60,12 +66,14 @@ func app(
         #expect(logi.uninstallAppNames.contains("logioptionsplus.app"))
         #expect(logi.quitBundleIDs.first?.contains("com.logi.optionsplus") == true)
 
-        let telegram = try #require(catalog.cask("telegram"))
-        #expect(telegram.versionPair == VersionPair(short: "13.1.0", build: "283357"))
+        // Homebrew writes "13.1.0,283357" for a version with a build number.
+        let withBuild = try #require(catalog.casks.first { $0.version.contains(",") })
+        let parts = withBuild.version.split(separator: ",").map(String.init)
+        #expect(withBuild.versionPair == VersionPair(short: parts[0], build: parts[1]))
 
         #expect(catalog.casks.contains { $0.needsManualInstall }, "fixture has a nested-container or installer cask")
         #expect(catalog.casks.contains { $0.isLatestVersion })
-        #expect(catalog.cask("firefox@cn")?.disabled == true)
+        #expect(catalog.casks.contains { $0.disabled })
         #expect(catalog.casks.contains { $0.deprecated && !$0.disabled })
     }
 
@@ -128,19 +136,19 @@ func app(
     }
 
     @Test func stableChannelForStableInstall() throws {
-        let m = try #require(matcher.match(app("Firefox.app", "org.mozilla.firefox", "158.0.1", build: "15826.10.19", names: ["Firefox"])))
+        let m = try #require(matcher.match(app("Firefox.app", "org.mozilla.firefox", try sampleVersion("firefox"), build: "15826.10.19", names: ["Firefox"])))
         #expect(m.token == "firefox")
         #expect(!m.channelUnsure)
         #expect(m.alternatives.contains("firefox@beta"))
     }
 
     @Test func betaChannelForBetaInstall() throws {
-        let m = try #require(matcher.match(app("Firefox.app", "org.mozilla.firefox", "159.0b5", names: ["Firefox"])))
+        let m = try #require(matcher.match(app("Firefox.app", "org.mozilla.firefox", try sampleVersion("firefox@beta"), names: ["Firefox"])))
         #expect(m.token == "firefox@beta")
     }
 
     @Test func esrChannelForEsrInstall() throws {
-        let m = try #require(matcher.match(app("Firefox.app", "org.mozilla.firefox", "153.5.1", names: ["Firefox"])))
+        let m = try #require(matcher.match(app("Firefox.app", "org.mozilla.firefox", try sampleVersion("firefox@esr"), names: ["Firefox"])))
         #expect(m.token == "firefox@esr")
     }
 

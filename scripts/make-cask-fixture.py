@@ -23,6 +23,8 @@ NAMED = [
 ]
 # The end-to-end checker test: Chrome, Firefox, AdGuard and Discord with their channels, and PasteNow.
 CORE = [t for t in NAMED if t.split("@")[0] in ("google-chrome", "firefox", "adguard", "discord", "pastenow")]
+# Apps the truth set installs as "not in Homebrew's list": never let a tricky-kind pick add them.
+ABSENT = {"betterdisplay"}
 MATCHER_FIXTURE = "Tests/CaskIndexTests/Fixtures/casks.json"
 CORE_FIXTURE = "Tests/BurnishCoreTests/Fixtures/casks.json"
 
@@ -43,11 +45,12 @@ def main(src):
         "nested": lambda c: isinstance(c.get("container"), dict) and "nested" in c["container"],
         "installer": lambda c: any("installer" in a for a in c.get("artifacts") or []),
         "deprecated": lambda c: c.get("deprecated") and not c.get("disabled"),
+        "disabled": lambda c: c.get("disabled"),
         "font": lambda c: c["token"].startswith("font-"),
         "variations": lambda c: "arm64_sonoma" in (c.get("variations") or {}),
     }
     for check in kinds.values():
-        match = next((c for c in casks if check(c) and c not in keep), None)
+        match = next((c for c in casks if check(c) and c not in keep and c["token"] not in ABSENT), None)
         if match:
             keep.append(match)
     write(keep, MATCHER_FIXTURE)

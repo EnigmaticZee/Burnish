@@ -1,0 +1,69 @@
+name: Refresh the Homebrew snapshot
+
+# Once a month, re-cuts the test sample from Homebrew's current cask list and, when every test
+# still passes against it, commits it. The truth set reads its versions from the sample, so a
+# fresh cut keeps the right answers. If a test disagrees, an issue is opened instead and nothing
+# is committed; that is the only case that needs a person.
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  refresh:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use the newest Xcode on the runner
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+      - name: Cut a fresh sample
+        id: cut
+        run: |
+          curl -fsSL -A "Burnish snapshot refresh (+https://github.com/${GITHUB_REPOSITORY})" \
+            -o "$RUNNER_TEMP/cask.json" https://formulae.brew.sh/api/cask.json
+          python3 scripts/make-cask-fixture.py "$RUNNER_TEMP/cask.json"
+          if git diff --quiet -- Tests; then
+            echo "changed=no" >> "$GITHUB_OUTPUT"
+            echo "Homebrew's list hasn't changed anything in the sample."
+          else
+            echo "changed=yes" >> "$GITHUB_OUTPUT"
+            git diff --stat -- Tests
+          fi
+      - name: Test against it
+        id: test
+        if: steps.cut.outputs.changed == 'yes'
+        continue-on-error: true
+        run: scripts/test.sh 2>&1 | tee "$RUNNER_TEMP/tests.log" | grep -E "✘|✔ Test run|error:" || true; test "${PIPESTATUS[0]}" = 0
+      - name: Commit the new sample
+        if: steps.cut.outputs.changed == 'yes' && steps.test.outcome == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Tests/CaskIndexTests/Fixtures/casks.json Tests/BurnishCoreTests/Fixtures/casks.json
+          git commit -m "Refresh the Homebrew snapshot ($(date -u +%Y-%m-%d))" \
+            -m "Cut from Homebrew's cask list today by the monthly job; every test passed against it."
+          git push
+      - name: Open an issue when the tests disagree
+        if: steps.cut.outputs.changed == 'yes' && steps.test.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(gh issue list --label snapshot --state open --json number --jq length)" != "0" ]; then
+            echo "An open snapshot issue already exists."; exit 0
+          fi
+          {
+            echo "The monthly refresh cut a new sample from Homebrew's list and the tests disagreed with it, so nothing was committed."
+            echo
+            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo '```'
+            grep -E "✘|Expectation failed|error:" "$RUNNER_TEMP/tests.log" | head -40
+            echo '```'
+          } > "$RUNNER_TEMP/issue.md"
+          gh issue create --title "Homebrew snapshot refresh needs a look ($(date -u +%Y-%m-%d))" --label snapshot --body-file "$RUNNER_TEMP/issue.md"

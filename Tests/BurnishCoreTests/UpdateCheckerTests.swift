@@ -50,10 +50,12 @@ final class Collected: @unchecked Sendable {
         var adguard = makeApp("Adguard", "com.adguard.mac.adguard", "2.20.1", build: "2627", feed: "https://example.com/appcast.xml")
         adguard = InstalledApp(bundleID: adguard.bundleID, name: "Adguard", bundleNames: ["AdGuard"], url: adguard.url, version: adguard.version,
                                signature: adguard.signature, sparkleFeedURL: adguard.sparkleFeedURL)
+        // Firefox sits at whatever version the sample lists, so a re-cut sample keeps it up to date.
+        let firefoxVersion = try #require(try CaskDataStore.parse(casksFixture(), platform: platform).first { $0.token == "firefox" }).versionPair
         let apps = [
             adguard,
             makeApp("Google Chrome", "com.google.Chrome", "155.0.8059.86", build: "8059.86"),
-            makeApp("Firefox", "org.mozilla.firefox", "158.0.1", build: "15826.10.19"),
+            makeApp("Firefox", "org.mozilla.firefox", firefoxVersion.short ?? "", build: "15826.10.19"),
             makeApp("Discord", "com.hnc.Discord", "0.0.416", feed: "https://example.com/dead.xml"),
             makeApp("PasteNow", "app.pastenow.PasteNow", "2.34", build: "765", appStore: true),
             makeApp("Nuvio", "com.nuvio.media.desktop", "1.1.32"),
