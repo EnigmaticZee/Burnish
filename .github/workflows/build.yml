@@ -1,8 +1,9 @@
 name: Build
 
 # Every push tests Burnish and builds the app for the runner's own chip. Pushing a version tag
-# (v0.2.0) builds the universal app and DMG, signs the update for Burnish's own updater and
-# publishes a GitHub Release with the DMG and the Sparkle appcast.
+# (v0.2.0) builds the universal app and DMG, signs them with the Developer ID and has Apple
+# notarise them when the secrets exist, signs the update for Burnish's own updater and publishes
+# a GitHub Release with the DMG and the Sparkle appcast.
 on:
   push:
     branches: ["**"]
@@ -33,6 +34,39 @@ jobs:
         # does, in a fraction of the universal build's time.
         if: "!startsWith(github.ref, 'refs/tags/v')"
         run: scripts/build-app.sh
+      - name: Set up the Developer ID certificate
+        # Only on tags, and only once the secrets exist; until then releases stay ad hoc signed.
+        if: startsWith(github.ref, 'refs/tags/v') && env.P12 != ''
+        env:
+          P12: ${{ secrets.DEVELOPER_ID_P12 }}
+          P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          security create-keychain -p "" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "" "$KEYCHAIN"
+          printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/developer-id.p12"
+          security import "$RUNNER_TEMP/developer-id.p12" -k "$KEYCHAIN" -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          rm -f "$RUNNER_TEMP/developer-id.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -o '"Developer ID Application: [^"]*"' | head -1 | tr -d '"')
+          test -n "$IDENTITY"
+          echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+          echo "Signing as $IDENTITY"
+      - name: Set up the notary key
+        if: startsWith(github.ref, 'refs/tags/v') && env.P8 != ''
+        env:
+          P8: ${{ secrets.APP_STORE_CONNECT_KEY }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          printf '%s\n' "$P8" > "$RUNNER_TEMP/app-store-connect.p8"
+          {
+            echo "APP_STORE_CONNECT_KEY=$RUNNER_TEMP/app-store-connect.p8"
+            echo "APP_STORE_CONNECT_KEY_ID=$KEY_ID"
+            echo "APP_STORE_CONNECT_ISSUER_ID=$ISSUER_ID"
+          } >> "$GITHUB_ENV"
       - name: Install dmgbuild
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
@@ -95,6 +129,7 @@ jobs:
             dist/Burnish.dmg
             dist/appcast.xml
             dist/accuracy.json
+            dist/notarised
           if-no-files-found: ignore
 
   release:
@@ -126,7 +161,11 @@ jobs:
             echo
             echo "Download **[Burnish.dmg]($REPO/releases/download/${GITHUB_REF_NAME}/Burnish.dmg)** (macOS 14 or later, Apple silicon and Intel), open it and drag Burnish into Applications."
             echo
-            echo "Burnish isn't notarised by Apple yet, so the first time you open it macOS asks you to confirm: open it once, click **Done**, then **System Settings → Privacy & Security → Open Anyway**. After that it updates itself."
+            if [ -f dist/notarised ]; then
+              echo "Signed with a Developer ID and notarised by Apple, so it opens like any other app. After that it updates itself."
+            else
+              echo "Burnish isn't notarised by Apple yet, so the first time you open it macOS asks you to confirm: open it once, click **Done**, then **System Settings → Privacy & Security → Open Anyway**. After that it updates itself."
+            fi
             echo
             echo "## Checksum (SHA-256)"
             echo
