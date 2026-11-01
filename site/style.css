@@ -330,11 +330,13 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 .step-n { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; font-weight: 800; color: #fff; background: linear-gradient(180deg, #e39a3c, #c8681d); margin-bottom: 16px; }
 .steps h3 { font-size: 1.15rem; margin-bottom: 8px; }
 .steps p { margin: 0; color: var(--ink-2); font-size: 0.97rem; }
-.steps .step-alt { margin-top: 10px; }
-.steps .step-alt code { display: block; margin-top: 6px; padding: 5px 9px; white-space: normal; overflow-wrap: anywhere; }
 .terminal { max-width: 760px; margin: 26px auto 0; }
 .code { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: #1d1712; overflow-x: auto; }
 .code code { background: none; color: #f6e2c4; white-space: nowrap; }
+.hero-brew { margin-top: 18px; max-width: 470px; }
+.hero-brew span { display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--ink-3); }
+.hero-brew .code { margin-top: 0; padding: 10px 14px; }
+.hero-brew .code code { white-space: normal; overflow-wrap: anywhere; }
 .copy { flex: none; margin-left: auto; font: inherit; font-size: 0.85rem; font-weight: 600; color: #1d1712; background: var(--brass-hi); border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
 
 /* Privacy */
