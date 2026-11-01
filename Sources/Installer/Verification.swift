@@ -45,17 +45,18 @@ public enum ArchiveKind: Equatable, Sendable {
         let bytes = [UInt8](head)
         func starts(_ prefix: [UInt8]) -> Bool { bytes.count >= prefix.count && Array(bytes.prefix(prefix.count)) == prefix }
 
+        // UDIF disk images end with a 512-byte "koly" trailer. That comes first: a compressed image
+        // (bzip2 or lzma) opens with its compressor's own magic, the same bytes a tarball would.
+        if let size = try? handle.seekToEnd(), size >= 512 {
+            try? handle.seek(toOffset: size - 512)
+            if let trailer = try? handle.read(upToCount: 4), trailer == Data("koly".utf8) { return .dmg }
+        }
         if starts([0x50, 0x4B, 0x03, 0x04]) { return .zip }
         if starts(Array("xar!".utf8)) { return .pkg }
         if starts([0x1F, 0x8B]) { return .tarGzip }
         if starts(Array("BZh".utf8)) { return .tarBzip2 }
         if starts([0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00]) { return .tarXz }
         if bytes.count >= 262, Array(bytes[257..<262]) == Array("ustar".utf8) { return .tar }
-        // UDIF disk images end with a 512-byte "koly" trailer.
-        if let size = try? handle.seekToEnd(), size >= 512 {
-            try? handle.seek(toOffset: size - 512)
-            if let trailer = try? handle.read(upToCount: 4), trailer == Data("koly".utf8) { return .dmg }
-        }
         return .unknown
     }
 }

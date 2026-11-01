@@ -896,6 +896,25 @@ actor Counter {
         #expect(ArchiveKind.detect(try write(Array("<html>".utf8), "e.bin")) == .unknown)
     }
 
+    /// Brave ships an lzma-compressed image (ULMO) and iStripper a bzip2 one (UDBZ): both open with
+    /// the compressor's magic, so only the "koly" trailer says they're disk images, not tarballs.
+    @Test func compressedDiskImagesAreImagesNotTarballs() throws {
+        let h = try Harness()
+        func image(startingWith magic: [UInt8], _ name: String) throws -> URL {
+            let url = h.build.appendingPathComponent(name)
+            var data = Data(magic)
+            data.append(Data(repeating: 0, count: 2000))
+            var trailer = Data("koly".utf8)
+            trailer.append(Data(repeating: 0, count: 508))
+            data.append(trailer)
+            try data.write(to: url)
+            return url
+        }
+        #expect(ArchiveKind.detect(try image(startingWith: [0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00], "lzma.dmg")) == .dmg)
+        #expect(ArchiveKind.detect(try image(startingWith: Array("BZh9".utf8), "bzip2.dmg")) == .dmg)
+        #expect(ArchiveKind.detect(try image(startingWith: [0x78, 0xDA], "zlib.dmg")) == .dmg)
+    }
+
     @Test func pkgutilOutput() {
         let text = """
         Package "AdGuard.pkg":
