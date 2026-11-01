@@ -2,6 +2,7 @@ import AppKit
 import BurnishCore
 import Store
 import SwiftUI
+import WidgetUI
 
 enum SettingsTab: String, CaseIterable, Identifiable {
     case general, updates, sources, privacy
@@ -283,6 +284,7 @@ struct OnboardingView: View {
             Text(model.isChecking ? "Checking your apps" : "All set").font(.title2.weight(.semibold))
             if model.isChecking {
                 ProgressView(value: Double(model.checkedCount), total: Double(max(model.totalCount, 1)))
+                    .progressViewStyle(.brassBar)
                 Text("Checked \(model.checkedCount) of \(model.totalCount) apps").foregroundStyle(.secondary)
             } else {
                 let count = model.outdated.count

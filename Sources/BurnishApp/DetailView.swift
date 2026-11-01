@@ -5,6 +5,7 @@ import Store
 import SwiftUI
 import UpdateSources
 import Versions
+import WidgetUI
 
 /// Versions, source and match confidence, release notes, and every action for one app.
 struct DetailView: View {
@@ -398,8 +399,8 @@ struct QuickRead: View {
                 Text("Quick read")
                     .font(.caption.weight(.semibold))
                     .padding(.horizontal, 7).padding(.vertical, 2)
-                    .background(Capsule().fill(Color(red: 0.80, green: 0.51, blue: 0.17).opacity(0.18)))
-                    .foregroundStyle(Color(red: 0.70, green: 0.42, blue: 0.10))
+                    .background(Capsule().fill(Color.brass.opacity(0.18)))
+                    .foregroundStyle(Color.brassInk)
                 Text("Summary").font(.caption).foregroundStyle(.secondary)
             }
             Text(verbatim: digest.headline).font(.callout.weight(.semibold))
@@ -632,6 +633,7 @@ struct HallmarksSection: View {
                             withAnimation(.easeInOut(duration: 0.2)) { showAll.toggle() }
                         }
                         .buttonStyle(.link)
+                        .foregroundStyle(Color.brass)
                         .font(.callout)
                     }
                 }
@@ -693,7 +695,7 @@ struct HallmarksSection: View {
 
     static func tint(_ state: Hallmark.State) -> Color {
         switch state {
-        case .confirmed, .checkedAtInstall: Color(red: 0.80, green: 0.51, blue: 0.17)
+        case .confirmed, .checkedAtInstall: .brass
         case .handedOff, .notAvailable: .secondary
         case .caution: .orange
         }

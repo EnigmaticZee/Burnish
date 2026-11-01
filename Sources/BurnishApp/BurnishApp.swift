@@ -2,6 +2,7 @@ import AppKit
 import BurnishCore
 import SwiftUI
 import UserNotifications
+import WidgetUI
 
 @main
 struct BurnishApp: App {
@@ -11,6 +12,7 @@ struct BurnishApp: App {
         MenuBarExtra {
             PopoverView()
                 .environment(delegate.model)
+                .tint(.brass)
         } label: {
             MenuBarLabel()
                 .environment(delegate.model)
@@ -20,6 +22,7 @@ struct BurnishApp: App {
         Window("Burnish", id: "main") {
             MainWindow()
                 .environment(delegate.model)
+                .tint(.brass)
         }
         .defaultSize(width: 980, height: 620)
         .commands {
@@ -38,12 +41,14 @@ struct BurnishApp: App {
 
         Window("What's New in Burnish", id: WhatsNew.windowID) {
             WhatsNewView()
+                .tint(.brass)
         }
         .windowResizability(.contentSize)
 
         Window("Welcome to Burnish", id: "onboarding") {
             OnboardingView()
                 .environment(delegate.model)
+                .tint(.brass)
         }
         .windowResizability(.contentSize)
         .windowStyle(.hiddenTitleBar)
@@ -51,6 +56,7 @@ struct BurnishApp: App {
         Settings {
             SettingsView()
                 .environment(delegate.model)
+                .tint(.brass)
         }
     }
 }

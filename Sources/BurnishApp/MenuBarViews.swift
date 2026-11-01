@@ -1,6 +1,7 @@
 import AppKit
 import BurnishCore
 import SwiftUI
+import WidgetUI
 
 /// The menu bar item: an outline icon, the count beside it in the normal text colour (never red),
 /// a gentle animation while checking, and a small dot when something needs the person.
@@ -132,7 +133,7 @@ struct PopoverView: View {
         AppStoreBanner()
         if model.isChecking, model.totalCount > 0 {
             ProgressView(value: Double(model.checkedCount), total: Double(max(model.totalCount, 1)))
-                .progressViewStyle(.linear)
+                .progressViewStyle(.brassBar)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
         }

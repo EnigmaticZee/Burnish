@@ -4,6 +4,7 @@ import CaskIndex
 import Installer
 import SwiftUI
 import UpdateSources
+import WidgetUI
 
 /// App icons from Finder, cached by path.
 @MainActor
@@ -99,15 +100,19 @@ struct UpdateControl: View {
         case .running(let phase)?:
             HStack(spacing: 6) {
                 if let fraction = phase.fraction {
-                    ProgressView(value: fraction).frame(width: 46)
+                    ProgressView(value: fraction).progressViewStyle(.brassBar).frame(width: 46)
                 } else {
                     ProgressView().controlSize(.small)
                 }
                 Text(phase.label).font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
         case .done(let relaunched)?:
-            Label(relaunched ? "Done, relaunched" : "Done", systemImage: "checkmark")
-                .font(.caption).foregroundStyle(.secondary)
+            Label {
+                Text(relaunched ? "Done, relaunched" : "Done")
+            } icon: {
+                Image(systemName: "checkmark.seal.fill").foregroundStyle(Color.brass)
+            }
+            .font(.caption).foregroundStyle(.secondary)
         case .openedInstaller?:
             Label("Opened in Installer", systemImage: "shippingbox")
                 .font(.caption).foregroundStyle(.secondary)
@@ -178,6 +183,27 @@ struct RefusalNote: View {
             }
         }
     }
+}
+
+/// A thin bar filled with the brass gradient from the website's hero, for determinate progress.
+struct BrassBarStyle: ProgressViewStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Capsule().fill(.quaternary)
+                Capsule().fill(Color.brassGradient)
+                    .frame(width: max(6, geometry.size.width * (configuration.fractionCompleted ?? 0)))
+            }
+        }
+        .frame(height: 6)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(configuration.label.map { _ in Text("Progress") } ?? Text("Progress"))
+        .accessibilityValue(Text(verbatim: "\(Int((configuration.fractionCompleted ?? 0) * 100))%"))
+    }
+}
+
+extension ProgressViewStyle where Self == BrassBarStyle {
+    static var brassBar: BrassBarStyle { BrassBarStyle() }
 }
 
 extension Date {

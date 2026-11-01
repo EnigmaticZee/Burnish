@@ -16,7 +16,6 @@ public struct UpdatesWidgetView: View {
     }
 
     /// Brass, from the app icon.
-    static let brass = Color(red: 0.80, green: 0.51, blue: 0.17)
 
     public var body: some View {
         if let snapshot {
@@ -28,7 +27,7 @@ public struct UpdatesWidgetView: View {
             }
         } else {
             VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: "bell").font(.title2).foregroundStyle(Self.brass)
+                Image(systemName: "bell").font(.title2).foregroundStyle(Color.brass)
                 Spacer(minLength: 0)
                 Text("Open Burnish to check your apps").font(.callout).foregroundStyle(.secondary)
             }
@@ -40,7 +39,7 @@ public struct UpdatesWidgetView: View {
         VStack(alignment: .leading, spacing: 2) {
             Image(systemName: snapshot.updateCount > 0 ? "bell" : "checkmark.circle")
                 .font(.title2)
-                .foregroundStyle(snapshot.updateCount > 0 ? Self.brass : .secondary)
+                .foregroundStyle(snapshot.updateCount > 0 ? Color.brass : .secondary)
             Spacer(minLength: 0)
             if snapshot.updateCount > 0 {
                 Text(snapshot.updateCount, format: .number)

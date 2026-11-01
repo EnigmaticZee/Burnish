@@ -1,6 +1,7 @@
 import AppKit
 import BurnishCore
 import SwiftUI
+import WidgetUI
 
 /// Burnish's own release notes, from the copy of HISTORY.md inside the app: the short version up
 /// front, the full notes folded away, and earlier versions below. Nothing is fetched.
@@ -85,8 +86,8 @@ private struct ShortVersion: View {
             Text("The short version")
                 .font(.caption.weight(.semibold))
                 .padding(.horizontal, 7).padding(.vertical, 2)
-                .background(Capsule().fill(Color(red: 0.80, green: 0.51, blue: 0.17).opacity(0.18)))
-                .foregroundStyle(Color(red: 0.70, green: 0.42, blue: 0.10))
+                .background(Capsule().fill(Color.brass.opacity(0.18)))
+                .foregroundStyle(Color.brassInk)
             ForEach(lines, id: \.self) { line in
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Image(systemName: "checkmark.seal").foregroundStyle(.secondary).frame(width: 16)
