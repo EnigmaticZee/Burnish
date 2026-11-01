@@ -7,3 +7,5 @@
 xcuserdata/
 DerivedData/
 /_site/
+# Private signing keys travel with the folder, never with the repo.
+/Keys/
