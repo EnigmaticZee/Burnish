@@ -1,5 +1,36 @@
 # Version history
 
+## 0.4.1-beta — 2026-11-01
+Brave's update opens now.
+
++ Brave's update installs; its disk image was being mistaken for a tarball.
++ Any disk image is recognised however it's compressed, and a misread download gets a second try
+  with the other openers.
++ Every download format now goes through the real unpacker on every test run.
++ A download Burnish still can't open gets a one-click report with the file's facts filled in.
+
+- **Fixed: Brave's update was refused with "The download couldn't be opened".** Brave ships an
+  lzma-compressed disk image, which begins with the same bytes as a `.tar.xz`, so Burnish handed it
+  to the wrong tool; iStripper's bzip2 image would have gone the same way. The checksum had already
+  matched and nothing on the Mac was touched; the update simply didn't happen. Burnish now
+  recognises a disk image by the trailer every one of them ends with, before it reads the first
+  bytes.
+- **A misread download gets a second try.** When the tool Burnish picked can't open a download,
+  the other openers each get a turn before it gives up, and the file's name settles it when the
+  bytes say nothing. A wrong guess now costs a second, not the install. When a tool does fail, the
+  reason shown is its answer, not the warnings it printed on the way, and an image that macOS is
+  busy attaching elsewhere gets a moment and another go.
+- **Apps kept in a folder on a disk image are found.** An image with the app inside a folder used
+  to come up empty.
+- **Every format, through the real tools, on every test run.** Burnish's tests now build disk
+  images in all six compressions, zips, gzip, bzip2 and xz tarballs and installer packages with
+  the system's own tools, and open each with the real unpacker, so a change in any of them shows up
+  before a release does.
+- **A download Burnish can't open gets a ready-made report.** The refusal keeps the file's facts:
+  its name and size, its first bytes, how it was read. *Report This on GitHub…* opens an issue with
+  those filled in and nothing about you or your other apps, so a fix can start from the report
+  alone.
+
 ## 0.4.0-beta — 2026-11-01
 Feeds found, feeds added.
 
