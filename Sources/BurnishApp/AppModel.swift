@@ -475,6 +475,15 @@ final class AppModel {
         NSWorkspace.shared.open(WrongMatchReport.url(for: result))
     }
 
+    /// A ready-made issue for a download Burnish couldn't open, with the file facts the installer kept.
+    func reportInstall(_ result: AppCheckResult, refusal: InstallRefusal) {
+        let info = Bundle.main.infoDictionary ?? [:]
+        let os = ProcessInfo.processInfo.operatingSystemVersion
+        let system = "macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion), \(isAppleSilicon ? "Apple silicon" : "Intel")"
+        let burnish = "\(info["CFBundleShortVersionString"] ?? "") (\(info["CFBundleVersion"] ?? ""))"
+        NSWorkspace.shared.open(InstallReport.url(for: result, refusal: refusal, burnish: burnish, system: system))
+    }
+
     // MARK: Feeds the person adds
 
     func userFeed(for result: AppCheckResult) -> CommunityFeed? { userFeeds.byApp[result.app.bundleID] }

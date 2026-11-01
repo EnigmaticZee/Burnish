@@ -1061,6 +1061,9 @@
     "Opened the %@ installer package in Installer" : {
 
     },
+    "Opens a ready-made issue with the file's details and nothing about you or your other apps" : {
+
+    },
     "Other…" : {
 
     },
@@ -1135,6 +1138,9 @@
           }
         }
       }
+    },
+    "Report This on GitHub…" : {
+
     },
     "Report a Wrong Match on GitHub…" : {
 

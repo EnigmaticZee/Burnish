@@ -160,13 +160,22 @@ struct UpdateControl: View {
 struct RefusalNote: View {
     @Environment(AppModel.self) private var model
     let result: AppCheckResult
+    /// The report button, where there's room for one.
+    var offersReport = true
 
     var body: some View {
         if case .refused(let refusal)? = model.installStates[result.id] {
-            Label(refusal.message, systemImage: "exclamationmark.shield")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 4) {
+                Label(refusal.message, systemImage: "exclamationmark.shield")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if offersReport, refusal.evidence != nil {
+                    Button("Report This on GitHub…") { model.reportInstall(result, refusal: refusal) }
+                        .controlSize(.small)
+                        .help("Opens a ready-made issue with the file's details and nothing about you or your other apps")
+                }
+            }
         }
     }
 }

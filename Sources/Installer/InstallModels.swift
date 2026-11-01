@@ -80,11 +80,14 @@ public struct InstallRefusal: Error, Sendable, Equatable, LocalizedError {
     public let rule: Rule
     public let message: String
     public let downloadPage: URL?
+    /// For a download Burnish couldn't open: what the file looked like, so a bug report says it all.
+    public let evidence: String?
 
-    public init(_ rule: Rule, _ message: String, downloadPage: URL?) {
+    public init(_ rule: Rule, _ message: String, downloadPage: URL?, evidence: String? = nil) {
         self.rule = rule
         self.message = message
         self.downloadPage = downloadPage
+        self.evidence = evidence
     }
 
     public var errorDescription: String? { message }

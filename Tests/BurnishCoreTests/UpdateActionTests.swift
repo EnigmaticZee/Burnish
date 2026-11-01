@@ -1,5 +1,6 @@
 import CaskIndex
 import Foundation
+import Installer
 import Inventory
 import Store
 import Testing
@@ -96,6 +97,23 @@ let downloadable = Release(source: .homebrew, version: VersionPair(short: "2.0")
         #expect(body.contains("com.x.tool"))
         #expect(body.contains("`tool`"))
         #expect(!body.contains("/Applications"), "no file paths or other personal data")
+    }
+
+    @Test func installReportCarriesTheFileFactsButNotTheDownloadLink() throws {
+        var release = downloadable
+        release.downloadURL = URL(string: "https://cdn.example.com/private/path/Tool-2.0.dmg?token=abc")
+        let r = outdated(makeApp("Tool", "com.x.tool", "1.0"), release: release)
+        let refusal = InstallRefusal(.unpack, "The download couldn't be opened (tar)", downloadPage: nil,
+                                     evidence: "Tool-2.0.dmg · 12 bytes · starts fd377a58 · read as tarXz")
+        let url = InstallReport.url(for: r, refusal: refusal, burnish: "0.4.1-beta (37)", system: "macOS 27.0.1, Apple silicon")
+        let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
+        let value = { (name: String) in components.queryItems?.first { $0.name == name }?.value ?? "" }
+        #expect(value("labels") == "install")
+        #expect(value("title").contains("com.x.tool"))
+        let body = value("body")
+        #expect(body.contains("starts fd377a58") && body.contains("unpack: The download couldn't be opened (tar)"))
+        #expect(body.contains("cdn.example.com") && body.contains("Tool-2.0.dmg") && body.contains("0.4.1-beta (37)"))
+        #expect(!body.contains("private/path") && !body.contains("token=abc"), "the download link stays out of a public issue")
     }
 
     @Test func feedsCanBeAddedForAppsTheCommunityCanHelpWith() throws {

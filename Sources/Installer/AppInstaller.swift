@@ -85,9 +85,9 @@ public struct AppInstaller: Sendable {
     ) async -> InstallOutcome {
         let snapshot = request.app
         let release = request.release
-        func refuse(_ rule: InstallRefusal.Rule, _ message: String) -> InstallOutcome {
+        func refuse(_ rule: InstallRefusal.Rule, _ message: String, evidence: String? = nil) -> InstallOutcome {
             log.notice("Refused \(snapshot.bundleID, privacy: .public) [\(rule.rawValue, privacy: .public)]: \(message, privacy: .public)")
-            return .refused(InstallRefusal(rule, message, downloadPage: request.downloadPage))
+            return .refused(InstallRefusal(rule, message, downloadPage: request.downloadPage, evidence: evidence))
         }
 
         // MARK: Before downloading anything
@@ -160,17 +160,23 @@ public struct AppInstaller: Sendable {
         }
 
         // MARK: Unpack
-        let kind = ArchiveKind.detect(file)
+        let name = url.lastPathComponent
+        let kind = ArchiveKind.detect(file, name: name)
         if kind == .pkg {
-            return await openPackage(file, teamID: teamID, name: url.lastPathComponent, refuse: refuse)
+            return await openPackage(file, teamID: teamID, name: name, refuse: { refuse($0, $1) })
         }
         let staging = job.appendingPathComponent("staging", isDirectory: true)
+        let openedAs: ArchiveKind
         do {
-            _ = try await env.unpacker.unpack(file, kind: kind, into: staging)
+            openedAs = try await env.unpacker.open(file, detected: kind, into: staging)
         } catch .licenseAgreement {
             return refuse(.manualOnly, Unpacker.Failure.licenseAgreement.errorDescription!)
         } catch {
-            return refuse(.unpack, error.errorDescription ?? String(localized: "The download couldn't be opened"))
+            return refuse(.unpack, error.errorDescription ?? String(localized: "The download couldn't be opened"),
+                          evidence: ArchiveEvidence.describe(file, name: name, readAs: kind))
+        }
+        if openedAs != kind {
+            log.notice("Opened \(name, privacy: .public) as \(String(describing: openedAs), privacy: .public) after reading it as \(String(describing: kind), privacy: .public)")
         }
 
         let newApp: URL
@@ -180,9 +186,10 @@ public struct AppInstaller: Sendable {
         case .wrongBundleID(let id):
             return refuse(.sameDeveloper, String(localized: "The new copy has a different bundle ID (\(id))"))
         case .packageOnly(let pkg):
-            return await openPackage(pkg, teamID: teamID, name: pkg.lastPathComponent, refuse: refuse)
+            return await openPackage(pkg, teamID: teamID, name: pkg.lastPathComponent, refuse: { refuse($0, $1) })
         case .nothing:
-            return refuse(.unpack, String(localized: "The download doesn't contain \(app.fileName)"))
+            return refuse(.unpack, String(localized: "The download doesn't contain \(app.fileName)"),
+                          evidence: ArchiveEvidence.describe(file, name: name, readAs: openedAs) + " · contains \(ArchiveEvidence.contents(of: staging))")
         }
 
         // MARK: Same developer (rule 4)
@@ -212,7 +219,7 @@ public struct AppInstaller: Sendable {
             return refuse(.wrongChip, problem)
         }
 
-        let outcome = await swap(app, with: newApp, teamID: teamID, progress: progress, askToQuit: askToQuit, refuse: refuse)
+        let outcome = await swap(app, with: newApp, teamID: teamID, progress: progress, askToQuit: askToQuit, refuse: { refuse($0, $1) })
         if case .installed = outcome {
             log.info("Updated \(app.bundleID, privacy: .public) to \(newInfo.version.display, privacy: .public)")
         }
@@ -277,7 +284,7 @@ public struct AppInstaller: Sendable {
         guard await env.gatekeeper.assess(previous) else {
             return refuse(.sameDeveloper, String(localized: "macOS Gatekeeper didn't accept the earlier version"))
         }
-        let outcome = await swap(app, with: previous, teamID: teamID, progress: progress, askToQuit: askToQuit, refuse: refuse)
+        let outcome = await swap(app, with: previous, teamID: teamID, progress: progress, askToQuit: askToQuit, refuse: { refuse($0, $1) })
         if case .installed = outcome {
             log.info("Restored \(app.bundleID, privacy: .public) to \(earlier.version.display, privacy: .public)")
         }

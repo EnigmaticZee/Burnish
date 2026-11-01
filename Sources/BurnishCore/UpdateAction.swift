@@ -1,5 +1,6 @@
 import CaskIndex
 import Foundation
+import Installer
 import Inventory
 import Net
 import Store
@@ -141,6 +142,35 @@ public enum WrongMatchReport {
         components.queryItems = [
             URLQueryItem(name: "title", value: "Wrong match: \(result.app.bundleID)"),
             URLQueryItem(name: "labels", value: "wrong-match"),
+            URLQueryItem(name: "body", value: body),
+        ]
+        return components.url!
+    }
+}
+
+/// A ready-made GitHub issue for a download Burnish couldn't open: the app and the version offered,
+/// where the file came from and what it looked like. The download link itself stays out, and so
+/// does anything about the person or their other apps.
+public enum InstallReport {
+    public static func url(for result: AppCheckResult, refusal: InstallRefusal, burnish: String, system: String) -> URL {
+        var body = """
+        **App:** \(result.app.name) (`\(result.app.bundleID)`)
+        **Installed version:** \(result.app.version.short ?? "-") (\(result.app.version.build ?? "-"))
+        """
+        if let candidate = result.status.candidate {
+            body += "\n**Offered:** \(candidate.displayVersion) from \(candidate.source.label)"
+            if let token = result.match?.token { body += " (cask `\(token)`)" }
+            if let download = candidate.release.downloadURL {
+                body += "\n**Download:** `\(download.lastPathComponent)` from \(download.host ?? "-")"
+            }
+        }
+        body += "\n**Refused at:** \(refusal.rule.rawValue): \(refusal.message)"
+        if let evidence = refusal.evidence { body += "\n**The file:** \(evidence)" }
+        body += "\n**Burnish:** \(burnish) · \(system)\n"
+        var components = URLComponents(url: Net.repository.appendingPathComponent("issues/new"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "title", value: "Install: \(result.app.name) couldn't be opened (\(result.app.bundleID))"),
+            URLQueryItem(name: "labels", value: "install"),
             URLQueryItem(name: "body", value: body),
         ]
         return components.url!

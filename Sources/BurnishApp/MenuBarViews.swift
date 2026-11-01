@@ -216,7 +216,7 @@ struct PopoverRow: View {
                     if result.status.candidate?.isMajorUpgrade == true { Tag(text: "May be paid") }
                     if model.isAppleSilicon, result.app.isIntelOnly { Tag(text: "Intel", symbol: "cpu") }
                 }
-                RefusalNote(result: result)
+                RefusalNote(result: result, offersReport: false)
             }
             Spacer(minLength: 8)
             UpdateControl(result: result)

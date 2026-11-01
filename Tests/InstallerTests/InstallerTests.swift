@@ -879,6 +879,162 @@ actor Counter {
     func increment() { value += 1 }
 }
 
+// MARK: Every archive format, through the real tools
+
+/// The formats Mac apps ship in, each built by the system tool that makes it and opened by the real
+/// unpacker. An lzma-compressed image starts with xz's magic number and a bzip2 one with bzip2's;
+/// a misread shows up here rather than on someone's Mac. Each case has its own folder, so they run
+/// side by side; hdiutil is the slow part.
+@Suite struct ArchiveFormats {
+    /// A folder holding Fixture.app 1.1 and the Applications shortcut disk images carry, or the app
+    /// inside a folder of its own.
+    static func source(in h: Harness, nested: Bool = false) throws -> URL {
+        let folder = h.build.appendingPathComponent("src-\(UUID().uuidString)")
+        let appFolder = nested ? folder.appendingPathComponent("Fixture 1.1") : folder
+        try FileManager.default.createDirectory(at: appFolder, withIntermediateDirectories: true)
+        try makeBundle(in: appFolder, short: "1.1", build: "110")
+        try FileManager.default.createSymbolicLink(at: folder.appendingPathComponent("Applications"), withDestinationURL: URL(fileURLWithPath: "/Applications"))
+        return folder
+    }
+
+    static func tool(_ path: String, _ args: [String]) throws {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: path)
+        p.arguments = args
+        p.standardOutput = FileHandle.nullDevice
+        p.standardError = FileHandle.nullDevice
+        try p.run()
+        p.waitUntilExit()
+        try #require(p.terminationStatus == 0, "\(path) \(args.joined(separator: " "))")
+    }
+
+    static func diskImage(of folder: URL, format: String, fileSystem: String = "HFS+", in h: Harness) throws -> URL {
+        let image = h.build.appendingPathComponent("\(UUID().uuidString)-\(format).dmg")
+        try tool("/usr/bin/hdiutil", ["create", "-quiet", "-ov", "-fs", fileSystem, "-format", format, "-volname", "Fixture", "-srcfolder", folder.path, image.path])
+        return image
+    }
+
+    /// Opens an archive the way the installer does: detect, then open with the other tools in reserve.
+    static func open(_ archive: URL, in h: Harness, readAs detected: ArchiveKind? = nil) async throws -> (kind: ArchiveKind, staging: URL) {
+        let staging = h.build.appendingPathComponent("staging-\(UUID().uuidString)")
+        let kind = try await Unpacker().open(archive, detected: detected ?? ArchiveKind.detect(archive, name: archive.lastPathComponent), into: staging)
+        return (kind, staging)
+    }
+
+    static func contains(_ staging: URL, _ name: String) -> Bool {
+        guard let items = FileManager.default.enumerator(at: staging, includingPropertiesForKeys: nil) else { return false }
+        return items.contains { ($0 as? URL)?.lastPathComponent == name }
+    }
+
+    @Test(arguments: ["UDZO", "UDBZ", "ULFO", "ULMO", "UDRO", "UDCO"])
+    func diskImageInEveryCompression(_ format: String) async throws {
+        let h = try Harness()
+        let image = try Self.diskImage(of: try Self.source(in: h), format: format, in: h)
+        #expect(ArchiveKind.detect(image) == .dmg, "\(format) is a disk image")
+        let opened = try await Self.open(image, in: h)
+        #expect(opened.kind == .dmg)
+        #expect(Self.contains(opened.staging, "Fixture.app"), "\(format) opened")
+    }
+
+    @Test func apfsImageAndAnImageWithTheAppInAFolder() async throws {
+        let h = try Harness()
+        let apfs = try Self.diskImage(of: try Self.source(in: h), format: "UDZO", fileSystem: "APFS", in: h)
+        #expect(Self.contains(try await Self.open(apfs, in: h).staging, "Fixture.app"))
+        let nested = try Self.diskImage(of: try Self.source(in: h, nested: true), format: "UDZO", in: h)
+        #expect(Self.contains(try await Self.open(nested, in: h).staging, "Fixture.app"), "an app inside a folder on the image comes out too")
+    }
+
+    @Test func zipsAndTarballs() async throws {
+        let h = try Harness()
+        let flat = try Self.source(in: h), nested = try Self.source(in: h, nested: true)
+        var archives: [(URL, ArchiveKind)] = []
+        func zip(_ item: URL, _ name: String) throws {
+            let out = h.build.appendingPathComponent(name)
+            try Self.tool("/usr/bin/ditto", ["-c", "-k", "--keepParent", item.path, out.path])
+            archives.append((out, .zip))
+        }
+        func tar(_ flag: String, _ name: String, _ kind: ArchiveKind) throws {
+            let out = h.build.appendingPathComponent(name)
+            try Self.tool("/usr/bin/tar", ["-c\(flag)f", out.path, "-C", flat.path, "Fixture.app"])
+            archives.append((out, kind))
+        }
+        try zip(flat.appendingPathComponent("Fixture.app"), "Fixture.zip")
+        try zip(nested.appendingPathComponent("Fixture 1.1"), "Fixture-in-a-folder.zip")
+        try tar("z", "Fixture.tar.gz", .tarGzip)
+        try tar("j", "Fixture.tbz", .tarBzip2)
+        try tar("J", "Fixture.tar.xz", .tarXz)
+        try tar("", "Fixture.tar", .tar)
+        for (archive, kind) in archives {
+            #expect(ArchiveKind.detect(archive) == kind, "\(archive.lastPathComponent)")
+            let opened = try await Self.open(archive, in: h)
+            #expect(opened.kind == kind, "\(archive.lastPathComponent)")
+            #expect(Self.contains(opened.staging, "Fixture.app"), "\(archive.lastPathComponent) opened")
+        }
+    }
+
+    @Test func installerPackagesAloneOrOnAnImage() async throws {
+        let h = try Harness()
+        let src = try Self.source(in: h)
+        let pkg = h.build.appendingPathComponent("Fixture.pkg")
+        try Self.tool("/usr/bin/pkgbuild", ["--quiet", "--root", src.appendingPathComponent("Fixture.app").path, "--identifier", bundleID,
+                                            "--version", "1.1", "--install-location", "/Applications/Fixture.app", pkg.path])
+        #expect(ArchiveKind.detect(pkg) == .pkg)
+        let folder = h.build.appendingPathComponent("pkg-src")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: pkg, to: folder.appendingPathComponent("Fixture.pkg"))
+        let image = try Self.diskImage(of: folder, format: "UDZO", in: h)
+        #expect(Self.contains(try await Self.open(image, in: h).staging, "Fixture.pkg"), "a package on an image comes out for Installer")
+    }
+
+    /// A disk image read as a zip: ditto can't open it, so the other openers get a turn.
+    @Test func aMisreadArchiveStillOpens() async throws {
+        let h = try Harness()
+        let image = try Self.diskImage(of: try Self.source(in: h), format: "UDZO", in: h)
+        let opened = try await Self.open(image, in: h, readAs: .zip)
+        #expect(opened.kind == .dmg, "the other openers get a turn")
+        #expect(Self.contains(opened.staging, "Fixture.app"))
+    }
+
+    /// hdiutil prints a deprecation warning before every answer on newer systems; the person sees
+    /// the answer, not the warning.
+    @Test func aToolsWarningsStayOutOfTheReason() async throws {
+        let h = try Harness()
+        let file = h.build.appendingPathComponent("not-an-image.dmg")
+        try Data(repeating: 0x41, count: 4096).write(to: file)
+        await #expect(throws: Unpacker.Failure.self) {
+            try await Unpacker().unpack(file, kind: .dmg, into: h.build.appendingPathComponent("staging-warn"))
+        }
+        do {
+            _ = try await Unpacker().unpack(file, kind: .dmg, into: h.build.appendingPathComponent("staging-warn2"))
+        } catch let failure as Unpacker.Failure {
+            let reason = failure.errorDescription ?? ""
+            #expect(reason.contains("hdiutil attach:") && !reason.lowercased().contains("deprecated"), "\(reason)")
+            #expect(!reason.contains("\n"))
+        }
+    }
+
+    @Test func theNameBreaksATieWhenTheBytesSayNothing() throws {
+        let h = try Harness()
+        let file = h.build.appendingPathComponent("download")
+        try Data(repeating: 0x41, count: 700).write(to: file)
+        #expect(ArchiveKind.detect(file, name: "Foo.dmg") == .dmg)
+        #expect(ArchiveKind.detect(file, name: "Foo.tar.bz2") == .tarBzip2)
+        #expect(ArchiveKind.detect(file, name: "Foo.bin") == .unknown)
+        #expect(ArchiveKind.detect(file) == .unknown)
+    }
+
+    @Test func anUnopenableDownloadIsRefusedWithTheFileFacts() async throws {
+        let h = try Harness()
+        let app = try h.installed(edKey: false)
+        h.client.serveDownload(h.downloadURL, data: Data("<html>not an archive</html>".utf8) + Data(repeating: 0, count: 600))
+        let outcome = await h.install(app, h.caskRelease(sha256: nil))
+        h.expectRefused(outcome, .unpack)
+        guard case let .refused(refusal) = outcome else { return }
+        let evidence = try #require(refusal.evidence)
+        #expect(evidence.contains("Fixture-1.1.zip") && evidence.contains("starts 3c68746d") && evidence.contains("read as zip"))
+    }
+}
+
 @Suite struct InstallerHelpers {
     @Test func archiveKinds() throws {
         let h = try Harness()
