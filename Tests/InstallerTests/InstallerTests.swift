@@ -1001,16 +1001,12 @@ actor Counter {
         let h = try Harness()
         let file = h.build.appendingPathComponent("not-an-image.dmg")
         try Data(repeating: 0x41, count: 4096).write(to: file)
-        await #expect(throws: Unpacker.Failure.self) {
+        let failure = await #expect(throws: Unpacker.Failure.self) {
             try await Unpacker().unpack(file, kind: .dmg, into: h.build.appendingPathComponent("staging-warn"))
         }
-        do {
-            _ = try await Unpacker().unpack(file, kind: .dmg, into: h.build.appendingPathComponent("staging-warn2"))
-        } catch let failure as Unpacker.Failure {
-            let reason = failure.errorDescription ?? ""
-            #expect(reason.contains("hdiutil attach:") && !reason.lowercased().contains("deprecated"), "\(reason)")
-            #expect(!reason.contains("\n"))
-        }
+        let reason = failure?.errorDescription ?? ""
+        #expect(reason.contains("hdiutil attach:") && !reason.lowercased().contains("deprecated"), "\(reason)")
+        #expect(!reason.contains("\n"))
     }
 
     @Test func theNameBreaksATieWhenTheBytesSayNothing() throws {
