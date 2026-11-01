@@ -156,12 +156,15 @@ final class AppModel {
         installStates = installStates.filter { if case .running = $0.value { true } else { false } }
         let engine = engine
         let settings = settings
-        let apps = await Task.detached { engine.scan(settings: settings).apps }.value.filter {
+        // Reading fifty bundles and pruning old copies is disk work; it stays off the main thread.
+        let apps = await Task.detached {
+            engine.earlierVersions.prune()
+            return engine.scan(settings: settings).apps
+        }.value.filter {
             settings.homebrewHandling != .hide || !$0.isManagedByHomebrew
         }
         totalCount = apps.count
 
-        engine.earlierVersions.prune()
         let report = await engine.check(apps, settings: settings) { [weak self] result in
             await self?.receive(result)
         }

@@ -10,27 +10,6 @@ public struct VersionPair: Sendable, Hashable, Codable {
         self.build = build?.nonEmpty
     }
 
-    /// Splits strings like `5.0 (1234)` or `2.1 build 345` into a version and a build.
-    public static func splittingDisplay(_ string: String) -> VersionPair {
-        let s = string.trimmingWhitespace()
-        if let open = s.firstIndex(of: "("), let close = s.lastIndex(of: ")"), open < close {
-            let core = String(s[..<open]).trimmingWhitespace()
-            var inner = String(s[s.index(after: open)..<close]).trimmingWhitespace()
-            if inner.lowercased().hasPrefix("build ") { inner = String(inner.dropFirst(6)) }
-            return VersionPair(short: core, build: inner)
-        }
-        let marker = Array(" build ")
-        let lower = Array(s.lowercased())
-        if lower.count > marker.count {
-            for offset in 0...(lower.count - marker.count) where Array(lower[offset..<offset + marker.count]) == marker {
-                let core = String(s.prefix(offset))
-                let build = String(s.dropFirst(offset + marker.count))
-                return VersionPair(short: core, build: build)
-            }
-        }
-        return VersionPair(short: s)
-    }
-
     /// Homebrew writes `1.2.3,456` for short version `1.2.3` with build `456`.
     /// Parts after the second are download-URL details and are ignored.
     public static func fromCask(_ version: String) -> VersionPair {

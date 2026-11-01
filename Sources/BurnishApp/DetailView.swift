@@ -673,9 +673,11 @@ struct HallmarksSection: View {
                     }
                 }
             }
-            .help(mark.detail.isEmpty ? HallmarksSection.stateText(mark.state) : mark.detail)
             .accessibilityElement(children: .combine)
             .accessibilityValue(HallmarksSection.stateText(mark.state))
+            // The tooltip goes on the combined element, so VoiceOver hears the explanation once
+            // rather than once per line.
+            .help(mark.detail.isEmpty ? HallmarksSection.stateText(mark.state) : mark.detail)
         }
     }
 

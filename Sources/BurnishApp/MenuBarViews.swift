@@ -168,8 +168,10 @@ struct PopoverView: View {
                 }
                 .padding(.vertical, 4)
             }
+            // As tall as the list up to a limit, then it scrolls. A scroll view left to size
+            // itself in a popover collapses to nothing once the list is long.
             .frame(maxHeight: 380)
-            .fixedSize(horizontal: false, vertical: outdated.count < 6)
+            .fixedSize(horizontal: false, vertical: true)
         }
     }
 

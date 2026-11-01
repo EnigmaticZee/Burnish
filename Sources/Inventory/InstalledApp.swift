@@ -60,8 +60,6 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
 
     /// `Google Chrome.app`
     public var fileName: String { url.lastPathComponent }
-    public var shortVersion: String { version.short ?? version.build ?? "" }
-    public var buildVersion: String? { version.build }
     public var teamID: String? { signature.teamID }
 
     /// Has Intel code and no Apple silicon code, so it runs through Rosetta on Apple silicon.

@@ -9,9 +9,10 @@ public enum Diagnostics {
     public static func report(engine: BurnishEngine, appVersion: String, build: String) async -> String {
         var out: [String] = []
         let os = ProcessInfo.processInfo.operatingSystemVersion
+        let iso = ISO8601DateFormatter()
         out.append("Burnish \(appVersion) (\(build))")
         out.append("macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion) · \(InstallerEnvironmentChip.description)")
-        out.append("Saved \(ISO8601DateFormatter().string(from: Date()))")
+        out.append("Saved \(iso.string(from: Date()))")
         out.append("")
 
         let managed = ManagedSettings.apply(to: await engine.store.load(.settings, default: Settings()))
@@ -31,8 +32,8 @@ public enum Diagnostics {
 
         out.append("== Last check")
         if let report = await engine.lastReport() {
-            out.append("Finished \(ISO8601DateFormatter().string(from: report.finishedAt)) · offline: \(report.isOffline)"
-                + (report.caskDataDate.map { " · Homebrew data from \(ISO8601DateFormatter().string(from: $0))" } ?? ""))
+            out.append("Finished \(iso.string(from: report.finishedAt)) · offline: \(report.isOffline)"
+                + (report.caskDataDate.map { " · Homebrew data from \(iso.string(from: $0))" } ?? ""))
             if !report.problems.isEmpty { out.append("Problems: \(report.problems.joined(separator: "; "))") }
             for r in report.results {
                 let latest = r.status.candidate?.displayVersion ?? "-"

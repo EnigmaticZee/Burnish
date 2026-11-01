@@ -50,12 +50,13 @@ public enum SparkleFeedDetector {
 
 /// Printable `https://` addresses inside a binary, in order of appearance, without repeats.
 enum BinaryStrings {
+    /// Printable ASCII that can't be part of an address: quotes, brackets, a backslash.
+    private static let stopBytes = Set("\"'\\<>`".utf8)
+
     static func httpsURLs(in binary: Data, maximumLength: Int = 512) -> [String] {
         var found: [String] = []
         var seen = Set<String>()
-        let urlBytes: (UInt8) -> Bool = { byte in
-            byte > 0x20 && byte < 0x7F && !"\"'\\<>`".utf8.contains(byte)
-        }
+        let urlBytes: (UInt8) -> Bool = { byte in byte > 0x20 && byte < 0x7F && !stopBytes.contains(byte) }
         binary.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in
             guard let base = raw.baseAddress else { return }
             let needle = Array("https://".utf8)

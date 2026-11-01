@@ -119,10 +119,6 @@ public struct IgnoreRules: Sendable, Codable, Equatable {
     }
 
     public func ignoresApp(_ bundleID: String) -> Bool { apps.contains(bundleID) }
-
-    public func ignoresVersion(_ version: String, of bundleID: String) -> Bool {
-        versions[bundleID] == version
-    }
 }
 
 /// Small bits of state that aren't settings.

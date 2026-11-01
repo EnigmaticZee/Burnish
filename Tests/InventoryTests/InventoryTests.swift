@@ -55,8 +55,8 @@ func makeApp(_ name: String, in dir: URL, plist: [String: Any], receipt: Bool = 
         #expect(app.bundleID == "com.knollsoft.Rectangle")
         #expect(app.name == "Rectangle")
         #expect(app.fileName == "Rectangle.app")
-        #expect(app.shortVersion == "2.0.3")
-        #expect(app.buildVersion == "203")
+        #expect(app.version.short == "2.0.3")
+        #expect(app.version.build == "203")
         #expect(app.sparkleFeedURL?.absoluteString == "https://rectangleapp.com/downloads/updates.xml")
         #expect(app.sparklePublicEDKey == "abc123=")
         #expect(app.minimumSystemVersion == "14.0")
@@ -121,7 +121,7 @@ func makeApp(_ name: String, in dir: URL, plist: [String: Any], receipt: Bool = 
         }
         let apps = AppInventory(signatureReader: FakeSignatures(), caskrooms: []).scan(roots: [a, b]).apps
         #expect(apps.count == 2)
-        #expect(Set(apps.map(\.shortVersion)) == ["1.0", "2.0"])
+        #expect(Set(apps.compactMap(\.version.short)) == ["1.0", "2.0"])
     }
 
     @Test func excludesBurnishItself() throws {
@@ -142,7 +142,7 @@ func makeApp(_ name: String, in dir: URL, plist: [String: Any], receipt: Bool = 
         let app = try #require(AppInventory(signatureReader: FakeSignatures(), caskrooms: []).readApp(at: outer))
         #expect(app.isAppStore)
         #expect(app.isWrappedIOSApp)
-        #expect(app.shortVersion == "4.2")
+        #expect(app.version.short == "4.2")
     }
 
     @Test func caskroomReceiptMarksAppsAsManagedByHomebrew() throws {

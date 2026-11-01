@@ -114,13 +114,6 @@ func verdicts(_ c: VerdictCase) {
     #expect(VersionPair.fromCask("1.0,") == VersionPair(short: "1.0", build: nil))
 }
 
-@Test func displaySplit() {
-    #expect(VersionPair.splittingDisplay("5.0 (1234)") == VersionPair(short: "5.0", build: "1234"))
-    #expect(VersionPair.splittingDisplay("5.0 (Build 1234)") == VersionPair(short: "5.0", build: "1234"))
-    #expect(VersionPair.splittingDisplay("2.1 build 345") == VersionPair(short: "2.1", build: "345"))
-    #expect(VersionPair.splittingDisplay("2.1") == VersionPair(short: "2.1", build: nil))
-}
-
 @Test func compatibility() throws {
     let v = { (s: String) in Version(s)! }
     #expect(UpdateComparator.isCompatible(v("5.0"), v("6.0")))

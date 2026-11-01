@@ -38,8 +38,7 @@ import Testing
         }
         let rules = await store.load(.ignoreRules, default: IgnoreRules())
         #expect(rules.ignoresApp("com.x.app"))
-        #expect(rules.ignoresVersion("2.0", of: "com.y.app"))
-        #expect(!rules.ignoresVersion("2.1", of: "com.y.app"))
+        #expect(rules.versions == ["com.y.app": "2.0"])
     }
 
     @Test func corruptFileReadsAsMissing() async throws {
