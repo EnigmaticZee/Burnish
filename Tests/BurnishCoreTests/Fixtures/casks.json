@@ -109,7 +109,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "google-chrome",
   "url": "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg",
   "url_specs": {},
@@ -227,7 +227,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "google-chrome@beta",
   "url": "https://dl.google.com/chrome/mac/universal/beta/googlechromebeta.dmg",
   "url_specs": {},
@@ -345,7 +345,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "google-chrome@canary",
   "url": "https://dl.google.com/chrome/mac/universal/canary/googlechromecanary.dmg",
   "url_specs": {},
@@ -463,7 +463,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "google-chrome@dev",
   "url": "https://dl.google.com/chrome/mac/universal/dev/googlechromedev.dmg",
   "url_specs": {},
@@ -1619,7 +1619,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox",
   "url": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/159.0/mac/en-US/Firefox%20159.0.dmg",
   "url_specs": {},
@@ -1949,7 +1949,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@beta",
   "url": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/160.0b3/mac/en-US/Firefox%20160.0b3.dmg",
   "url_specs": {},
@@ -2577,7 +2577,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@esr",
   "url": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/153.6.0esr/mac/en-US/Firefox%20153.6.0esr.dmg",
   "url_specs": {},
@@ -2850,7 +2850,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@nightly",
   "url": "https://ftp.mozilla.org/pub/firefox/nightly/2026/11/2026-11-01-08-59-33-mozilla-central/firefox-161.0a1.en-US.mac.dmg",
   "url_specs": {},
@@ -3123,7 +3123,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@developer-edition",
   "url": "https://download-installer.cdn.mozilla.net/pub/devedition/releases/160.0b3/mac/en-US/Firefox%20160.0b3.dmg",
   "url_specs": {},
@@ -3244,7 +3244,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@cn",
   "url": "https://download-ssl.firefox.com.cn/releases/firefox/116.0/zh-CN/Firefox-latest.dmg",
   "url_specs": {},
@@ -3370,7 +3370,7 @@
    "arm64_monterey"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "adguard",
   "url": "https://static.adguard.com/mac/release/AdGuard-2.20.2.2629.dmg",
   "url_specs": {},
@@ -3499,7 +3499,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "adguard@nightly",
   "url": "https://static.adguard.com/mac/nightly/AdGuard-2.21.0.2632.dmg",
   "url_specs": {},
@@ -3608,7 +3608,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "discord",
   "url": "https://dl.discordapp.net/apps/osx/0.0.420/Discord.dmg",
   "url_specs": {},
@@ -3712,7 +3712,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "discord@canary",
   "url": "https://dl-canary.discordapp.net/apps/osx/0.0.1428/DiscordCanary.dmg",
   "url_specs": {},
@@ -3803,7 +3803,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "discord@ptb",
   "url": "https://dl-ptb.discordapp.net/apps/osx/0.0.269/DiscordPTB.dmg",
   "url_specs": {},
@@ -3892,7 +3892,7 @@
    "arm64_sonoma"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "pastenow",
   "url": "https://pastenow.app/api/release_manager/downloads/app.pastenow.PasteNow/766.zip",
   "url_specs": {},

@@ -109,7 +109,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "google-chrome",
   "url": "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg",
   "url_specs": {},
@@ -227,7 +227,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "google-chrome@beta",
   "url": "https://dl.google.com/chrome/mac/universal/beta/googlechromebeta.dmg",
   "url_specs": {},
@@ -345,7 +345,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "google-chrome@canary",
   "url": "https://dl.google.com/chrome/mac/universal/canary/googlechromecanary.dmg",
   "url_specs": {},
@@ -463,7 +463,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "google-chrome@dev",
   "url": "https://dl.google.com/chrome/mac/universal/dev/googlechromedev.dmg",
   "url_specs": {},
@@ -1619,7 +1619,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox",
   "url": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/159.0/mac/en-US/Firefox%20159.0.dmg",
   "url_specs": {},
@@ -1949,7 +1949,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@beta",
   "url": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/160.0b3/mac/en-US/Firefox%20160.0b3.dmg",
   "url_specs": {},
@@ -2577,7 +2577,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@esr",
   "url": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/153.6.0esr/mac/en-US/Firefox%20153.6.0esr.dmg",
   "url_specs": {},
@@ -2850,7 +2850,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@nightly",
   "url": "https://ftp.mozilla.org/pub/firefox/nightly/2026/11/2026-11-01-08-59-33-mozilla-central/firefox-161.0a1.en-US.mac.dmg",
   "url_specs": {},
@@ -3123,7 +3123,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@developer-edition",
   "url": "https://download-installer.cdn.mozilla.net/pub/devedition/releases/160.0b3/mac/en-US/Firefox%20160.0b3.dmg",
   "url_specs": {},
@@ -3244,7 +3244,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "firefox@cn",
   "url": "https://download-ssl.firefox.com.cn/releases/firefox/116.0/zh-CN/Firefox-latest.dmg",
   "url_specs": {},
@@ -3339,7 +3339,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "brave-browser",
   "url": "https://updates-cdn.bravesoftware.com/sparkle/Brave-Browser/stable-arm64/198.63/Brave-Browser-arm64.dmg",
   "url_specs": {},
@@ -3462,7 +3462,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "brave-browser@beta",
   "url": "https://updates-cdn.bravesoftware.com/sparkle/Brave-Browser/beta-arm64/199.53/Brave-Browser-Beta-arm64.dmg",
   "url_specs": {},
@@ -3591,7 +3591,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "brave-origin",
   "url": "https://updates-cdn.bravesoftware.com/sparkle/Brave-Origin/stable-arm64/198.63/Brave-Origin-arm64.dmg",
   "url_specs": {},
@@ -3735,7 +3735,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "visual-studio-code",
   "url": "https://update.code.visualstudio.com/1.144.0/darwin-arm64/stable",
   "url_specs": {},
@@ -3894,7 +3894,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "iterm2",
   "url": "https://iterm2.com/downloads/stable/iTerm2-3_7_6.zip",
   "url_specs": {},
@@ -3997,7 +3997,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "iterm2@beta",
   "url": "https://iterm2.com/downloads/beta/iTerm2-3_7_7beta2.zip",
   "url_specs": {},
@@ -4108,7 +4108,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "slack",
   "url": "https://downloads.slack-edge.com/desktop-releases/mac/arm64/4.53.276/Slack-4.53.276-macOS.dmg",
   "url_specs": {},
@@ -4277,7 +4277,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "slack@beta",
   "url": "https://downloads.slack-edge.com/desktop-releases/mac/arm64/4.53.276/Slack-4.53.276-macOS.dmg",
   "url_specs": {},
@@ -4435,7 +4435,7 @@
    "arm64_monterey"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "1password",
   "url": "https://downloads.1password.com/mac/1Password-8.12.42-aarch64.zip",
   "url_specs": {},
@@ -4565,7 +4565,7 @@
    "arm64_sonoma"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "rectangle",
   "url": "https://github.com/rxhanson/Rectangle/releases/download/v2.0.4/Rectangle2.0.4.dmg",
   "url_specs": {},
@@ -4691,7 +4691,7 @@
    "arm64_monterey"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "adguard",
   "url": "https://static.adguard.com/mac/release/AdGuard-2.20.2.2629.dmg",
   "url_specs": {},
@@ -4820,7 +4820,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "adguard@nightly",
   "url": "https://static.adguard.com/mac/nightly/AdGuard-2.21.0.2632.dmg",
   "url_specs": {},
@@ -4946,7 +4946,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "cleanmymac",
   "url": "https://updates.cleanmymac.com/com.macpaw.cleanmymac5/releases/CleanMyMac5_50703.0.2610281229.zip",
   "url_specs": {},
@@ -5051,7 +5051,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "cleanmymac-cli",
   "url": "https://cli.cleanmymac.com/1.0.0/CleanMyMac-CLI-1.0.0.zip",
   "url_specs": {},
@@ -5160,7 +5160,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "discord",
   "url": "https://dl.discordapp.net/apps/osx/0.0.420/Discord.dmg",
   "url_specs": {},
@@ -5264,7 +5264,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "discord@canary",
   "url": "https://dl-canary.discordapp.net/apps/osx/0.0.1428/DiscordCanary.dmg",
   "url_specs": {},
@@ -5355,7 +5355,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "discord@ptb",
   "url": "https://dl-ptb.discordapp.net/apps/osx/0.0.269/DiscordPTB.dmg",
   "url_specs": {},
@@ -5458,7 +5458,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "figma",
   "url": "https://desktop.figma.com/mac-arm/Figma-126.10.13.zip",
   "url_specs": {},
@@ -5592,7 +5592,7 @@
    "arm64_monterey"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "figma@beta",
   "url": "https://desktop.figma.com/mac-arm/beta/FigmaBeta-126.11.5.zip",
   "url_specs": {},
@@ -5736,7 +5736,7 @@
    "arm64_sonoma"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "nordvpn",
   "url": "https://downloads.nordcdn.com/apps/macos/generic/NordVPN-OpenVPN/10.14.1/NordVPN.pkg",
   "url_specs": {},
@@ -5877,7 +5877,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "logi-options+",
   "url": "https://download01.logi.com/web/ftp/pub/techsupport/optionsplus/logioptionsplus_installer.zip",
   "url_specs": {},
@@ -6003,7 +6003,7 @@
    "arm64_sonoma"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "pastenow",
   "url": "https://pastenow.app/api/release_manager/downloads/app.pastenow.PasteNow/766.zip",
   "url_specs": {},
@@ -6106,7 +6106,7 @@
    "x86_64_linux"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "qbittorrent",
   "url": "https://downloads.sourceforge.net/qbittorrent/qbittorrent-mac/qbittorrent-5.2.3/qbittorrent-5.2.3.dmg",
   "url_specs": {},
@@ -6288,7 +6288,7 @@
    "x86_64_linux"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "qbittorrent@lt20",
   "url": "https://downloads.sourceforge.net/qbittorrent/qbittorrent-mac/qbittorrent-5.2.3/qbittorrent-5.2.3_lt20.dmg",
   "url_specs": {},
@@ -6470,7 +6470,7 @@
    "arm64_linux"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "c0re100-qbittorrent",
   "url": "https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/download/release-5.2.4.10/qBittorrent-Enhanced-Edition-release-5.2.4.10-macOS-universal.dmg",
   "url_specs": {},
@@ -6612,7 +6612,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "stremio",
   "url": "https://dl.strem.io/stremio-shell-macos/v5.1.26/Stremio_arm64.dmg",
   "url_specs": {},
@@ -6749,7 +6749,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "stremio@beta",
   "url": "https://dl.strem.io/stremio-shell-macos/v5.1.30/Stremio_arm64.dmg",
   "url_specs": {},
@@ -6937,7 +6937,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "wondershare-uniconverter",
   "url": "https://download.wondershare.com/cbs_down/uniconverter-mac_arm_18.0.1_full14207.zip",
   "url_specs": {},
@@ -7083,7 +7083,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "mailbutler",
   "url": "https://downloads.mailbutler.io/sparkle/public/new-horizons/Mailbutler_8226-3630918.pkg",
   "url_specs": {},
@@ -7185,7 +7185,7 @@
    "arm64_linux"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "obsidian",
   "url": "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.14.5/Obsidian-1.14.5.dmg",
   "url_specs": {},
@@ -7370,7 +7370,7 @@
    "x86_64_linux"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "zoom",
   "url": "https://cdn.zoom.us/prod/7.2.5.90525/arm64/zoomusInstallerFull.pkg",
   "url_specs": {},
@@ -7584,7 +7584,7 @@
    "arm64_ventura"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "spotify",
   "url": "https://download.scdn.co/SpotifyARM64.dmg",
   "url_specs": {},
@@ -7716,7 +7716,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "vlc",
   "url": "https://get.videolan.org/vlc/3.0.24/macosx/vlc-3.0.24-arm64.dmg",
   "url_specs": {},
@@ -7863,7 +7863,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "telegram",
   "url": "https://osx.telegram.org/updates/Telegram-13.1.0.283357.app.zip",
   "url_specs": {},
@@ -7969,7 +7969,7 @@
    "arm64_monterey"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "1password@nightly",
   "url": "https://c.1password.com/dist/1P/mac8/1Password-latest.NIGHTLY-aarch64.zip",
   "url_specs": {},
@@ -8082,7 +8082,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "4peaks",
   "url": "https://downloads.nucleobytes.com/4peaks.dmg",
   "url_specs": {},
@@ -8196,7 +8196,7 @@
    "arm64_monterey"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "asix-ax88179",
   "url": "https://www.asix.com.tw/en/support/download/file/1951",
   "url_specs": {},
@@ -8309,7 +8309,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "adobe-air",
   "url": "https://airsdk.wxlift.com/assets/downloads/51.4.1.2/AdobeAIR.dmg",
   "url_specs": {},
@@ -8417,7 +8417,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "active-trader-pro",
   "url": "https://www.fidelity.com/webcontent/Codeweaver/activetrader-1.0.55.zip",
   "url_specs": {},
@@ -8510,7 +8510,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "1kc-razer",
   "url": "https://github.com/1kc/razer-macos/releases/download/v0.4.10/Razer.macOS-0.4.10-universal.dmg",
   "url_specs": {},
@@ -8638,7 +8638,7 @@
    "arm64_linux"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "font-0xproto",
   "url": "https://github.com/0xType/0xProto/releases/download/2.502/0xProto_2_502.zip",
   "url_specs": {},
@@ -8734,7 +8734,7 @@
    "arm64_big_sur"
   ],
   "tap": "homebrew/cask",
-  "tap_git_head": "37387e6604528da456ecaff9499093b42cd8163d",
+  "tap_git_head": "e9707c29ee761b7190f73cc79e56e1033b685cbc",
   "token": "calhash",
   "url": "https://www.titanium-software.fr/download/26/CalHash.dmg",
   "url_specs": {},
