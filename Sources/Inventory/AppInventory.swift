@@ -88,16 +88,22 @@ public struct AppInventory: Sendable {
         let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
         let isAppStore = isWrapped || fm.fileExists(atPath: receipt.path)
         let hasElectronFeed = fm.fileExists(atPath: electron.path)
-        // Only apps with no other update feed are worth reading for a Tauri updater.
+        // Only apps with no other update feed are worth reading for an updater address.
         var tauri: [String]?
+        var sparkleCandidates: [String]?
         var architectures: [String]?
         if !isWrapped, let executable = (plist["CFBundleExecutable"] as? String)?.nonEmpty {
             let binary = contents.appendingPathComponent("MacOS/\(executable)")
             let found = MachOArchitectures.of(binary)
             architectures = found.isEmpty ? nil : found
             if !isAppStore, feed == nil, !hasElectronFeed {
-                let endpoints = TauriDetector.updateEndpoints(executable: binary)
-                tauri = endpoints.isEmpty ? nil : endpoints
+                if fm.fileExists(atPath: contents.appendingPathComponent("Frameworks/Sparkle.framework").path) {
+                    let leads = SparkleFeedDetector.candidateFeeds(executable: binary)
+                    sparkleCandidates = leads.isEmpty ? nil : leads
+                } else {
+                    let endpoints = TauriDetector.updateEndpoints(executable: binary)
+                    tauri = endpoints.isEmpty ? nil : endpoints
+                }
             }
         }
 
@@ -114,6 +120,7 @@ public struct AppInventory: Sendable {
             sparklePublicEDKey: (plist["SUPublicEDKey"] as? String)?.nonEmpty,
             electronUpdateConfig: hasElectronFeed ? electron : nil,
             tauriUpdateEndpoints: tauri,
+            sparkleFeedCandidates: sparkleCandidates,
             architectures: architectures,
             minimumSystemVersion: (plist["LSMinimumSystemVersion"] as? String)?.nonEmpty,
             modificationDate: modified

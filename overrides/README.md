@@ -20,13 +20,16 @@ Rules:
 - Say in the pull request how you checked: the app's `CFBundleIdentifier` (`defaults read /Applications/Foo.app/Contents/Info.plist CFBundleIdentifier`) and the cask page on formulae.brew.sh.
 - The user's own corrections in the app always win over this file.
 
-Burnish downloads this file at most once a day from the `main` branch.
+Burnish downloads this file at most once a day from the `main` branch. A check runs on every pull
+request that touches it (`scripts/check-overrides.py`): the shape, the IDs, and that each feed is a
+real appcast or repository. Green pull requests are merged in batches.
 
 ## Update feeds
 
 Some apps don't say where they update from and aren't in Homebrew, so Burnish can only say "Can't
-check". People can ask for one with **Request Support on GitHub** in the app, which opens a
-ready-made issue. If you know where such an app announces its updates, add it under `feeds`:
+check". In the app, **Add Update Feed…** on such an app watches a feed for one Mac, and **Share
+This Feed…** opens a ready-made issue with the line below. If you know where an app announces its
+updates, add it under `feeds`:
 
 ```json
 {

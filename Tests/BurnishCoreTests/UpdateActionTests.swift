@@ -98,17 +98,26 @@ let downloadable = Release(source: .homebrew, version: VersionPair(short: "2.0")
         #expect(!body.contains("/Applications"), "no file paths or other personal data")
     }
 
-    @Test func supportRequestsAreForAppsTheCommunityCanHelpWith() throws {
+    @Test func feedsCanBeAddedForAppsTheCommunityCanHelpWith() throws {
         let r = AppCheckResult(app: makeApp("Tool", "com.x.tool", "1.0", build: "10"), status: .cantCheck(reason: "No update feed found"))
-        #expect(r.canRequestSupport)
-        let components = try #require(URLComponents(url: SupportRequest.url(for: r), resolvingAgainstBaseURL: false))
+        #expect(r.canAddFeed)
+        let feed = CommunityFeed(sparkle: URL(string: "https://example.com/appcast.xml"))
+        let components = try #require(URLComponents(url: FeedSuggestion.url(for: r, feed: feed), resolvingAgainstBaseURL: false))
         let body = try #require(components.queryItems?.first { $0.name == "body" }?.value)
-        #expect(body.contains("com.x.tool") && body.contains("No update feed found"))
+        #expect(body.contains("\"com.x.tool\": { \"sparkle\": \"https://example.com/appcast.xml\" }"), "ready to paste into the community file")
         #expect(!body.contains("/Applications"), "no file paths or other personal data")
 
         let apple = AppCheckResult(app: makeApp("Final Cut Pro", "com.apple.FinalCut", "12.0"), status: .cantCheck(reason: "Updated by Apple"))
-        #expect(!apple.canRequestSupport, "Apple's apps update through Apple")
+        #expect(!apple.canAddFeed, "Apple's apps update through Apple")
         let fine = AppCheckResult(app: makeApp("Tool", "com.x.tool", "1.0"), status: .upToDate(note: nil))
-        #expect(!fine.canRequestSupport)
+        #expect(!fine.canAddFeed)
+    }
+
+    @Test func aFeedThePersonAddedIsReadButNeverInstalledFrom() {
+        var release = downloadable
+        release.addedByUser = true
+        let r = outdated(makeApp("Tool", "com.x.tool", "1.0"), release: release)
+        guard case .openDownloadPage = r.action(homebrew: .showOnly) else { Issue.record("expected the download page"); return }
+        #expect(r.hallmarks(homebrew: .showOnly).first?.title == "A feed you added")
     }
 }

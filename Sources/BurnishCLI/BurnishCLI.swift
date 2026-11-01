@@ -58,6 +58,14 @@ func row(_ r: AppCheckResult) -> Row {
 
 @main
 struct BurnishCLI {
+    /// The app's Info.plist when this tool runs from inside Burnish.app (Contents/Helpers/burnish).
+    static var appInfo: [String: Any] {
+        guard let executable = Bundle.main.executableURL?.resolvingSymlinksInPath() else { return [:] }
+        let app = executable.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        guard app.pathExtension == "app" else { return [:] }
+        return Bundle(url: app)?.infoDictionary ?? [:]
+    }
+
     static func main() async throws {
         let arguments = Array(CommandLine.arguments.dropFirst())
         let command = arguments.first ?? "help"
@@ -107,6 +115,11 @@ struct BurnishCLI {
             \(report.problems.isEmpty ? "" : "\nProblems: " + report.problems.joined(separator: "; "))
 
             """.utf8))
+
+        case "diagnostics":
+            let info = appInfo
+            print(await Diagnostics.report(engine: engine, appVersion: info["CFBundleShortVersionString"] as? String ?? "development",
+                                           build: info["CFBundleVersion"] as? String ?? "-"), terminator: "")
 
         case "count":
             // A fresh check by default; --cached answers instantly from the last one.
@@ -209,6 +222,7 @@ struct BurnishCLI {
               burnish check --json           Same, as JSON
               burnish update <app>           Download, verify and install one app's update
               burnish count [--cached]       How many updates are waiting
+              burnish diagnostics            Everything a bug report needs, as text
               burnish history <app>          What Burnish has done with one app
               burnish restore <app>          Put back the version Burnish's latest update replaced
             """)

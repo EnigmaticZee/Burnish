@@ -43,11 +43,18 @@ public struct AppcastItem: Sendable, Hashable {
     }
 }
 
+/// A parsed appcast: the channel's title and its items.
+public struct Appcast: Sendable, Hashable {
+    public var title: String?
+    public var items: [AppcastItem]
+}
+
 /// Parses appcast XML, including old Sparkle 1 feeds that keep versions on the enclosure.
 public final class AppcastParser: NSObject, XMLParserDelegate {
     static let sparkleNS = "http://www.andymatuschak.org/xml-namespaces/sparkle"
 
     private var items: [AppcastItem] = []
+    private var channelTitle: String?
     private var current: AppcastItem?
     private var stack: [String] = []
     private var text = ""
@@ -55,6 +62,10 @@ public final class AppcastParser: NSObject, XMLParserDelegate {
     private var failure: Error?
 
     public static func parse(_ data: Data) throws -> [AppcastItem] {
+        try parseFeed(data).items
+    }
+
+    public static func parseFeed(_ data: Data) throws -> Appcast {
         let delegate = AppcastParser()
         let parser = XMLParser(data: data)
         parser.shouldProcessNamespaces = true
@@ -63,7 +74,7 @@ public final class AppcastParser: NSObject, XMLParserDelegate {
         guard parser.parse() else {
             throw delegate.failure ?? parser.parserError ?? CocoaError(.propertyListReadCorrupt)
         }
-        return delegate.items
+        return Appcast(title: delegate.channelTitle, items: delegate.items)
     }
 
     private func key(_ name: String, _ namespace: String?) -> String {
@@ -116,6 +127,7 @@ public final class AppcastParser: NSObject, XMLParserDelegate {
         let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
         // Only direct children of <item> describe the item (not those inside sparkle:informationalUpdate etc.).
         let parent = stack.dropLast().last
+        if current == nil, name == "title", parent == "channel" { channelTitle = value.nilIfEmpty }
         guard current != nil else { return }
         if name == "item" {
             items.append(current!)

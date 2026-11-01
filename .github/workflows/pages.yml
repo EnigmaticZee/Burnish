@@ -31,7 +31,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)
-          python3 scripts/build-site.py "${TAG#v}" _site
+          # The accuracy ledger that release's build wrote; older releases have none.
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern accuracy.json --dir "$RUNNER_TEMP" || true
+          python3 scripts/build-site.py "${TAG#v}" _site "--ledger=$RUNNER_TEMP/accuracy.json"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

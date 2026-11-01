@@ -60,6 +60,10 @@ public struct SparkleSource: Sendable {
 
     /// `installed` lets the result list the versions in between, for "what you missed".
     public func check(feed: URL, preferences: Preferences = Preferences(), installed: VersionPair? = nil) async throws(Failure) -> Result {
+        try select(from: try await fetch(feed).items, preferences: preferences, installed: installed)
+    }
+
+    func fetch(_ feed: URL) async throws(Failure) -> Appcast {
         guard feed.scheme?.lowercased() == "https" else { throw .notHTTPS }
         let response: HTTPResponse
         do {
@@ -68,8 +72,49 @@ public struct SparkleSource: Sendable {
             throw .unreachable((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
         }
         guard response.isSuccess else { throw .unreachable("HTTP \(response.status)") }
-        guard let items = try? AppcastParser.parse(response.body) else { throw .unreadable }
-        return try select(from: items, preferences: preferences, installed: installed)
+        guard let appcast = try? AppcastParser.parseFeed(response.body) else { throw .unreadable }
+        return appcast
+    }
+
+    /// What a feed has to show before an address found inside the app counts as its feed.
+    public struct Owner: Sendable {
+        /// The app's file name and bundle names.
+        public var names: [String]
+        public var installed: VersionPair
+
+        public init(names: [String], installed: VersionPair) {
+            self.names = names
+            self.installed = installed
+        }
+    }
+
+    /// Asks each lead in turn and keeps the first appcast that plainly belongs to the app: its
+    /// channel or its downloads carry the app's name, or it lists the version that's installed.
+    /// Anything else is left alone, so a lead can't raise an alert for the wrong app.
+    public func check(leads: [URL], owner: Owner, preferences: Preferences = Preferences()) async -> (feed: URL, result: Result)? {
+        for lead in leads {
+            guard let appcast = try? await fetch(lead), Self.belongs(appcast, to: owner),
+                  let result = try? select(from: appcast.items, preferences: preferences, installed: owner.installed)
+            else { continue }
+            return (lead, result)
+        }
+        return nil
+    }
+
+    static func belongs(_ appcast: Appcast, to owner: Owner) -> Bool {
+        let names = owner.names.map(squash).filter { $0.count >= 3 }
+        let haystacks = [appcast.title].compactMap { $0 }.map(squash)
+            + appcast.items.compactMap { $0.enclosure?.url?.lastPathComponent }.map(squash)
+        if haystacks.contains(where: { text in names.contains { text.contains($0) } }) { return true }
+        return appcast.items.contains { item in
+            (owner.installed.build != nil && item.effectiveVersion == owner.installed.build)
+                || (owner.installed.short != nil && item.effectiveShortVersion == owner.installed.short)
+        }
+    }
+
+    /// "Google Chrome.app" and "googlechrome" meet in the middle.
+    static func squash(_ text: String) -> String {
+        String(text.lowercased().unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) })
     }
 
     func select(from items: [AppcastItem], preferences: Preferences = Preferences(), installed: VersionPair? = nil) throws(Failure) -> Result {

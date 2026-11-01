@@ -129,6 +129,15 @@ import Versions
         #expect(falseAlerts.isEmpty, "false alerts: \(falseAlerts)")
         #expect(missed.isEmpty, "missed updates: \(missed)")
         // Silence would pass the test above too, so the known apps must actually be recognised.
-        #expect(report.results.filter { $0.status.tab == .upToDate }.count >= 30, "known apps recognised, not shrugged off")
+        let recognised = report.results.filter { $0.status.tab == .upToDate }.count
+        #expect(recognised >= 30, "known apps recognised, not shrugged off")
+
+        // The accuracy ledger: CI publishes this run's numbers with each release, for the website.
+        if let path = ProcessInfo.processInfo.environment["BURNISH_LEDGER"] {
+            let expected = Self.cases.filter { $0.truth == .update }.count
+            let ledger: [String: Int] = ["apps": Self.cases.count, "falseAlerts": falseAlerts.count,
+                                         "updatesExpected": expected, "updatesFound": expected - missed.count, "recognised": recognised]
+            try JSONSerialization.data(withJSONObject: ledger, options: [.sortedKeys]).write(to: URL(fileURLWithPath: path))
+        }
     }
 }

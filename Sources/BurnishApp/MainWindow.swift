@@ -263,8 +263,14 @@ struct RowActions: View {
         }
         Divider()
         Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([result.app.url]) }
-        if result.canRequestSupport {
-            Button("Request Support on GitHub…") { model.requestSupport(result) }
+        if result.canAddFeed {
+            Button("Add Update Feed…") {
+                NSApp.activate(ignoringOtherApps: true)
+                model.selectedID = result.id
+                model.showDetails = true
+                model.feedPromptID = result.id
+                openWindow(id: "main")
+            }
         }
     }
 }

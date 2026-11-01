@@ -56,9 +56,27 @@ extension StoreKey {
 public struct CommunityFeed: Codable, Sendable, Equatable {
     public var sparkle: URL?
     public var github: String?
+    /// Typed into Burnish by the person, for their own Mac, rather than listed in the repository.
+    public var addedByUser: Bool?
 
-    public init(sparkle: URL? = nil, github: String? = nil) {
+    public init(sparkle: URL? = nil, github: String? = nil, addedByUser: Bool? = nil) {
         self.sparkle = sparkle
         self.github = github
+        self.addedByUser = addedByUser
     }
+
+    /// Where it points, for a label: the appcast's host or the repository.
+    public var label: String { sparkle?.host ?? github ?? "" }
+}
+
+/// Feeds the person added themselves for apps Burnish can't check, keyed by bundle ID. Read like
+/// community feeds: to spot updates, never to install from.
+public struct UserFeeds: Codable, Sendable, Equatable {
+    public var byApp: [String: CommunityFeed] = [:]
+
+    public init() {}
+}
+
+extension StoreKey {
+    public static var userFeeds: StoreKey<UserFeeds> { StoreKey<UserFeeds>("user-feeds.json") }
 }

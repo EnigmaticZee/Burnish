@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Builds the website into a folder, with "What's new" filled from docs/HISTORY.md.
 
-Usage: python3 scripts/build-site.py <version> [out-dir]      (out-dir defaults to _site)
+Usage: python3 scripts/build-site.py <version> [out-dir] [--ledger=accuracy.json]
 
 The deploy workflow passes the version of the newest published release, so the page never
-announces a version whose download isn't up yet. Uses only the standard library.
+announces a version whose download isn't up yet, and the accuracy ledger that release's build
+wrote (the 50-app truth set's result). Uses only the standard library.
 """
 import html
 import importlib.util
+import json
 import re
 import shutil
 import sys
@@ -63,7 +65,23 @@ def short_block(short):
             f'          <ul>\n{lines}\n          </ul>\n        </div>')
 
 
-def build(version, out):
+def ledger_block(path):
+    """The truth set's numbers from the release's own build, or the plain sentence without them."""
+    if not path or not Path(path).exists():
+        return '          <p class="ledger">Zero false alerts on our 50-app test, checked on every build.</p>'
+    d = json.loads(Path(path).read_text(encoding="utf-8"))
+
+    def day(iso):
+        when = date.fromisoformat(iso[:10])
+        return f"{when.day} {when.strftime('%B %Y')}"
+
+    return (f'          <p class="ledger">Checked on every build: <b>{d["apps"]} apps</b>, <b>{d["falseAlerts"]} false alerts</b>, '
+            f'{d["updatesFound"]} of {d["updatesExpected"]} real updates found. Last run {day(d["date"])}, against '
+            f'Homebrew\'s list from {day(d["homebrewSnapshot"])}. '
+            f'<a href="{REPO}/blob/main/Tests/BurnishCoreTests/FalseAlertTests.swift">How it\'s measured →</a></p>')
+
+
+def build(version, out, ledger=None):
     lines = notes.section(version)
     short = notes.short_version(lines)
     headline, items, extra = split_entry(notes.full_notes(lines))
@@ -80,6 +98,7 @@ def build(version, out):
         "RELEASE_EXTRA": "\n".join(f'        <p class="release-extra">{notes.inline(p)}</p>' for p in extra),
         "DOWNLOAD_URL": DOWNLOAD,
         "REPO": REPO,
+        "LEDGER": ledger_block(ledger),
     }
     page = (SITE / "index.html").read_text(encoding="utf-8")
     for key, value in values.items():
@@ -96,6 +115,9 @@ def build(version, out):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if not args:
         sys.exit(__doc__)
-    build(sys.argv[1], Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "_site")
+    ledger = next((f.split("=", 1)[1] for f in flags if f.startswith("--ledger=")), None)
+    build(args[0], Path(args[1]) if len(args) > 1 else ROOT / "_site", ledger)

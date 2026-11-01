@@ -193,6 +193,12 @@ struct SettingsPane: View {
                 Text("Burnish's data")
                 Text("Settings, results and history, in Application Support on this Mac.")
             }
+            LabeledContent {
+                Button("Save Diagnostics…") { Task { await DiagnosticsSaver.save(model: model) } }
+            } label: {
+                Text("Diagnostics")
+                Text("A text file with your app list, the last check and Burnish's recent log lines, for bug reports. Nothing is sent anywhere; you choose where it goes.")
+            }
         }
     }
 
@@ -294,5 +300,22 @@ struct OnboardingView: View {
                 .disabled(model.isChecking)
             }
         }
+    }
+}
+
+/// Writes the diagnostics report where the person chooses.
+@MainActor
+enum DiagnosticsSaver {
+    static func save(model: AppModel) async {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "Burnish Diagnostics.txt"
+        panel.title = String(localized: "Save Diagnostics")
+        panel.message = String(localized: "The file names the apps on this Mac. Attach it to a bug report if you like.")
+        NSApp.activate(ignoringOtherApps: true)
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let info = Bundle.main.infoDictionary ?? [:]
+        let text = await Diagnostics.report(engine: model.engine, appVersion: info["CFBundleShortVersionString"] as? String ?? "",
+                                            build: info["CFBundleVersion"] as? String ?? "")
+        try? text.write(to: url, atomically: true, encoding: .utf8)
     }
 }

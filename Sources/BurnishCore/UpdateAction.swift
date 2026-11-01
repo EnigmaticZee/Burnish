@@ -51,6 +51,9 @@ extension AppCheckResult {
             return homebrew == .upgradeWithBrew ? .brewUpgrade(token: token) : .managedByHomebrew(token: token)
         }
         if let vendorUpdater { return .openUpdater(vendorUpdater) }
+        if release.addedByUser == true {
+            return .openDownloadPage(downloadPage, reason: String(localized: "Found through a feed you added, so the install is yours to do"))
+        }
         if release.listedByCommunity == true {
             return .openDownloadPage(downloadPage, reason: String(localized: "Found through a community-listed feed, so the install is yours to do"))
         }
@@ -144,23 +147,27 @@ public enum WrongMatchReport {
     }
 }
 
-/// A prefilled GitHub issue asking for an app Burnish can't check to be covered, with what
-/// Burnish knows about it and nothing else. Answers usually become community feeds.
-public enum SupportRequest {
-    public static func url(for result: AppCheckResult) -> URL {
-        var body = """
+/// A ready-made GitHub issue offering a feed the person added for everyone, as the line the
+/// community file needs, with the app's name, bundle ID and version and nothing else.
+public enum FeedSuggestion {
+    public static func url(for result: AppCheckResult, feed: CommunityFeed) -> URL {
+        let entry = feed.sparkle.map { "{ \"sparkle\": \"\($0.absoluteString)\" }" } ?? "{ \"github\": \"\(feed.github ?? "")\" }"
+        let body = """
         **App:** \(result.app.name)
-        **Bundle ID:** `\(result.app.bundleID)`
         **Installed version:** \(result.app.version.short ?? "-") (\(result.app.version.build ?? "-"))
+
+        For `feeds` in `overrides/community-overrides.json`:
+
+        ```json
+        "\(result.app.bundleID)": \(entry)
+        ```
+
+        **How I know it's this app's feed:** <!-- for example: the developer's site links to it, or the app's release notes match -->
         """
-        if case let .cantCheck(reason) = result.status {
-            body += "\n**Why Burnish can't check it:** \(reason)"
-        }
-        body += "\n\n**Where it announces updates, if you know:** <!-- an appcast URL, a GitHub repository, or the developer's download page -->\n"
         var components = URLComponents(url: Net.repository.appendingPathComponent("issues/new"), resolvingAgainstBaseURL: false)!
         components.queryItems = [
-            URLQueryItem(name: "title", value: "Support request: \(result.app.name) (\(result.app.bundleID))"),
-            URLQueryItem(name: "labels", value: "support-request"),
+            URLQueryItem(name: "title", value: "Feed: \(result.app.name) (\(result.app.bundleID))"),
+            URLQueryItem(name: "labels", value: "feed"),
             URLQueryItem(name: "body", value: body),
         ]
         return components.url!
@@ -168,9 +175,9 @@ public enum SupportRequest {
 }
 
 extension AppCheckResult {
-    /// Apps Burnish can't check that the community could help with. Apple's apps and App Store
-    /// apps update through Apple, so there's nothing to add for them.
-    public var canRequestSupport: Bool {
+    /// Apps Burnish can't check that a feed could help with. Apple's apps and App Store apps
+    /// update through Apple, so there's nothing to add for them.
+    public var canAddFeed: Bool {
         guard case .cantCheck = status else { return false }
         return !app.isApple && !app.isAppStore
     }

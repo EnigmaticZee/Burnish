@@ -1,0 +1,35 @@
+name: Tidy old issues
+
+# Burnish is a one-person project read in batches, so issues nobody has touched for two months
+# get a note and two more weeks before they close. Reopening is always welcome.
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          days-before-stale: 60
+          days-before-close: 14
+          exempt-issue-labels: confirmed,security,feed,wrong-match
+          exempt-pr-labels: confirmed
+          stale-issue-label: quiet
+          stale-pr-label: quiet
+          stale-issue-message: >-
+            Nothing has happened here for two months. Burnish is looked after by one person in
+            batches, so this will close in two weeks unless there's something to add. If it still
+            matters, a comment keeps it open, and a diagnostics file (Settings → Privacy → Save
+            Diagnostics…) gives it the best chance.
+          stale-pr-message: >-
+            This pull request has been quiet for two months and will close in two weeks unless
+            it's updated. Thank you for it either way.
+          close-issue-message: Closed for now. Reopen it any time if it's still happening.
+          close-pr-message: Closed for now. Reopen it any time.

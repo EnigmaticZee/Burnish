@@ -132,13 +132,22 @@ public actor UpdateChecker {
         client: HTTPClient, system: SystemVersion,
         platform: Platform, matcher: CaskMatcher?, github: GitHubSource
     ) async {
+        let preferences = SparkleSource.Preferences(maximumMajor: rule.stayOnMajor, includeBeta: rule.followBeta)
         if let feed = app.sparkleFeedURL {
-            let preferences = SparkleSource.Preferences(maximumMajor: rule.stayOnMajor, includeBeta: rule.followBeta)
             do {
                 findings.sparkle = .found(try await SparkleSource(client: client, system: system, isARM: platform.isARM)
                     .check(feed: feed, preferences: preferences, installed: app.version))
             } catch {
                 findings.sparkle = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
+            }
+        } else if let leads = app.sparkleFeedCandidates?.compactMap({ URL(string: $0) }), !leads.isEmpty {
+            // An address compiled into the app is only a lead: the feed has to prove it's the app's own.
+            let owner = SparkleSource.Owner(names: [app.name] + app.bundleNames, installed: app.version)
+            if let found = await SparkleSource(client: client, system: system, isARM: platform.isARM)
+                .check(leads: leads, owner: owner, preferences: preferences) {
+                var result = found.result
+                result.release?.feedFoundInApp = true
+                findings.sparkle = .found(result)
             }
         }
         if let config = app.electronUpdateConfig, !findings.sparkleSucceeded {
@@ -191,6 +200,7 @@ public actor UpdateChecker {
             do {
                 var result = try await SparkleSource(client: client, system: system, isARM: platform.isARM).check(feed: url)
                 result.release?.listedByCommunity = true
+                result.release?.addedByUser = feed.addedByUser
                 findings.sparkle = .found(result)
             } catch {
                 findings.sparkle = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
@@ -204,6 +214,7 @@ public actor UpdateChecker {
                                       downloadPage: latest.page, releaseNotes: latest.body.map { ReleaseNotes(text: $0, format: .markdown) },
                                       date: latest.publishedAt, needsManualInstall: true)
                 release.listedByCommunity = true
+                release.addedByUser = feed.addedByUser
                 findings.community = .found(release)
             } catch {
                 if error != .noRelease { findings.community = .failed(error.errorDescription ?? String(localized: "GitHub not reachable")) }

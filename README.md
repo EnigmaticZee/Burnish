@@ -84,7 +84,7 @@ No account, no analytics, no crash reports. Logs stay on your Mac. These are the
 | --- | --- | --- |
 | Homebrew's app list (`formulae.brew.sh`) | At most once a day | Nothing about your apps |
 | Apple's App Store lookup (`itunes.apple.com`) | Each check, if you have App Store apps | Their bundle IDs (you can turn this off) |
-| Each app's own update feed, or the one the community file lists for it, and release-notes links in it | Each check | Nothing beyond the request |
+| Each app's own update feed (named in its Info.plist or compiled into it), one the community file lists for it, or one you add yourself, and release-notes links in it | Each check | Nothing beyond the request |
 | GitHub's releases API, for apps whose download lives on GitHub or that the community file points there | Each check, cached | Nothing beyond the request |
 | Community match fixes and update feeds (this repository) | At most once a day (you can turn this off) | Nothing |
 | The update download itself | When you update | Nothing beyond the request |
@@ -136,7 +136,7 @@ Burnish finds their updates and hands them to the App Store, which installs them
 <details>
 <summary><b>Why does it say "Can't check" for some apps?</b></summary>
 <br>
-Some apps have no public update source Burnish can read, or set their update feed only while running. Burnish says so rather than guessing. If an app is in Homebrew under a different name, <b>Wrong Match? → Choose a Different Homebrew App</b> fixes it for you, and <a href="overrides/README.md">community match fixes</a> fix it for everyone. Know where an app announces its updates? Add it to the <a href="overrides/README.md#update-feeds">community feeds</a> and Burnish can watch it for everyone, or use <b>Request Support on GitHub</b> on the app in Burnish and someone else can.
+Some apps have no public update source Burnish can read, or set their update feed only while running. Burnish says so rather than guessing. If an app is in Homebrew under a different name, <b>Wrong Match? → Choose a Different Homebrew App</b> fixes it for you, and <a href="overrides/README.md">community match fixes</a> fix it for everyone. Know where an app announces its updates? <b>Add Update Feed…</b> on the app in Burnish watches it for you, and <b>Share This Feed…</b> offers it to everyone through the <a href="overrides/README.md#update-feeds">community feeds</a>.
 </details>
 
 <details>
@@ -193,6 +193,10 @@ JSON and CSV reports. [docs/ADMINS.md](docs/ADMINS.md) has every key and an exam
 ⬜ A Homebrew cask for Burnish<br>
 ⬜ More apps matched out of the box
 
+## Support
+
+Burnish is made by one person in their spare time, and it's free. It updates itself, so fixes arrive on their own, and issues are read in batches rather than answered quickly. If something goes wrong, **Settings → Privacy → Save Diagnostics…** writes a file with everything a report needs, and nothing leaves your Mac unless you attach it. [SUPPORT.md](SUPPORT.md) has the details.
+
 ## Build from source
 
 ```sh
@@ -204,7 +208,7 @@ open build/Burnish.app
 
 SwiftUI's macros ship with Xcode, so have Xcode installed; the scripts find it on their own. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for how the project is put together and the rules every change follows.
 
-**Contributing:** issues and pull requests are welcome. The fastest way to help is fixing a wrong match in [overrides/community-overrides.json](overrides/README.md).
+**Contributing:** issues and pull requests are welcome, and are read in batches. The fastest way to help is a wrong-match fix or an update feed in [overrides/community-overrides.json](overrides/README.md); a check runs on every pull request, and green ones are merged together.
 
 ---
 

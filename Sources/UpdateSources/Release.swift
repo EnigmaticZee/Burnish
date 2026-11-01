@@ -59,6 +59,11 @@ public struct Release: Sendable, Hashable, Codable {
     /// Found through a feed a contributor listed, not one the app or Homebrew names. Burnish
     /// reads it to spot updates and leaves the install to the person (install rule 1).
     public var listedByCommunity: Bool?
+    /// Found through a feed the person typed into Burnish themselves; read, never installed from.
+    public var addedByUser: Bool?
+    /// The feed address came from inside the app's executable rather than its Info.plist, and the
+    /// feed proved it belongs to the app.
+    public var feedFoundInApp: Bool?
     /// Versions between the installed one and this, newest first, when the feed lists them.
     public var missed: [MissedRelease]?
 

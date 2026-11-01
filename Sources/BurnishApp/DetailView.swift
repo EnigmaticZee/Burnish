@@ -11,6 +11,7 @@ struct DetailView: View {
     @Environment(AppModel.self) private var model
     let result: AppCheckResult
     @State private var showingPicker = false
+    @State private var showingFeedSheet = false
     @State private var confirmingPutBack = false
 
     var body: some View {
@@ -18,8 +19,9 @@ struct DetailView: View {
             VStack(alignment: .leading, spacing: 18) {
                 header
                 confirmation
-                supportRequest
+                feedOffer
                 facts
+                UserFeedSection(result: result)
                 HallmarksSection(result: result)
                 notes
                 ReleaseNotesSection(result: result)
@@ -41,6 +43,15 @@ struct DetailView: View {
                 if let token { Task { await model.confirmMatch(result, token: token) } }
             }
         }
+        .sheet(isPresented: $showingFeedSheet) { AddFeedSheet(result: result) }
+        .onAppear { openFeedPromptIfAsked() }
+        .onChange(of: model.feedPromptID) { _, _ in openFeedPromptIfAsked() }
+    }
+
+    private func openFeedPromptIfAsked() {
+        guard model.feedPromptID == result.id else { return }
+        model.feedPromptID = nil
+        showingFeedSheet = true
     }
 
     private var header: some View {
@@ -81,9 +92,9 @@ struct DetailView: View {
             if let homepage = result.homepage {
                 Button("Open Developer's Site") { NSWorkspace.shared.open(homepage) }
             }
-            if result.canRequestSupport {
+            if result.canAddFeed || model.userFeed(for: result) != nil {
                 Divider()
-                Button("Request Support on GitHub…") { model.requestSupport(result) }
+                Button(model.userFeed(for: result) == nil ? "Add Update Feed…" : "Change Update Feed…") { showingFeedSheet = true }
             }
             if !result.app.isAppStore {
                 Divider()
@@ -100,16 +111,16 @@ struct DetailView: View {
         .fixedSize()
     }
 
-    /// For an app Burnish can't check: ask for it to be covered, ideally with where it posts updates.
+    /// For an app Burnish can't check: the person can point it at the feed themselves.
     @ViewBuilder
-    private var supportRequest: some View {
-        if result.canRequestSupport {
+    private var feedOffer: some View {
+        if result.canAddFeed, model.userFeed(for: result) == nil {
             GroupBox {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Know where \(result.app.name) announces its updates? Ask for it to be added, and say where if you can.")
+                    Text("Know where \(result.app.name) announces its updates? Add its feed and Burnish will watch it for you.")
                         .fixedSize(horizontal: false, vertical: true)
-                    Button("Request Support on GitHub…") { model.requestSupport(result) }
-                    Text("Opens a ready-made issue in your browser with the app's name, bundle ID and version. Nothing is sent until you submit it.")
+                    Button("Add Update Feed…") { showingFeedSheet = true }
+                    Text("A Sparkle appcast address or a GitHub repository. Burnish reads it to spot updates and leaves the install to you.")
                         .font(.caption).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }

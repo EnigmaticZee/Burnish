@@ -24,6 +24,9 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
     public let electronUpdateConfig: URL?
     /// Updater endpoints compiled into a Tauri app's executable.
     public let tauriUpdateEndpoints: [String]?
+    /// Appcast addresses compiled into a Sparkle app that names no feed in Info.plist; leads,
+    /// not facts, until the checker finds one that plainly belongs to the app.
+    public let sparkleFeedCandidates: [String]?
     /// Processors the executable has code for (`arm64`, `x86_64`), when it could be read.
     public let architectures: [String]?
     public let minimumSystemVersion: String?
@@ -33,8 +36,8 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
         bundleID: String, name: String, bundleNames: [String] = [], url: URL, version: VersionPair,
         signature: CodeSignature = .unsigned, isAppStore: Bool = false, isWrappedIOSApp: Bool = false,
         sparkleFeedURL: URL? = nil, sparklePublicEDKey: String? = nil, caskroomToken: String? = nil,
-        electronUpdateConfig: URL? = nil, tauriUpdateEndpoints: [String]? = nil, architectures: [String]? = nil,
-        minimumSystemVersion: String? = nil, modificationDate: Date? = nil
+        electronUpdateConfig: URL? = nil, tauriUpdateEndpoints: [String]? = nil, sparkleFeedCandidates: [String]? = nil,
+        architectures: [String]? = nil, minimumSystemVersion: String? = nil, modificationDate: Date? = nil
     ) {
         self.bundleID = bundleID
         self.name = name
@@ -49,6 +52,7 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
         self.caskroomToken = caskroomToken
         self.electronUpdateConfig = electronUpdateConfig
         self.tauriUpdateEndpoints = tauriUpdateEndpoints
+        self.sparkleFeedCandidates = sparkleFeedCandidates
         self.architectures = architectures
         self.minimumSystemVersion = minimumSystemVersion
         self.modificationDate = modificationDate

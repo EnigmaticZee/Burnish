@@ -1,0 +1,25 @@
+name: Community file
+
+# Checks every change to the community match fixes and feeds, so a pull request that's green can
+# be merged in a batch without a second look: well-formed JSON and IDs, feeds that really are
+# Sparkle appcasts, repositories that exist.
+on:
+  pull_request:
+    paths: ["overrides/community-overrides.json", "scripts/check-overrides.py"]
+  push:
+    branches: [main]
+    paths: ["overrides/community-overrides.json", "scripts/check-overrides.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the community file
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/check-overrides.py overrides/community-overrides.json

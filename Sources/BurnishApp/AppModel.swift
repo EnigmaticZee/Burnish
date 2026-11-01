@@ -59,6 +59,10 @@ final class AppModel {
     private(set) var history = UpdateHistory()
     /// Per-app choices: automatic or not, stay on a major version, follow betas.
     private(set) var appRules = AppRules()
+    /// Feeds the person added for apps Burnish can't check.
+    private(set) var userFeeds = UserFeeds()
+    /// Set from a row's menu so the app's details open straight onto Add Update Feed.
+    var feedPromptID: String?
     /// Settings the person's organisation enforces; Settings shows them locked.
     private(set) var lockedSettings: Set<ManagedSettings.Key> = []
     private var animationTimer: Timer?
@@ -112,6 +116,7 @@ final class AppModel {
         if let report = await engine.lastReport() { apply(report) }
         history = await engine.history()
         appRules = await engine.store.load(.appRules, default: AppRules())
+        userFeeds = await engine.store.load(.userFeeds, default: UserFeeds())
         lastCheck = state.lastCheck ?? results.first?.checkedAt
     }
 
@@ -467,8 +472,28 @@ final class AppModel {
         NSWorkspace.shared.open(WrongMatchReport.url(for: result))
     }
 
-    func requestSupport(_ result: AppCheckResult) {
-        NSWorkspace.shared.open(SupportRequest.url(for: result))
+    // MARK: Feeds the person adds
+
+    func userFeed(for result: AppCheckResult) -> CommunityFeed? { userFeeds.byApp[result.app.bundleID] }
+
+    func addFeed(_ feed: CommunityFeed, for result: AppCheckResult) async {
+        userFeeds.byApp[result.app.bundleID] = feed
+        let feeds = userFeeds
+        await engine.store.save(feeds, .userFeeds)
+        await recheck(result)
+    }
+
+    func removeFeed(for result: AppCheckResult) async {
+        userFeeds.byApp[result.app.bundleID] = nil
+        let feeds = userFeeds
+        await engine.store.save(feeds, .userFeeds)
+        await recheck(result)
+    }
+
+    /// Offers the feed to everyone: a ready-made issue with the line the community file needs.
+    func shareFeed(_ result: AppCheckResult) {
+        guard let feed = userFeed(for: result) else { return }
+        NSWorkspace.shared.open(FeedSuggestion.url(for: result, feed: feed))
     }
 
     // MARK: Animation for the menu bar icon while checking

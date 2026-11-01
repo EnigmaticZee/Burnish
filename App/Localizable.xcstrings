@@ -281,7 +281,16 @@
     "3 days" : {
 
     },
+    "A Sparkle appcast address or a GitHub repository. Burnish reads it to spot updates and leaves the install to you." : {
+
+    },
+    "A Sparkle appcast at %@." : {
+
+    },
     "A feed listed by the community" : {
+
+    },
+    "A feed you added" : {
 
     },
     "A file with the same name is already in the Trash" : {
@@ -293,10 +302,19 @@
     "A security update: %@" : {
 
     },
+    "A text file with your app list, the last check and Burnish's recent log lines, for bug reports. Nothing is sent anywhere; you choose where it goes." : {
+
+    },
     "A way back" : {
 
     },
     "Accepted by Gatekeeper" : {
+
+    },
+    "Add" : {
+
+    },
+    "Add Update Feed…" : {
 
     },
     "All set" : {
@@ -327,6 +345,9 @@
 
     },
     "App Store not reachable" : {
+
+    },
+    "Appcast addresses start with https://. Many developers link them from their website or the app's release notes." : {
 
     },
     "Apple" : {
@@ -450,6 +471,9 @@
     "Burnish reads it to spot updates and leaves the install to you." : {
 
     },
+    "Burnish reads the feed to tell you about new versions and opens the developer's page for the download. It never installs from a feed the app didn't name itself." : {
+
+    },
     "Burnish updated itself to %@." : {
 
     },
@@ -500,6 +524,12 @@
 
     },
     "Cancel Update" : {
+
+    },
+    "Change" : {
+
+    },
+    "Change Update Feed…" : {
 
     },
     "Check Now" : {
@@ -573,6 +603,9 @@
 
     },
     "Development certificate (not distributed)" : {
+
+    },
+    "Diagnostics" : {
 
     },
     "Didn't install %@: %@" : {
@@ -658,7 +691,13 @@
         }
       }
     },
+    "Found inside the app, which names it. %@" : {
+
+    },
     "Found through a community-listed feed, so the install is yours to do" : {
+
+    },
+    "Found through a feed you added, so the install is yours to do" : {
 
     },
     "From %@, over HTTPS." : {
@@ -680,6 +719,9 @@
 
     },
     "GitHub not reachable (%@)" : {
+
+    },
+    "GitHub releases of %@." : {
 
     },
     "GitHub's hourly limit was reached; try again later" : {
@@ -827,7 +869,7 @@
     "Keep replaced versions for 30 days" : {
 
     },
-    "Know where %@ announces its updates? Ask for it to be added, and say where if you can." : {
+    "Know where %@ announces its updates? Add its feed and Burnish will watch it for you." : {
 
     },
     "Latest" : {
@@ -1019,9 +1061,6 @@
     "Opened the %@ installer package in Installer" : {
 
     },
-    "Opens a ready-made issue in your browser with the app's name, bundle ID and version. Nothing is sent until you submit it." : {
-
-    },
     "Other…" : {
 
     },
@@ -1078,6 +1117,12 @@
     "Released" : {
 
     },
+    "Remove" : {
+
+    },
+    "Remove Feed" : {
+
+    },
     "Replacing" : {
 
     },
@@ -1094,9 +1139,6 @@
     "Report a Wrong Match on GitHub…" : {
 
     },
-    "Request Support on GitHub…" : {
-
-    },
     "Rules for this app" : {
 
     },
@@ -1107,6 +1149,12 @@
 
     },
     "Same developer as your copy" : {
+
+    },
+    "Save Diagnostics" : {
+
+    },
+    "Save Diagnostics…" : {
 
     },
     "Search Homebrew…" : {
@@ -1134,6 +1182,12 @@
 
     },
     "Several Homebrew entries fit %@. Which one is installed?" : {
+
+    },
+    "Share This Feed…" : {
+
+    },
+    "Sharing opens a ready-made issue on GitHub, so everyone with this app gets the feed. Burnish is made by one person, so additions land in batches." : {
 
     },
     "Show Details" : {
@@ -1194,6 +1248,9 @@
 
     },
     "Team %@" : {
+
+    },
+    "That doesn't look like an HTTPS address or a GitHub repository yet." : {
 
     },
     "The App Store, Homebrew or the developer's own updater installs these." : {
@@ -1275,6 +1332,9 @@
 
     },
     "The feed's build is newer but its version is older" : {
+
+    },
+    "The file names the apps on this Mac. Attach it to a bug report if you like." : {
 
     },
     "The full notes" : {
@@ -1580,6 +1640,12 @@
     "Waits for you: %@" : {
 
     },
+    "Watching the GitHub releases of %@, which you added." : {
+
+    },
+    "Watching the appcast at %@, which you added." : {
+
+    },
     "Welcome to Burnish" : {
 
     },
@@ -1596,6 +1662,9 @@
 
     },
     "Where Burnish asks" : {
+
+    },
+    "Where does %@ announce its updates?" : {
 
     },
     "Which Homebrew app is %@?" : {
@@ -1672,6 +1741,9 @@
 
     },
     "high confidence" : {
+
+    },
+    "https://example.com/appcast.xml, or owner/repository on GitHub" : {
 
     },
     "installed by Homebrew" : {

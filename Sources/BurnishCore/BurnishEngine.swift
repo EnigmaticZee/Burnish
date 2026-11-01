@@ -65,7 +65,7 @@ public final class BurnishEngine: Sendable {
             userOverrides: await store.load(.userOverrides, default: MatchOverrides()),
             communityOverrides: settings.communityOverrides ? await community.load() : .none,
             appRules: await store.load(.appRules, default: AppRules()),
-            communityFeeds: settings.communityOverrides ? await community.feeds() : [:]
+            communityFeeds: await feeds(settings: settings)
         )
         let report = await checker.check(apps, options: options, onResult: onResult)
         let found = report.results.filter(\.status.isOutdated).compactMap { result in
@@ -79,6 +79,16 @@ public final class BurnishEngine: Sendable {
             }
         }
         return report
+    }
+
+    /// Community feeds, with the person's own feeds on top: theirs win for the same app.
+    func feeds(settings: Settings) async -> [String: CommunityFeed] {
+        var feeds = settings.communityOverrides ? await community.feeds() : [:]
+        for (bundleID, var feed) in await store.load(.userFeeds, default: UserFeeds()).byApp {
+            feed.addedByUser = true
+            feeds[bundleID] = feed
+        }
+        return feeds
     }
 
     public func lastReport() async -> CheckReport? {

@@ -271,6 +271,9 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 .card svg { width: 34px; height: 34px; fill: none; stroke: var(--brass); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 16px; }
 .card h3 { font-size: 1.2rem; margin-bottom: 8px; }
 .card p { margin: 0; color: var(--ink-2); font-size: 0.98rem; }
+.card .ledger { margin-top: 10px; font-size: 0.86rem; color: var(--ink-3); }
+.card .ledger b { color: var(--ink-2); font-weight: 600; }
+.card .ledger a { color: inherit; }
 
 /* Promises */
 

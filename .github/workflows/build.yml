@@ -22,6 +22,8 @@ jobs:
           sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
           swift --version
       - name: Test
+        env:
+          BURNISH_LEDGER: ${{ runner.temp }}/ledger.json
         run: scripts/test.sh
       - name: Check the tag matches VERSION
         if: startsWith(github.ref, 'refs/tags/v')
@@ -32,6 +34,20 @@ jobs:
           .venv/bin/pip install --quiet dmgbuild==1.6.5
       - name: Build universal app and DMG
         run: DMGBUILD=.venv/bin/dmgbuild scripts/make-dmg.sh
+      - name: Write the accuracy ledger
+        # The truth set's result for this build, with the date of the Homebrew data it ran against.
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os, subprocess
+          d = json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "ledger.json")))
+          d["homebrewSnapshot"] = subprocess.check_output(
+              ["git", "log", "-1", "--format=%cs", "--", "Tests/CaskIndexTests/Fixtures/casks.json"], text=True).strip()
+          d["commit"] = os.environ.get("GITHUB_SHA", "")[:7]
+          d["date"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          os.makedirs("dist", exist_ok=True)
+          json.dump(d, open("dist/accuracy.json", "w"), indent=2, sort_keys=True)
+          print(json.dumps(d, indent=2))
+          PY
       - name: Sign the update and write the Sparkle appcast
         if: startsWith(github.ref, 'refs/tags/v')
         env:
@@ -71,6 +87,7 @@ jobs:
           path: |
             dist/Burnish.dmg
             dist/appcast.xml
+            dist/accuracy.json
           if-no-files-found: ignore
 
   release:
@@ -119,7 +136,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/Burnish.dmg dist/appcast.xml \
+          gh release create "$GITHUB_REF_NAME" dist/Burnish.dmg dist/appcast.xml dist/accuracy.json \
             --title "Burnish ${GITHUB_REF_NAME#v}" --notes-file notes.md --latest
       - name: Refresh the website's What's new
         env:
