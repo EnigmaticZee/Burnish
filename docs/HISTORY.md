@@ -1,5 +1,38 @@
 # Version history
 
+## 0.4.0-beta — 2026-11-01
+Feeds found, feeds added.
+
++ Apps that keep their update feed inside the app itself, not in their Info.plist, get checked now.
++ Know where an app announces its updates? Add the feed yourself, and share it with everyone in one
+  click.
++ Settings → Privacy can save a diagnostics file for bug reports. Nothing is sent anywhere.
++ The menu bar list is back for anyone with six or more updates waiting.
+
+- **Feeds written into the app count too.** Some Sparkle apps hand their feed address to Sparkle in
+  code rather than in Info.plist, so to Burnish they looked feedless. Burnish now reads the address
+  out of the app's own executable, inside the same signed bundle, and asks that feed, keeping it
+  only when the feed plainly belongs to the app: it names the app, or it lists the version you
+  have. The hallmark reads *Found inside the app, which names it.* On the Mac Burnish is built on,
+  that moved iStripper from *Can't check* to an update.
+- **Add an app's feed yourself.** An app under *Can't check* (Apple's and App Store apps aside)
+  offers *Add Update Feed…*, which takes a Sparkle appcast address or a GitHub repository. Burnish
+  reads it to spot new versions and opens the developer's download page; it never installs from a
+  feed the app didn't name itself. *Share This Feed…* opens a ready-made GitHub issue so everyone
+  with that app gets the feed. Burnish is made by one person, so those land in batches. This
+  replaces *Request Support on GitHub*.
+- **Save a diagnostics file.** Settings → Privacy → *Save Diagnostics…* writes one text file:
+  Burnish's version, your settings, the last check, each app's history and Burnish's recent log
+  lines. It names the apps on your Mac, so you choose where it goes, and nothing leaves the Mac
+  unless you attach it to a bug report. The command line has `burnish diagnostics` for the same.
+- **Every release carries its accuracy report.** The test run's numbers, the apps checked against a
+  dated Homebrew snapshot and the false alerts among them (none), are attached to each release and
+  shown on the website's *Never guesses* card, in place of a sentence we wrote ourselves.
+- **Fixed: the menu bar list went missing past five updates.** With six or more updates waiting,
+  the menu bar window showed its header and its buttons and nothing in between, and had since
+  0.1.0-alpha. The bell rang, but the desk was empty. The list is back, and scrolls when it's long.
+- **Fixed: VoiceOver read each hallmark's explanation two or three times.** Once is plenty.
+
 ## 0.3.2-beta — 2026-10-26
 Same app, right chip.
 
