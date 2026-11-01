@@ -95,21 +95,8 @@ macOS may also contact Apple when Burnish asks Gatekeeper to check a downloaded 
 ## Install
 
 1. **[Download Burnish.dmg](https://github.com/EnigmaticZee/Burnish/releases/latest/download/Burnish.dmg)**, open it and drag Burnish into Applications.
-2. **Open it once.** Burnish isn't notarised by Apple yet (that needs a paid developer account), so macOS blocks it the first time. Click **Done**.
-3. **Allow it.** In **System Settings → Privacy & Security**, next to *"Burnish" was blocked*, click **Open Anyway**.
-4. **Let it update apps.** Burnish asks for **App Management** (System Settings → Privacy & Security), which macOS requires before one app can replace another. Finding updates works without it.
-
-<details>
-<summary>Prefer Terminal? Skip steps 2–3</summary>
-<br>
-
-This removes the "downloaded from the internet" flag for Burnish only:
-
-```sh
-xattr -dr com.apple.quarantine /Applications/Burnish.app
-```
-
-</details>
+2. **Open it.** Burnish is signed with a Developer ID and notarised by Apple, so it opens like any other app.
+3. **Let it update apps.** Burnish asks for **App Management** (System Settings → Privacy & Security), which macOS requires before one app can replace another. Finding updates works without it.
 
 From then on Burnish lives in your menu bar, checks once a day, and updates itself.
 
@@ -189,7 +176,7 @@ JSON and CSV reports. [docs/ADMINS.md](docs/ADMINS.md) has every key and an exam
 
 **Next**
 
-⬜ Signed and notarised builds, so there's no first-launch prompt<br>
+✅ Signed and notarised builds, so there's no first-launch prompt<br>
 ⬜ A Homebrew cask for Burnish<br>
 ⬜ More apps matched out of the box
 
