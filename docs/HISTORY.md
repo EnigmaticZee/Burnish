@@ -1,5 +1,26 @@
 # Version history
 
+## 0.5.0-beta — 2026-11-01
+Opens like any other app.
+
++ Burnish is signed with a Developer ID and notarised by Apple, so it opens with no warning.
++ The app wears its own colour now: brass toggles, seals and a gradient progress bar.
++ The accuracy numbers on the website come from a Homebrew sample that refreshes itself every
+  month.
+
+- **Notarised by Apple.** Every release is now signed with a Developer ID and checked by Apple's
+  notary service before it's published, with Apple's ticket stapled to the download. Download, drag,
+  open: no "Open Anyway", no Terminal command. If you installed an earlier beta the hard way,
+  there's nothing to undo; this update arrives through Burnish like any other, signed with the same
+  update key as before.
+- **Brass, not blue.** Toggles, menus, the hallmark seals and the Show all link take Burnish's own
+  colour, matched to the website in light and dark, and progress bars draw the same brass gradient
+  as the website's hero. A finished install gets a brass seal.
+- **A ledger that stays current.** The *Never guesses* numbers on the website are measured against
+  a sample of Homebrew's list. A job now re-cuts that sample on the first of every month and runs
+  every test against it, so the date on the card stays within a month of today with nobody
+  touching it.
+
 ## 0.4.1-beta — 2026-11-01
 Brave's update opens now.
 
