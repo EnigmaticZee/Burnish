@@ -32,16 +32,17 @@ public struct Version: Sendable, Comparable, Hashable, CustomStringConvertible {
 
     public var description: String { raw }
 
-    /// The parts after the first `count`: `2.20.2.2629` dropping 3 → `2629`.
-    public func dropping(_ count: Int) -> Version? {
+    /// The parts after the first `count`: `2.20.2.2629` dropping 3 → `2629`, `155.1.97.57` dropping 1 → `1.97.57`.
+    /// Nil when nothing numeric would remain.
+    func dropping(_ count: Int) -> Version? {
         let rest = Array(components.dropFirst(count))
         guard case .number = rest.first else { return nil }
         return Version(raw: Self.render(rest), components: rest)
     }
 
     /// True when `other`'s parts start with all of this version's parts.
-    public func isPrefix(of other: Version) -> Bool {
-        other.components.count > components.count && Array(other.components.prefix(components.count)) == components
+    func isPrefix(of other: Version) -> Bool {
+        other.components.count > components.count && other.components.starts(with: components)
     }
 
     static func render(_ parts: [Component]) -> String {
@@ -52,9 +53,6 @@ public struct Version: Sendable, Comparable, Hashable, CustomStringConvertible {
             }
         }.joined(separator: ".")
     }
-
-    /// `155.1.97.57` → `1.97.57`. Nil when nothing numeric would remain.
-    public func droppingFirstComponent() -> Version? { dropping(1) }
 
     /// The first number, for shape checks. `Double` so huge date-like numbers don't overflow.
     public var leadingNumber: Double? {
@@ -82,9 +80,10 @@ public struct Version: Sendable, Comparable, Hashable, CustomStringConvertible {
     public static func == (lhs: Version, rhs: Version) -> Bool { compare(lhs, rhs) == 0 }
 
     public func hash(into hasher: inout Hasher) {
-        var parts = components
-        while case .number("0") = parts.last { parts.removeLast() }
-        for part in parts {
+        // Trailing zeros don't count, so `1.2` and `1.2.0` hash alike.
+        var end = components.endIndex
+        while end > components.startIndex, case .number("0") = components[end - 1] { end -= 1 }
+        for part in components[..<end] {
             switch part {
             case let .number(n): hasher.combine(0); hasher.combine(n)
             case let .word(w, rank): hasher.combine(1); if let rank { hasher.combine(rank) } else { hasher.combine(w) }

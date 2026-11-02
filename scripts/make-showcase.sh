@@ -15,7 +15,7 @@ cp "$TMP/out/showcase.png" "$TMP/out/showcase-dark.png" docs/images/
 for v in "" "-dark"; do
     sips -s format jpeg -s formatOptions 82 --resampleWidth 1600 "$TMP/out/site-showcase$v.png" --out "site/assets/showcase$v.jpg" >/dev/null
 done
-cp "$TMP/out/social-preview.png" site/assets/
+sips -s format jpeg -s formatOptions 85 "$TMP/out/social-preview.png" --out site/assets/social-preview.jpg >/dev/null
 sips -z 64 64 docs/images/icon.png --out site/assets/icon-64.png >/dev/null
 sips -z 256 256 docs/images/icon.png --out site/assets/icon-256.png >/dev/null
 echo "Images written to docs/images and site/assets"

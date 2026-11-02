@@ -19,10 +19,8 @@ final class Collected: @unchecked Sendable {
 @Suite struct UpdateCheckerTests {
     let dir = FileManager.default.temporaryDirectory.appendingPathComponent("burnish-checker-\(UUID().uuidString)")
 
-    func casksFixture() throws -> Data {
-        let url = try #require(Bundle.module.url(forResource: "casks", withExtension: "json", subdirectory: "Fixtures"))
-        return try Data(contentsOf: url)
-    }
+    /// The matcher tests' cut of Homebrew's list, shared with the truth set rather than copied.
+    func casksFixture() throws -> Data { try FalseAlertTests.homebrewFixture() }
 
     @Test func checksEverySourceAndStreamsResults() async throws {
         defer { try? FileManager.default.removeItem(at: dir) }

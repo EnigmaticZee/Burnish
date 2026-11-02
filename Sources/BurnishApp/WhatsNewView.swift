@@ -6,8 +6,9 @@ import WidgetUI
 /// Burnish's own release notes, from the copy of HISTORY.md inside the app: the short version up
 /// front, the full notes folded away, and earlier versions below. Nothing is fetched.
 struct WhatsNewView: View {
-    private let history = ReleaseHistory.bundled()
-    private let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+    /// Read and parsed once: the view is rebuilt far more often than the file changes.
+    private static let history = ReleaseHistory.bundled()
+    private static let version = Bundle.main.shortVersion
     @State private var showFull = false
 
     var body: some View {
@@ -61,8 +62,8 @@ struct WhatsNewView: View {
         .modifier(RegularWhileOpen())
     }
 
-    private var entry: ReleaseHistory.Entry? { history?.entry(for: version) }
-    private var earlier: [ReleaseHistory.Entry] { (history?.entries ?? []).filter { $0.version != entry?.version } }
+    private var entry: ReleaseHistory.Entry? { Self.history?.entry(for: Self.version) }
+    private var earlier: [ReleaseHistory.Entry] { (Self.history?.entries ?? []).filter { $0.version != entry?.version } }
 
     /// "2026-10-25" as this Mac writes dates.
     static func day(_ iso: String) -> String {
@@ -71,10 +72,16 @@ struct WhatsNewView: View {
         return date.formatted(Date.FormatStyle(date: .long, time: .omitted, timeZone: .gmt))
     }
 
-    /// HISTORY.md's bold, italics, code and links.
-    static func inline(_ text: String) -> AttributedString {
-        (try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text)
+    /// HISTORY.md's bold, italics, code and links, parsed once per line and kept.
+    @MainActor static func inline(_ text: String) -> AttributedString {
+        if let kept = inlineCache[text] { return kept }
+        let parsed = (try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+            ?? AttributedString(text)
+        inlineCache[text] = parsed
+        return parsed
     }
+
+    @MainActor private static var inlineCache: [String: AttributedString] = [:]
 }
 
 /// The "+ " lines: a few plain sentences for people who only skim.

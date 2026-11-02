@@ -23,12 +23,11 @@ else
     ISSUER_ID="${APP_STORE_CONNECT_ISSUER_ID:?APP_STORE_CONNECT_ISSUER_ID is not set}"
 fi
 
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
 UPLOAD="$TARGET"
-WORK=""
 case "$TARGET" in
     *.app)
-        WORK="$(mktemp -d)"
-        trap 'rm -rf "$WORK"' EXIT
         UPLOAD="$WORK/$(basename "$TARGET" .app).zip"
         ditto -c -k --keepParent "$TARGET" "$UPLOAD"
         ;;
@@ -36,9 +35,8 @@ esac
 
 echo "Notarising $(basename "$TARGET")…"
 xcrun notarytool submit "$UPLOAD" --key "$KEY" --key-id "$KEY_ID" --issuer "$ISSUER_ID" --wait --timeout 30m \
-    --output-format json > "${WORK:-/tmp}/notary.json"
-STATUS=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("status", ""))' "${WORK:-/tmp}/notary.json")
-ID=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("id", ""))' "${WORK:-/tmp}/notary.json")
+    --output-format json > "$WORK/notary.json"
+read -r STATUS ID < <(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("status", ""), d.get("id", ""))' "$WORK/notary.json")
 if [ "$STATUS" != "Accepted" ]; then
     echo "Apple answered: ${STATUS:-no answer} (submission $ID). The log:" >&2
     xcrun notarytool log "$ID" --key "$KEY" --key-id "$KEY_ID" --issuer "$ISSUER_ID" >&2 || true

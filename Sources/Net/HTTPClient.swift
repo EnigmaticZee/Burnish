@@ -56,26 +56,27 @@ extension HTTPClient {
 public enum Net {
     public static let repository = URL(string: "https://github.com/EnigmaticZee/Burnish")!
     /// At most 8 network requests in flight.
-    public static let maxInFlight = 8
+    static let maxInFlight = 8
     /// 10-second timeout per feed.
     public static let feedTimeout: TimeInterval = 10
 
-    public static var userAgent: String {
+    /// `Burnish/0.5.0 (+https://github.com/EnigmaticZee/Burnish)`, read from the bundle once.
+    static let userAgent: String = {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
         return "Burnish/\(version) (+\(repository.absoluteString))"
-    }
+    }()
 
     static let log = Logger(subsystem: "io.github.enigmaticzee.Burnish", category: "net")
 }
 
 /// Limits how many requests run at once.
-public actor AsyncLimiter {
+actor AsyncLimiter {
     private var available: Int
     private var waiters: [CheckedContinuation<Void, Never>] = []
 
-    public init(_ limit: Int) { available = limit }
+    init(_ limit: Int) { available = limit }
 
-    public func acquire() async {
+    func acquire() async {
         if available > 0 {
             available -= 1
             return
@@ -83,7 +84,7 @@ public actor AsyncLimiter {
         await withCheckedContinuation { waiters.append($0) }
     }
 
-    public func release() {
+    func release() {
         if waiters.isEmpty {
             available += 1
         } else {
@@ -91,7 +92,7 @@ public actor AsyncLimiter {
         }
     }
 
-    public func run<T: Sendable>(_ body: @Sendable () async throws -> T) async rethrows -> T {
+    func run<T: Sendable>(_ body: @Sendable () async throws -> T) async rethrows -> T {
         await acquire()
         defer { release() }
         return try await body()

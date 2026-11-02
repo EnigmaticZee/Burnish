@@ -19,22 +19,47 @@ public struct CaskroomScan: Sendable, Hashable {
     /// the one whose Caskroom version matches wins, then a token without a channel, then the
     /// alphabetically first, so the answer never depends on dictionary order.
     public func token(forAppNamed fileName: String, version: String? = nil) -> String? {
-        let target = fileName.lowercased()
-        let claims = installed.filter { _, apps in apps.contains { $0.lowercased() == target } }.keys.sorted()
-        guard claims.count > 1 else { return claims.first }
-        if let version {
-            let short = version.split(separator: ",").first.map(String.init) ?? version
-            let matching = claims.filter { token in
-                (versions[token] ?? []).contains { ($0.split(separator: ",").first.map(String.init) ?? $0) == short }
-            }
-            if matching.count == 1 { return matching[0] }
+        index().token(forAppNamed: fileName, version: version)
+    }
+
+    /// The same answers from an index built once, for a whole scan rather than once per app.
+    public func index() -> Index {
+        var claims: [String: Set<String>] = [:]
+        for (token, apps) in installed {
+            for app in apps { claims[app.lowercased(), default: []].insert(token) }
         }
-        return claims.first { !$0.contains("@") } ?? claims.first
+        return Index(claims: claims.mapValues { $0.sorted() }, shortVersions: versions.mapValues { Set($0.map(Self.short)) })
+    }
+
+    /// `1.2.3,456` → `1.2.3`: a Caskroom version without its build part.
+    static func short(_ version: String) -> String {
+        version.split(separator: ",").first.map(String.init) ?? version
+    }
+
+    /// Lowercased `.app` name → the tokens that claim it, answering `token(forAppNamed:version:)`.
+    public struct Index: Sendable {
+        let claims: [String: [String]]
+        let shortVersions: [String: Set<String>]
+
+        public func token(forAppNamed fileName: String, version: String? = nil) -> String? {
+            guard let claims = claims[fileName.lowercased()] else { return nil }
+            guard claims.count > 1 else { return claims.first }
+            if let version {
+                let short = CaskroomScan.short(version)
+                let matching = claims.filter { shortVersions[$0]?.contains(short) ?? false }
+                if matching.count == 1 { return matching[0] }
+            }
+            return claims.first { !$0.contains("@") } ?? claims.first
+        }
     }
 }
 
 struct CaskroomScanner {
     let roots: [URL]
+
+    /// `app "Foo.app"` in a cask file; the capture is the quoted path. Built once: `Regex` is
+    /// immutable, it just hasn't been marked `Sendable`.
+    nonisolated(unsafe) private static let appLine = /^\s*app\s+"([^"]+\.app)"/.anchorsMatchLineEndings()
 
     func scan() -> CaskroomScan {
         let fm = FileManager.default
@@ -63,27 +88,25 @@ struct CaskroomScanner {
         // .metadata/<version>/<timestamp>/Casks/<token>.json (or .rb)
         let fm = FileManager.default
         guard let enumerator = fm.enumerator(at: metadata, includingPropertiesForKeys: nil) else { return [] }
-        var newest: (URL, Date)?
+        var newest: (file: URL, date: Date)?
         for case let file as URL in enumerator where file.deletingLastPathComponent().lastPathComponent == "Casks" {
             let date = (try? file.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
-            if newest == nil || date > newest!.1 { newest = (file, date) }
+            if let newest, date <= newest.date { continue }
+            newest = (file, date)
         }
-        guard let file = newest?.0, let data = try? Data(contentsOf: file) else { return [] }
+        guard let file = newest?.file, let data = try? Data(contentsOf: file) else { return [] }
         if file.pathExtension == "json",
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            let artifacts = json["artifacts"] as? [[String: Any]] {
             return Self.apps(fromArtifacts: artifacts)
         }
         let source = String(decoding: data, as: UTF8.self)
-        let regex = try! NSRegularExpression(pattern: #"^\s*app\s+"([^"]+\.app)""#, options: .anchorsMatchLines)
-        return regex.matches(in: source, range: NSRange(source.startIndex..., in: source)).compactMap {
-            Range($0.range(at: 1), in: source).map { (String(source[$0]) as NSString).lastPathComponent }
-        }
+        return source.matches(of: Self.appLine).map { (String($0.output.1) as NSString).lastPathComponent }
     }
 
     /// `{"app": ["Foo.app"], "target": "/Applications/Foo.app"}`; `app "Foo.app", target: "Bar.app"`
     /// installs as Bar.app, so a target wins over the source name.
-    public static func apps(fromArtifacts artifacts: [[String: Any]]) -> [String] {
+    static func apps(fromArtifacts artifacts: [[String: Any]]) -> [String] {
         var names: [String] = []
         for artifact in artifacts {
             guard let apps = artifact["app"] as? [Any] else { continue }

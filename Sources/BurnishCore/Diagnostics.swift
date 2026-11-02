@@ -1,3 +1,4 @@
+import CaskIndex
 import Foundation
 import Store
 
@@ -11,7 +12,7 @@ public enum Diagnostics {
         let os = ProcessInfo.processInfo.operatingSystemVersion
         let iso = ISO8601DateFormatter()
         out.append("Burnish \(appVersion) (\(build))")
-        out.append("macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion) · \(InstallerEnvironmentChip.description)")
+        out.append("macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion) · \(Platform.current.isARM ? "Apple silicon" : "Intel")")
         out.append("Saved \(iso.string(from: Date()))")
         out.append("")
 
@@ -72,7 +73,7 @@ public enum Diagnostics {
     static func logLines(limit: Int = 400) async -> String {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/log")
-        process.arguments = ["show", "--style", "compact", "--last", "2d", "--predicate", "subsystem == \"io.github.enigmaticzee.Burnish\""]
+        process.arguments = ["show", "--style", "compact", "--last", "2d", "--predicate", "subsystem == \"\(BurnishEngine.bundleID)\""]
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = FileHandle.nullDevice
@@ -86,17 +87,6 @@ public enum Diagnostics {
         watchdog.cancel()
         let lines = String(decoding: data, as: UTF8.self).split(separator: "\n", omittingEmptySubsequences: true)
         return lines.suffix(limit).joined(separator: "\n")
-    }
-}
-
-/// Which chip this Mac has, in words.
-enum InstallerEnvironmentChip {
-    static var description: String {
-        #if arch(arm64)
-        "Apple silicon"
-        #else
-        "Intel"
-        #endif
     }
 }
 

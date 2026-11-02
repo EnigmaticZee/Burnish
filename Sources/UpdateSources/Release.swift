@@ -1,8 +1,9 @@
 import Foundation
 import Versions
 
-/// Where Burnish learned about a version. Order matters: the developer's own feed wins.
-public enum SourceKind: String, Sendable, Codable, CaseIterable, Comparable {
+/// Where Burnish learned about a version. Which source wins is UpdateChecker's decision, not an
+/// order of these cases.
+public enum SourceKind: String, Sendable, Codable, CaseIterable {
     case appStore
     case sparkle
     case electron
@@ -19,10 +20,6 @@ public enum SourceKind: String, Sendable, Codable, CaseIterable, Comparable {
         case .homebrew: String(localized: "Homebrew")
         case .github: String(localized: "GitHub")
         }
-    }
-
-    public static func < (a: SourceKind, b: SourceKind) -> Bool {
-        allCases.firstIndex(of: a)! < allCases.firstIndex(of: b)!
     }
 }
 

@@ -4,7 +4,7 @@ import Foundation
 /// Trash doesn't take away Put Back. One earlier version per app; anything older than the
 /// keeping period goes back to the Trash, never deleted outright.
 public struct EarlierVersions: Sendable {
-    public static let keepFor: TimeInterval = 30 * 24 * 3600
+    static let keepFor: TimeInterval = 30 * 24 * 3600
 
     public let directory: URL
     let trash: Trashing

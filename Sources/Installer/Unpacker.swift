@@ -40,7 +40,7 @@ public struct Unpacker: Sendable {
     }
 
     /// Unpacks `file` into `destination` and returns it.
-    public func unpack(_ file: URL, kind: ArchiveKind, into destination: URL) async throws(Failure) -> URL {
+    func unpack(_ file: URL, kind: ArchiveKind, into destination: URL) async throws(Failure) -> URL {
         do {
             try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
         } catch {
@@ -110,7 +110,8 @@ public struct Unpacker: Sendable {
             }
             if let output, output.succeeded || !output.errorText.contains("temporarily unavailable") { return output }
         }
-        return output!
+        guard let output else { throw .tool("hdiutil attach: no answer") }
+        return output
     }
 
     private func detach(_ mountPoint: URL) async {

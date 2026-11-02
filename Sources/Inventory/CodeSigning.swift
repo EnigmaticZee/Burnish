@@ -27,8 +27,7 @@ public struct SecuritySignatureReader: SignatureReading {
         if identifier == nil && certificates.isEmpty && flags == 0 && teamID == nil {
             return .unsigned
         }
-        // kSecCodeSignatureAdhoc
-        if flags & 0x0002 != 0 || certificates.isEmpty {
+        if flags & SecCodeSignatureFlags.adhoc.rawValue != 0 || certificates.isEmpty {
             return CodeSignature(kind: .adHoc, teamID: nil, identifier: identifier)
         }
         let authority = certificates.first.flatMap { SecCertificateCopySubjectSummary($0) as String? }

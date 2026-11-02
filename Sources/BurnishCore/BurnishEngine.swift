@@ -35,20 +35,26 @@ public final class BurnishEngine: Sendable {
         EarlierVersions(directory: store.directory.appendingPathComponent("Earlier Versions", isDirectory: true))
     }
 
-    public func roots(for settings: Settings) -> [URL] {
+    private func roots(for settings: Settings) -> [URL] {
         var roots = [AppInventory.systemApplications]
         if settings.scanUserApplications { roots.append(AppInventory.userApplications) }
         return roots
     }
 
-    /// Scans the app folders. Burnish updates itself with Sparkle, so it leaves itself out.
+    /// Reads apps the way a check does. Burnish updates itself with Sparkle, so it leaves itself out.
+    private var inventory: AppInventory { AppInventory(excludedBundleIDs: [Self.bundleID]) }
+
+    /// Scans the app folders.
     public func scan(settings: Settings) -> InventoryResult {
-        AppInventory(excludedBundleIDs: [Self.bundleID]).scan(roots: roots(for: settings))
+        inventory.scan(roots: roots(for: settings))
     }
 
-    /// Scan, check every app, remember the report.
+    /// Scan, check every app, remember the report: the CLI's one-shot check. The app runs the same
+    /// steps itself in `AppModel.check`, with the scan off the main thread and progress shown in
+    /// between, so a step added here wants adding there too.
     public func runCheck(onResult: @escaping @Sendable (AppCheckResult) async -> Void = { _ in }) async -> CheckReport {
         earlierVersions.prune()
+        AppInstaller.prunePackages(in: downloadsDirectory)
         let settings = await settings()
         var apps = scan(settings: settings).apps
         if settings.homebrewHandling == .hide { apps.removeAll(where: \.isManagedByHomebrew) }
@@ -59,13 +65,19 @@ public final class BurnishEngine: Sendable {
     }
 
     public func check(_ apps: [InstalledApp], settings: Settings, onResult: @escaping @Sendable (AppCheckResult) async -> Void = { _ in }) async -> CheckReport {
+        // The rule files and the community file don't depend on each other, so they're read together.
+        async let ignoreRules = store.load(.ignoreRules, default: IgnoreRules())
+        async let userOverrides = store.load(.userOverrides, default: MatchOverrides())
+        async let appRules = store.load(.appRules, default: AppRules())
+        async let userFeeds = store.load(.userFeeds, default: UserFeeds())
+        async let contributed = communityContents(settings: settings)
         let options = CheckOptions(
             appStoreLookups: settings.appStoreLookups,
-            ignoreRules: await store.load(.ignoreRules, default: IgnoreRules()),
-            userOverrides: await store.load(.userOverrides, default: MatchOverrides()),
-            communityOverrides: settings.communityOverrides ? await community.load() : .none,
-            appRules: await store.load(.appRules, default: AppRules()),
-            communityFeeds: await feeds(settings: settings)
+            ignoreRules: await ignoreRules,
+            userOverrides: await userOverrides,
+            communityOverrides: await contributed.overrides,
+            appRules: await appRules,
+            communityFeeds: Self.feeds(community: await contributed.feeds, user: await userFeeds)
         )
         let report = await checker.check(apps, options: options, onResult: onResult)
         let found = report.results.filter(\.status.isOutdated).compactMap { result in
@@ -81,10 +93,15 @@ public final class BurnishEngine: Sendable {
         return report
     }
 
+    /// What the community file contributes, read once per check; nothing when the setting is off.
+    private func communityContents(settings: Settings) async -> CommunityOverrides.Contents {
+        settings.communityOverrides ? await community.contents() : .empty
+    }
+
     /// Community feeds, with the person's own feeds on top: theirs win for the same app.
-    func feeds(settings: Settings) async -> [String: CommunityFeed] {
-        var feeds = settings.communityOverrides ? await community.feeds() : [:]
-        for (bundleID, var feed) in await store.load(.userFeeds, default: UserFeeds()).byApp {
+    static func feeds(community: [String: CommunityFeed], user: UserFeeds) -> [String: CommunityFeed] {
+        var feeds = community
+        for (bundleID, var feed) in user.byApp {
             feed.addedByUser = true
             feeds[bundleID] = feed
         }
@@ -97,7 +114,7 @@ public final class BurnishEngine: Sendable {
 
     /// Re-checks one app after an install, an ignore change or a match correction.
     public func recheck(_ app: InstalledApp, settings: Settings) async -> AppCheckResult? {
-        let fresh = AppInventory(excludedBundleIDs: [Self.bundleID]).readApp(at: app.url).map { found -> InstalledApp in
+        let fresh = inventory.readApp(at: app.url).map { found -> InstalledApp in
             var copy = found
             copy.caskroomToken = app.caskroomToken
             return copy
@@ -131,7 +148,8 @@ public final class BurnishEngine: Sendable {
         }
         var release = candidate.release
         if release.downloadPage == nil { release.downloadPage = result.downloadPage }
-        let expected = await catalog()?.cask(result.match?.token ?? "")?.appNames ?? []
+        // The names Homebrew installs the app under, remembered with the result so no catalogue is reloaded here.
+        let expected = result.cask?.appNames ?? []
         let installer = AppInstaller(environment: .live(client: client, workDirectory: downloadsDirectory))
         var outcome = await installer.install(
             InstallRequest(app: result.app, release: release, expectedAppNames: expected),

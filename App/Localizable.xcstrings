@@ -590,6 +590,9 @@
     "Couldn't change Open Burnish at login: %@" : {
 
     },
+    "Couldn't save the diagnostics file" : {
+
+    },
     "Date" : {
 
     },
@@ -728,9 +731,6 @@
 
     },
     "GitHub, for apps whose downloads live there, and for community fixes and feeds" : {
-
-    },
-    "GitHub, for apps whose downloads live there, and for community match fixes" : {
 
     },
     "Hallmarks" : {
@@ -1070,6 +1070,9 @@
     "Privacy" : {
 
     },
+    "Progress" : {
+
+    },
     "Put Back" : {
 
     },
@@ -1305,6 +1308,9 @@
 
     },
     "The download couldn't be opened (%@)" : {
+
+    },
+    "The download couldn't be read to check its checksum" : {
 
     },
     "The download doesn't come from a trusted HTTPS source" : {

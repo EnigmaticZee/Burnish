@@ -17,11 +17,11 @@ public struct BrewUpgrader: Sendable {
         }
     }
 
-    public static let candidates = ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"]
+    static let candidates = ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"]
 
     public init() {}
 
-    public static var brewPath: String? {
+    static var brewPath: String? {
         candidates.first { FileManager.default.isExecutableFile(atPath: $0) }
     }
 

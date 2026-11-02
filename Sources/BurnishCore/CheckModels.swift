@@ -89,6 +89,9 @@ public struct CaskSummary: Sendable, Hashable, Codable {
     public let isDeprecated: Bool
     public let isDisabled: Bool
     public let reason: String?
+    /// The app bundles the cask installs, so an install can pick the right one out of a download.
+    /// Nil in reports saved before Burnish kept this.
+    public let appNames: [String]?
 
     public init(_ cask: Cask) {
         token = cask.token
@@ -98,6 +101,7 @@ public struct CaskSummary: Sendable, Hashable, Codable {
         isDeprecated = cask.deprecated
         isDisabled = cask.disabled
         reason = cask.deprecationReason
+        appNames = cask.appNames
     }
 
     public var isUnmaintained: Bool { isDeprecated || isDisabled }

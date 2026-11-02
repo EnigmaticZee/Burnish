@@ -39,13 +39,16 @@ jobs:
         id: test
         if: steps.cut.outputs.changed == 'yes'
         continue-on-error: true
-        run: scripts/test.sh 2>&1 | tee "$RUNNER_TEMP/tests.log" | grep -E "✘|✔ Test run|error:" || true; test "${PIPESTATUS[0]}" = 0
+        run: |
+          scripts/test.sh > "$RUNNER_TEMP/tests.log" 2>&1; status=$?
+          grep -E "✘|✔ Test run|error:" "$RUNNER_TEMP/tests.log" || true
+          exit $status
       - name: Commit the new sample
         if: steps.cut.outputs.changed == 'yes' && steps.test.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Tests/CaskIndexTests/Fixtures/casks.json Tests/BurnishCoreTests/Fixtures/casks.json
+          git add Tests/CaskIndexTests/Fixtures/casks.json
           git commit -m "Refresh the Homebrew snapshot ($(date -u +%Y-%m-%d))" \
             -m "Cut from Homebrew's cask list today by the monthly job; every test passed against it."
           git push

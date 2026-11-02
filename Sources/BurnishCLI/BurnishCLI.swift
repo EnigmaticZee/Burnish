@@ -5,12 +5,7 @@ import Inventory
 import Store
 import UpdateSources
 
-// burnish inventory            Every app found, with bundle ID, versions, Team ID and source hints
-// burnish check [--csv|--json] Detection report: app, installed, latest, source, confidence
-// burnish update <app>         One verified install, with the same checks as the app
-// burnish count [--cached]     How many updates are waiting (for Shortcuts and scripts)
-// burnish history <app>        What Burnish has done with one app
-// burnish restore <app>        Put back the version Burnish's latest update replaced
+// The commands are listed once, in the usage text at the bottom of `main`.
 
 func pad(_ s: String, _ width: Int) -> String {
     s.count >= width ? String(s.prefix(width - 1)) + "…" : s + String(repeating: " ", count: width - s.count)
@@ -123,7 +118,7 @@ struct BurnishCLI {
 
         case "count":
             // A fresh check by default; --cached answers instantly from the last one.
-            let report = arguments.contains("--cached") ? await engine.lastReport() : await engine.runCheck()
+            let report = flags.contains("--cached") ? await engine.lastReport() : await engine.runCheck()
             print(report?.results.filter(\.status.isOutdated).count ?? 0)
 
         case "update":
@@ -140,7 +135,8 @@ struct BurnishCLI {
                 return
             }
             guard let candidate = result.status.candidate, result.status.isOutdated else {
-                print("\(result.app.name) \(result.app.version.display): \(row(result).status). \(row(result).detail)")
+                let described = row(result)
+                print("\(result.app.name) \(result.app.version.display): \(described.status). \(described.detail)")
                 return
             }
             let action = result.action(homebrew: settings.homebrewHandling)

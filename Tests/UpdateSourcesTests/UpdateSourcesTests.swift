@@ -123,6 +123,12 @@ func fixture(_ name: String) throws -> Data {
 }
 
 @Suite struct ElectronTests {
+    @Test func aBucketNameThatIsNoHostIsRefusedNotFatal() {
+        // A space in a bucket name used to crash the check; the config is the developer's, not ours.
+        #expect(throws: ElectronSource.Failure.self) { try ElectronSource.feed(fromConfig: "provider: s3\nbucket: my bucket\n") }
+        #expect(throws: ElectronSource.Failure.self) { try ElectronSource.feed(fromConfig: "provider: spaces\nname: my space\nregion: nyc3\n") }
+    }
+
     @Test func feedsFromConfig() throws {
         let generic = try ElectronSource.feed(fromConfig: "provider: generic\nurl: https://downloads.example.com/updates\nchannel: latest\n")
         #expect(generic.manifest.absoluteString == "https://downloads.example.com/updates/latest-mac.yml")
@@ -407,7 +413,7 @@ func fixture(_ name: String) throws -> Data {
         #expect(digest.counts[.security] == 1)
         #expect(digest.highlights.map(\.kind) == [.security, .new, .fix], "security first, at most three")
         #expect(digest.highlights.first?.text == "Patched CVE-2026-1234 in the image parser")
-        #expect(digest.headline == "1 security fixes, 2 shiny new things, and 3 squashed bugs" || digest.headline.contains("2 shiny new things"))
+        #expect(digest.headline == "1 security fixes, 2 shiny new things, and 3 squashed bugs", "plural forms come from the string catalog, which the test bundle doesn't carry")
     }
 
     @Test func noSummaryWhenThereIsNothingToSort() {

@@ -29,7 +29,7 @@ public struct WidgetSnapshot: Codable, Sendable, Equatable {
         self.lastCheck = lastCheck
     }
 
-    public static let fileName = "widget.json"
+    static let fileName = "widget.json"
 
     /// Burnish's folder in the real home folder. Inside the sandbox `NSHomeDirectory()` is the
     /// widget's container, so this asks the user database instead.
@@ -41,15 +41,12 @@ public struct WidgetSnapshot: Codable, Sendable, Equatable {
 
     public static func load(from directory: URL = directory) -> WidgetSnapshot? {
         guard let data = try? Data(contentsOf: directory.appendingPathComponent(fileName)) else { return nil }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try? decoder.decode(WidgetSnapshot.self, from: data)
+        return try? StateStore.decoder.decode(WidgetSnapshot.self, from: data)
     }
 
+    /// Written with the store's own coders, so the dates read back the way the app wrote them.
     public func save(to directory: URL = directory) throws {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try encoder.encode(self).write(to: directory.appendingPathComponent(Self.fileName), options: .atomic)
+        try StateStore.encoder.encode(self).write(to: directory.appendingPathComponent(Self.fileName), options: .atomic)
     }
 }

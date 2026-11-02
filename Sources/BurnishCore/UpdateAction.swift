@@ -124,6 +124,18 @@ extension AppCheckResult {
     }
 }
 
+/// A new issue in Burnish's repository with the title, label and body filled in. The base address
+/// is a constant and `URLComponents` percent-encodes the values, so neither unwrap can fail.
+private func issueURL(title: String, label: String, body: String) -> URL {
+    var components = URLComponents(url: Net.repository.appendingPathComponent("issues/new"), resolvingAgainstBaseURL: false)!
+    components.queryItems = [
+        URLQueryItem(name: "title", value: title),
+        URLQueryItem(name: "labels", value: label),
+        URLQueryItem(name: "body", value: body),
+    ]
+    return components.url!
+}
+
 /// A prefilled GitHub issue with the bundle ID, versions and chosen cask, and nothing else.
 public enum WrongMatchReport {
     public static func url(for result: AppCheckResult) -> URL {
@@ -138,13 +150,7 @@ public enum WrongMatchReport {
             body += "\n**Version Burnish offered:** \(candidate.displayVersion) from \(candidate.source.label)"
         }
         body += "\n\n**What's wrong:** <!-- for example: it's actually the `foo` cask, or this app isn't in Homebrew -->\n"
-        var components = URLComponents(url: Net.repository.appendingPathComponent("issues/new"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
-            URLQueryItem(name: "title", value: "Wrong match: \(result.app.bundleID)"),
-            URLQueryItem(name: "labels", value: "wrong-match"),
-            URLQueryItem(name: "body", value: body),
-        ]
-        return components.url!
+        return issueURL(title: "Wrong match: \(result.app.bundleID)", label: "wrong-match", body: body)
     }
 }
 
@@ -167,13 +173,7 @@ public enum InstallReport {
         body += "\n**Refused at:** \(refusal.rule.rawValue): \(refusal.message)"
         if let evidence = refusal.evidence { body += "\n**The file:** \(evidence)" }
         body += "\n**Burnish:** \(burnish) · \(system)\n"
-        var components = URLComponents(url: Net.repository.appendingPathComponent("issues/new"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
-            URLQueryItem(name: "title", value: "Install: \(result.app.name) couldn't be opened (\(result.app.bundleID))"),
-            URLQueryItem(name: "labels", value: "install"),
-            URLQueryItem(name: "body", value: body),
-        ]
-        return components.url!
+        return issueURL(title: "Install: \(result.app.name) couldn't be opened (\(result.app.bundleID))", label: "install", body: body)
     }
 }
 
@@ -194,13 +194,7 @@ public enum FeedSuggestion {
 
         **How I know it's this app's feed:** <!-- for example: the developer's site links to it, or the app's release notes match -->
         """
-        var components = URLComponents(url: Net.repository.appendingPathComponent("issues/new"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
-            URLQueryItem(name: "title", value: "Feed: \(result.app.name) (\(result.app.bundleID))"),
-            URLQueryItem(name: "labels", value: "feed"),
-            URLQueryItem(name: "body", value: body),
-        ]
-        return components.url!
+        return issueURL(title: "Feed: \(result.app.name) (\(result.app.bundleID))", label: "feed", body: body)
     }
 }
 

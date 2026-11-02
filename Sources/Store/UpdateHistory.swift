@@ -3,7 +3,7 @@ import Foundation
 /// What happened to each app, newest first: updates found, installs, hand-offs, refusals and
 /// versions put back. Keyed by bundle ID, the last 50 events per app. Stays on this Mac.
 public struct UpdateHistory: Codable, Sendable, Equatable {
-    public static let limit = 50
+    static let limit = 50
     public private(set) var events: [String: [HistoryEvent]] = [:]
 
     public init() {}

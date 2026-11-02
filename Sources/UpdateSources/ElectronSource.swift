@@ -31,7 +31,7 @@ public struct ElectronSource: Sendable {
     let client: HTTPClient
     let isARM: Bool
 
-    public init(client: HTTPClient, isARM: Bool = Platform.currentIsARM) {
+    public init(client: HTTPClient, isARM: Bool = Platform.current.isARM) {
         self.client = client
         self.isARM = isARM
     }
@@ -60,14 +60,19 @@ public struct ElectronSource: Sendable {
             let region = config["region"]?.string
             let host = region.map { "\(bucket).s3.\($0).amazonaws.com" } ?? "\(bucket).s3.amazonaws.com"
             let path = (config["path"]?.string ?? "").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-            let base = URL(string: "https://\(host)/" + (path.isEmpty ? "" : path + "/"))!
+            // A bucket or region with a space in it isn't a host; a bad config must never crash a check.
+            guard let base = URL(string: "https://\(host)/" + (path.isEmpty ? "" : path + "/")) else {
+                throw .unsupportedProvider("s3 with an unusable bucket or region")
+            }
             return Feed(manifest: base.appendingPathComponent(manifestName), fileBase: base, github: nil)
         case "spaces":
             guard let name = config["name"]?.string, let region = config["region"]?.string else {
                 throw .unsupportedProvider("spaces without name/region")
             }
             let path = (config["path"]?.string ?? "").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-            let base = URL(string: "https://\(name).\(region).digitaloceanspaces.com/" + (path.isEmpty ? "" : path + "/"))!
+            guard let base = URL(string: "https://\(name).\(region).digitaloceanspaces.com/" + (path.isEmpty ? "" : path + "/")) else {
+                throw .unsupportedProvider("spaces with an unusable name or region")
+            }
             return Feed(manifest: base.appendingPathComponent(manifestName), fileBase: base, github: nil)
         default:
             throw .unsupportedProvider(provider)
@@ -115,7 +120,7 @@ public struct ElectronSource: Sendable {
             downloadPage: feed.github?.releasesPage,
             releaseNotes: notes,
             minimumOS: manifest["minimumSystemVersion"]?.string,
-            date: manifest["releaseDate"]?.string.flatMap(Self.parseDate),
+            date: manifest["releaseDate"]?.string.flatMap(ISO8601.date),
             sha512: file["sha512"]?.nilIfEmpty,
             length: file["size"].flatMap { Int64($0) }
         )
@@ -134,11 +139,5 @@ public struct ElectronSource: Sendable {
             return s
         }
         return files.filter { $0["url"] != nil }.max { score($0) < score($1) }.flatMap { score($0) > 0 ? $0 : nil }
-    }
-
-    static func parseDate(_ string: String) -> Date? {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return f.date(from: string) ?? ISO8601DateFormatter().date(from: string)
     }
 }

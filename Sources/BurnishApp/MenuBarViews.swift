@@ -1,7 +1,6 @@
 import AppKit
 import BurnishCore
 import SwiftUI
-import WidgetUI
 
 /// The menu bar item: an outline icon, the count beside it in the normal text colour (never red),
 /// a gentle animation while checking, and a small dot when something needs the person.
@@ -111,7 +110,7 @@ struct PopoverView: View {
     }
 
     private var subtitle: String {
-        if model.isChecking { return "Checked \(model.checkedCount) of \(model.totalCount) apps" }
+        if model.isChecking { return String(localized: "Checked \(model.checkedCount) of \(model.totalCount) apps") }
         guard let last = model.lastCheck else { return String(localized: "Not checked yet") }
         return String(localized: "Checked \(last.relativeDescription)")
     }
@@ -124,12 +123,8 @@ struct PopoverView: View {
                 model.justUpdatedTo = nil
             }))
         }
-        if let offline = model.offlineBanner {
-            Banner(text: offline, symbol: "wifi.slash")
-        }
-        if model.needsAppManagement {
-            Banner(text: String(localized: "Burnish needs App Management to replace apps."), symbol: "lock", action: (String(localized: "Open Settings"), Permissions.openAppManagement))
-        }
+        OfflineBanner()
+        AppManagementBanner()
         AppStoreBanner()
         if model.isChecking, model.totalCount > 0 {
             ProgressView(value: Double(model.checkedCount), total: Double(max(model.totalCount, 1)))
@@ -228,8 +223,7 @@ struct PopoverRow: View {
         // Clicking a row (not its button) opens that app's details.
         .onTapGesture {
             NSApp.activate(ignoringOtherApps: true)
-            model.selectedID = result.id
-            model.showDetails = true
+            model.reveal(result)
             openWindow(id: "main")
         }
         .contextMenu { RowActions(result: result) }
@@ -251,6 +245,27 @@ struct Banner: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(.quaternary.opacity(0.4))
+    }
+}
+
+/// "You're offline", or which day's data Burnish is using, in the popover and the main window alike.
+struct OfflineBanner: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        if let offline = model.offlineBanner { Banner(text: offline, symbol: "wifi.slash") }
+    }
+}
+
+/// An install failed for want of App Management; the button opens that pane of System Settings.
+struct AppManagementBanner: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        if model.needsAppManagement {
+            Banner(text: String(localized: "Burnish needs App Management to replace apps."), symbol: "lock",
+                   action: (String(localized: "Open Settings"), Permissions.openAppManagement))
+        }
     }
 }
 

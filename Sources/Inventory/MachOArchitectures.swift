@@ -8,10 +8,11 @@ public enum MachOArchitectures {
     static let thinMagic64: UInt32 = 0xFEED_FACF
     static let thinMagic: UInt32 = 0xFEED_FACE
 
+    /// Enough of the file for a fat header with all its slices, or a thin header.
+    static let headSize = 4096
+
     public static func of(_ executable: URL) -> [String] {
-        guard let handle = try? FileHandle(forReadingFrom: executable) else { return [] }
-        defer { try? handle.close() }
-        return parse((try? handle.read(upToCount: 4096)) ?? Data())
+        parse(BinaryStrings.head(of: executable, bytes: headSize))
     }
 
     static func parse(_ header: Data) -> [String] {

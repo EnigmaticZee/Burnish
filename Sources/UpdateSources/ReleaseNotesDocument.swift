@@ -170,8 +170,8 @@ public struct ReleaseNotesDocument: Sendable, Hashable {
         while i < chars.count {
             if chars[i] == "<" {
                 // Comments and doctype.
-                if matches(chars, at: i, "<!--") {
-                    i = find(chars, "-->", from: i + 4).map { $0 + 3 } ?? chars.count
+                if matches(chars, at: i, commentOpen) {
+                    i = find(chars, commentClose, from: i + 4).map { $0 + 3 } ?? chars.count
                     continue
                 }
                 guard let end = tagEnd(chars, from: i) else {
@@ -361,16 +361,20 @@ public struct ReleaseNotesDocument: Sendable, Hashable {
         }
     }
 
-    static func matches(_ chars: [Character], at i: Int, _ s: String) -> Bool {
-        let target = Array(s)
+    static let commentOpen: [Character] = Array("<!--")
+    static let commentClose: [Character] = Array("-->")
+
+    /// Compares in place: building arrays here would allocate twice for every `<` and for every
+    /// character inside a comment.
+    static func matches(_ chars: [Character], at i: Int, _ target: [Character]) -> Bool {
         guard i + target.count <= chars.count else { return false }
-        return Array(chars[i..<(i + target.count)]) == target
+        return chars[i..<(i + target.count)].elementsEqual(target)
     }
 
-    static func find(_ chars: [Character], _ s: String, from: Int) -> Int? {
+    static func find(_ chars: [Character], _ target: [Character], from: Int) -> Int? {
         var i = from
         while i < chars.count {
-            if matches(chars, at: i, s) { return i }
+            if matches(chars, at: i, target) { return i }
             i += 1
         }
         return nil

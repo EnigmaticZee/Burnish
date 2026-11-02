@@ -66,7 +66,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     let model = AppModel()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
         #if DEBUG
         if PreviewRenderer.runIfRequested(model: model) { return }
         #endif

@@ -150,20 +150,31 @@ func setArchitecture(of app: URL, to arch: String?) throws {
     try Data(bytes).write(to: executable)
 }
 
-func zip(_ app: URL, to zipURL: URL) throws {
+/// Runs a command-line tool quietly and insists it succeeded.
+func tool(_ path: String, _ args: [String]) throws {
     let p = Process()
-    p.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
-    p.arguments = ["-c", "-k", "--keepParent", app.path, zipURL.path]
+    p.executableURL = URL(fileURLWithPath: path)
+    p.arguments = args
+    p.standardOutput = FileHandle.nullDevice
+    p.standardError = FileHandle.nullDevice
     try p.run()
     p.waitUntilExit()
+    try #require(p.terminationStatus == 0, "\(path) \(args.joined(separator: " "))")
+}
+
+func zip(_ app: URL, to zipURL: URL) throws {
+    try tool("/usr/bin/ditto", ["-c", "-k", "--keepParent", app.path, zipURL.path])
 }
 
 func dmg(of folder: URL, to dmgURL: URL) throws {
-    let p = Process()
-    p.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
-    p.arguments = ["create", "-quiet", "-ov", "-fs", "HFS+", "-format", "UDZO", "-volname", "Fixture", "-srcfolder", folder.path, dmgURL.path]
-    try p.run()
-    p.waitUntilExit()
+    try tool("/usr/bin/hdiutil", ["create", "-quiet", "-ov", "-fs", "HFS+", "-format", "UDZO", "-volname", "Fixture", "-srcfolder", folder.path, dmgURL.path])
+}
+
+/// CFBundleShortVersionString of a bundle on disk, or nil when there's no readable Info.plist.
+func shortVersion(of bundle: URL) -> String? {
+    let plist = bundle.appendingPathComponent("Contents/Info.plist")
+    guard let data = try? Data(contentsOf: plist) else { return nil }
+    return (try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])?["CFBundleShortVersionString"] as? String
 }
 
 func codesignAdHoc(_ app: URL) throws {
@@ -264,12 +275,7 @@ final class Harness {
         await installer().install(InstallRequest(app: app, release: release), askToQuit: askToQuit)
     }
 
-    func installedVersion() -> String? {
-        let plist = applications.appendingPathComponent("Fixture.app/Contents/Info.plist")
-        guard let data = try? Data(contentsOf: plist),
-              let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { return nil }
-        return dict["CFBundleShortVersionString"] as? String
-    }
+    func installedVersion() -> String? { shortVersion(of: applications.appendingPathComponent("Fixture.app")) }
 
     var trashIsEmpty: Bool {
         ((try? FileManager.default.contentsOfDirectory(atPath: trashFolder.path)) ?? []).isEmpty
@@ -624,12 +630,6 @@ final class Harness {
         return (current, oldCopy)
     }
 
-    func version(of bundle: URL) -> String? {
-        let plist = bundle.appendingPathComponent("Contents/Info.plist")
-        guard let data = try? Data(contentsOf: plist) else { return nil }
-        return (try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])?["CFBundleShortVersionString"] as? String
-    }
-
     func expectRefused(_ outcome: InstallOutcome, _ rule: InstallRefusal.Rule, _ h: Harness, previous: URL,
                        sourceLocation: SourceLocation = #_sourceLocation) {
         guard case let .refused(refusal) = outcome else {
@@ -648,7 +648,7 @@ final class Harness {
         #expect(h.installedVersion() == "1.0")
         #expect(!relaunched)
         #expect(!FileManager.default.fileExists(atPath: previous.path), "the earlier copy came out of the Trash")
-        #expect(version(of: newerCopy) == "1.1", "and 1.1 went in, so there's still a way back")
+        #expect(shortVersion(of: newerCopy) == "1.1", "and 1.1 went in, so there's still a way back")
     }
 
     @Test func quitsPolitelyAndRelaunches() async throws {
@@ -800,10 +800,6 @@ final class Harness {
         return p.terminationStatus
     }
 
-    func version(_ app: URL) -> String? {
-        (try? PropertyListSerialization.propertyList(from: Data(contentsOf: app.appendingPathComponent("Contents/Info.plist")), format: nil) as? [String: Any])?["CFBundleShortVersionString"] as? String
-    }
-
     @Test func replacesAndKeepsTheOldCopy() throws {
         let h = try Harness()
         let old = try makeBundle(in: h.applications, short: "1.0", build: "100")
@@ -816,8 +812,8 @@ final class Harness {
         let status = try run(old: old, new: new, target: target, partial: h.trashFolder.appendingPathComponent("partial.app"),
                              requirement: "identifier \"\(bundleID)\"")
         #expect(status == 0)
-        #expect(version(old) == "1.1")
-        #expect(version(target) == "1.0")
+        #expect(shortVersion(of: old) == "1.1")
+        #expect(shortVersion(of: target) == "1.0")
     }
 
     @Test func failedVerificationPutsTheOldVersionBack() throws {
@@ -833,8 +829,8 @@ final class Harness {
         // An ad-hoc copy can never satisfy an Apple-anchored Team ID requirement.
         let status = try run(old: old, new: new, target: target, partial: partial, requirement: AppInstaller.requirement(teamID: teamA))
         #expect(status == 5)
-        #expect(version(old) == "1.0", "old version is back")
-        #expect(version(partial) == "1.1", "the rejected copy is parked in the Trash, not deleted")
+        #expect(shortVersion(of: old) == "1.0", "old version is back")
+        #expect(shortVersion(of: partial) == "1.1", "the rejected copy is parked in the Trash, not deleted")
     }
 
     @Test func refusesWhenTheTrashNameIsTaken() throws {
@@ -844,8 +840,8 @@ final class Harness {
         let target = try makeBundle(in: h.trashFolder, short: "0.9", build: "90")
         let status = try run(old: old, new: old, target: target, partial: h.trashFolder.appendingPathComponent("p.app"), requirement: "anchor apple")
         #expect(status == 3)
-        #expect(version(old) == "1.0")
-        #expect(version(target) == "0.9", "nothing moved into the existing item")
+        #expect(shortVersion(of: old) == "1.0")
+        #expect(shortVersion(of: target) == "0.9", "nothing moved into the existing item")
     }
 }
 
@@ -897,17 +893,6 @@ actor Counter {
         return folder
     }
 
-    static func tool(_ path: String, _ args: [String]) throws {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: path)
-        p.arguments = args
-        p.standardOutput = FileHandle.nullDevice
-        p.standardError = FileHandle.nullDevice
-        try p.run()
-        p.waitUntilExit()
-        try #require(p.terminationStatus == 0, "\(path) \(args.joined(separator: " "))")
-    }
-
     static func diskImage(of folder: URL, format: String, fileSystem: String = "HFS+", in h: Harness) throws -> URL {
         let image = h.build.appendingPathComponent("\(UUID().uuidString)-\(format).dmg")
         try tool("/usr/bin/hdiutil", ["create", "-quiet", "-ov", "-fs", fileSystem, "-format", format, "-volname", "Fixture", "-srcfolder", folder.path, image.path])
@@ -950,12 +935,12 @@ actor Counter {
         var archives: [(URL, ArchiveKind)] = []
         func zip(_ item: URL, _ name: String) throws {
             let out = h.build.appendingPathComponent(name)
-            try Self.tool("/usr/bin/ditto", ["-c", "-k", "--keepParent", item.path, out.path])
+            try tool("/usr/bin/ditto", ["-c", "-k", "--keepParent", item.path, out.path])
             archives.append((out, .zip))
         }
         func tar(_ flag: String, _ name: String, _ kind: ArchiveKind) throws {
             let out = h.build.appendingPathComponent(name)
-            try Self.tool("/usr/bin/tar", ["-c\(flag)f", out.path, "-C", flat.path, "Fixture.app"])
+            try tool("/usr/bin/tar", ["-c\(flag)f", out.path, "-C", flat.path, "Fixture.app"])
             archives.append((out, kind))
         }
         try zip(flat.appendingPathComponent("Fixture.app"), "Fixture.zip")
@@ -976,7 +961,7 @@ actor Counter {
         let h = try Harness()
         let src = try Self.source(in: h)
         let pkg = h.build.appendingPathComponent("Fixture.pkg")
-        try Self.tool("/usr/bin/pkgbuild", ["--quiet", "--root", src.appendingPathComponent("Fixture.app").path, "--identifier", bundleID,
+        try tool("/usr/bin/pkgbuild", ["--quiet", "--root", src.appendingPathComponent("Fixture.app").path, "--identifier", bundleID,
                                             "--version", "1.1", "--install-location", "/Applications/Fixture.app", pkg.path])
         #expect(ArchiveKind.detect(pkg) == .pkg)
         let folder = h.build.appendingPathComponent("pkg-src")
@@ -1132,5 +1117,24 @@ actor Counter {
         let fresh = try makeBundle(in: root.appendingPathComponent("b"), name: "Fixture 1.0", short: "1.0", build: "100")
         _ = try kept.keep(fresh, bundleID: bundleID, now: now)
         #expect(kept.prune(now: now).isEmpty, "a fresh copy stays")
+    }
+}
+
+@Suite struct PackageHandoffs {
+    @Test func packagesHandedToInstallerArePrunedAfterADay() throws {
+        let work = FileManager.default.temporaryDirectory.appendingPathComponent("burnish-packages-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: work) }
+        let packages = work.appendingPathComponent("Packages")
+        try FileManager.default.createDirectory(at: packages, withIntermediateDirectories: true)
+        let old = packages.appendingPathComponent("Old.pkg")
+        let fresh = packages.appendingPathComponent("Fresh.pkg")
+        try Data("old".utf8).write(to: old)
+        try Data("fresh".utf8).write(to: fresh)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-2 * 24 * 3600)], ofItemAtPath: old.path)
+
+        AppInstaller.prunePackages(in: work)
+        #expect(!FileManager.default.fileExists(atPath: old.path), "a package Installer was given two days ago is gone")
+        #expect(FileManager.default.fileExists(atPath: fresh.path), "today's stays until Installer is done with it")
+        AppInstaller.prunePackages(in: work.appendingPathComponent("never-made"))
     }
 }

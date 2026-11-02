@@ -2,9 +2,9 @@ import CryptoKit
 import Foundation
 
 /// Checks on the downloaded file itself (rules 2 and 3).
-public enum DownloadVerifier {
+enum DownloadVerifier {
     /// Sparkle signs the exact archive bytes with Ed25519; the public key is `SUPublicEDKey`.
-    public static func verifyEdDSA(file: URL, signature: String, publicKey: String) -> Bool {
+    static func verifyEdDSA(file: URL, signature: String, publicKey: String) -> Bool {
         guard let keyData = Data(base64Encoded: publicKey.trimmingCharacters(in: .whitespacesAndNewlines)),
               let signatureData = Data(base64Encoded: signature.trimmingCharacters(in: .whitespacesAndNewlines)),
               let key = try? Curve25519.Signing.PublicKey(rawRepresentation: keyData),
@@ -13,13 +13,13 @@ public enum DownloadVerifier {
         return key.isValidSignature(signatureData, for: data)
     }
 
-    public static func sha256Hex(of file: URL) throws -> String {
+    static func sha256Hex(of file: URL) throws -> String {
         var hasher = SHA256()
         try stream(file) { hasher.update(data: $0) }
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 
-    public static func sha512Base64(of file: URL) throws -> String {
+    static func sha512Base64(of file: URL) throws -> String {
         var hasher = SHA512()
         try stream(file) { hasher.update(data: $0) }
         return Data(hasher.finalize()).base64EncodedString()

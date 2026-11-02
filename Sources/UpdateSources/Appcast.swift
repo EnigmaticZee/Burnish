@@ -60,9 +60,14 @@ public final class AppcastParser: NSObject, XMLParserDelegate {
     private var text = ""
     private var lang = ""
     private var failure: Error?
-
-    public static func parse(_ data: Data) throws -> [AppcastItem] {
-        try parseFeed(data).items
+    /// RFC 822 `pubDate` formats, built once per feed rather than four times per item.
+    private let dateFormatters: [DateFormatter] = [
+        "EEE, dd MMM yyyy HH:mm:ss Z", "EEE, d MMM yyyy HH:mm:ss Z", "dd MMM yyyy HH:mm:ss Z", "EEE, dd MMM yyyy HH:mm Z",
+    ].map { format in
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = format
+        return formatter
     }
 
     public static func parseFeed(_ data: Data) throws -> Appcast {
@@ -137,7 +142,7 @@ public final class AppcastParser: NSObject, XMLParserDelegate {
         guard parent == "item" else { return }
         switch name {
         case "link": current?.link = URL(string: value)
-        case "pubDate": current?.pubDate = Self.parseDate(value)
+        case "pubDate": current?.pubDate = parseDate(value)
         case "description": if !value.isEmpty { current?.descriptions[lang] = value }
         case "sparkle:version": current?.version = value.nilIfEmpty
         case "sparkle:shortVersionString": current?.shortVersion = value.nilIfEmpty
@@ -155,13 +160,10 @@ public final class AppcastParser: NSObject, XMLParserDelegate {
 
     public func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) { failure = parseError }
 
-    static func parseDate(_ string: String) -> Date? {
-        for format in ["EEE, dd MMM yyyy HH:mm:ss Z", "EEE, d MMM yyyy HH:mm:ss Z", "dd MMM yyyy HH:mm:ss Z", "EEE, dd MMM yyyy HH:mm Z"] {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.dateFormat = format
+    func parseDate(_ string: String) -> Date? {
+        for formatter in dateFormatters {
             if let date = formatter.date(from: string) { return date }
         }
-        return ISO8601DateFormatter().date(from: string)
+        return ISO8601.date(string)
     }
 }

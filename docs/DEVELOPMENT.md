@@ -95,6 +95,7 @@ One Swift package, one target per module:
 | `scripts/build-site.py` | Builds the website into `_site/` for a given release (`python3 scripts/build-site.py 0.2.0-beta`) |
 | `scripts/make-cask-fixture.py` | Cuts the test fixtures out of a full copy of Homebrew's cask list |
 | `scripts/sign.sh` | Developer ID signing, once there's a certificate |
+| `scripts/sign-update.sh` | Signs a DMG with the Sparkle key from `Keys/` or this Mac's Keychain and prints the appcast attributes (the tag build does the same from the secret) |
 
 ## The website
 

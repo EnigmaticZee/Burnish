@@ -127,7 +127,7 @@ public actor GitHubSource {
             tag: p.tag_name,
             body: p.body,
             page: p.html_url.flatMap(URL.init(string:)),
-            publishedAt: p.published_at.flatMap { ISO8601DateFormatter().date(from: $0) },
+            publishedAt: p.published_at.flatMap(ISO8601.date),
             assets: (p.assets ?? []).compactMap { a in
                 URL(string: a.browser_download_url).map { GitHubRelease.Asset(name: a.name, url: $0, size: a.size, digest: a.digest) }
             }

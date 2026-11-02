@@ -2,12 +2,22 @@ import CaskIndex
 import Foundation
 import Net
 import Store
+import os
 
 /// Match fixes and update feeds contributed by pull request to
 /// `overrides/community-overrides.json` in the repository. Fetched at most once a day; the last
 /// copy is used offline.
 public actor CommunityOverrides {
     public static let sourceURL = URL(string: "https://raw.githubusercontent.com/EnigmaticZee/Burnish/main/overrides/community-overrides.json")!
+
+    /// Both halves of the file from one read, so a check asks for it once.
+    public struct Contents: Sendable {
+        public var overrides: MatchOverrides
+        /// The listed feeds that are safe to ask: HTTPS appcasts and well-formed GitHub repositories.
+        public var feeds: [String: CommunityFeed]
+
+        public static let empty = Contents(overrides: .none, feeds: [:])
+    }
 
     struct File: Codable {
         var schema: Int
@@ -26,6 +36,7 @@ public actor CommunityOverrides {
     private let client: HTTPClient
     private let store: StateStore
     private let now: @Sendable () -> Date
+    private let log = Logger(subsystem: BurnishEngine.bundleID, category: "community")
     private static let key = StoreKey<Cached>("community-overrides.json")
 
     public init(client: HTTPClient, store: StateStore, now: @escaping @Sendable () -> Date = Date.init) {
@@ -35,14 +46,16 @@ public actor CommunityOverrides {
     }
 
     public func load() async -> MatchOverrides {
-        await file().map(Self.overrides(from:)) ?? .none
+        await contents().overrides
     }
 
-    /// The listed feeds that are safe to ask: HTTPS appcasts and well-formed GitHub repositories.
     public func feeds() async -> [String: CommunityFeed] {
-        (await file()?.feeds ?? [:]).filter { _, feed in
-            feed.sparkle?.scheme == "https" || feed.github.map { $0.split(separator: "/").count == 2 } == true
-        }
+        await contents().feeds
+    }
+
+    public func contents() async -> Contents {
+        guard let file = await file() else { return .empty }
+        return Contents(overrides: Self.overrides(from: file), feeds: Self.safeFeeds(in: file))
     }
 
     private func file() async -> File? {
@@ -50,7 +63,8 @@ public actor CommunityOverrides {
         if let cached, now().timeIntervalSince(cached.fetchedAt) < 24 * 3600 { return cached.file }
         var headers: [String: String] = [:]
         if let etag = cached?.etag { headers["If-None-Match"] = etag }
-        if let response = try? await client.get(Self.sourceURL, headers: headers, timeout: Net.feedTimeout) {
+        do {
+            let response = try await client.get(Self.sourceURL, headers: headers, timeout: Net.feedTimeout)
             if response.status == 304, var cached {
                 cached.fetchedAt = now()
                 await store.save(cached, Self.key)
@@ -60,6 +74,10 @@ public actor CommunityOverrides {
                 await store.save(Cached(fetchedAt: now(), etag: response.header("ETag"), file: file), Self.key)
                 return file
             }
+            log.error("Community overrides: HTTP \(response.status, privacy: .public) or an unreadable file; keeping the last copy")
+        } catch {
+            // Offline or slow: the last copy serves until the next check.
+            log.error("Community overrides couldn't be fetched: \(error.localizedDescription, privacy: .public)")
         }
         return cached?.file
     }
@@ -70,6 +88,13 @@ public actor CommunityOverrides {
             if let token { result.chosen[bundleID] = token } else { result.noCask.insert(bundleID) }
         }
         return result
+    }
+
+    /// The listed feeds that are safe to ask: HTTPS appcasts and well-formed GitHub repositories.
+    static func safeFeeds(in file: File) -> [String: CommunityFeed] {
+        (file.feeds ?? [:]).filter { _, feed in
+            feed.sparkle?.scheme == "https" || feed.github.map { $0.split(separator: "/").count == 2 } == true
+        }
     }
 }
 

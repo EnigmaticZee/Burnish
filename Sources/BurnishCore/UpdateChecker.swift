@@ -30,11 +30,19 @@ public struct CheckOptions: Sendable {
 /// Runs every source for every app and decides each status. Results stream out as each app
 /// finishes; the list never waits for the slowest feed.
 public actor UpdateChecker {
+    /// The sources a check asks, built once and shared by every app.
+    struct Sources: Sendable {
+        let sparkle: SparkleSource
+        let electron: ElectronSource
+        let tauri: TauriSource
+        let github: GitHubSource
+    }
+
     private let client: HTTPClient
     private let caskStore: CaskDataStore
     private let system: SystemVersion
     private let platform: Platform
-    private let github: GitHubSource
+    private let sources: Sources
     private let storefront: String?
     private var lastCatalog: CaskCatalog?
     private let log = Logger(subsystem: "io.github.enigmaticzee.Burnish", category: "check")
@@ -46,7 +54,12 @@ public actor UpdateChecker {
         self.caskStore = caskStore
         self.system = system
         self.platform = platform
-        github = GitHubSource(client: client)
+        sources = Sources(
+            sparkle: SparkleSource(client: client, system: system, isARM: platform.isARM),
+            electron: ElectronSource(client: client, isARM: platform.isARM),
+            tauri: TauriSource(client: client, isARM: platform.isARM),
+            github: GitHubSource(client: client)
+        )
     }
 
     public var catalog: CaskCatalog? { lastCatalog }
@@ -88,8 +101,7 @@ public actor UpdateChecker {
         let appRules = options.appRules
         let communityFeeds = options.communityFeeds
         let system = system
-        let platform = platform
-        let github = github
+        let sources = sources
 
         let results = await withTaskGroup(of: AppCheckResult.self) { group in
             for app in apps {
@@ -102,7 +114,7 @@ public actor UpdateChecker {
                         }
                     } else if !app.isApple {
                         await Self.gather(&findings, app: app, rule: appRules.rule(for: app.bundleID), communityFeed: communityFeeds[app.bundleID],
-                                          client: client, system: system, platform: platform, matcher: matcher, github: github)
+                                          sources: sources, matcher: matcher)
                         findings.vendorUpdater = VendorUpdaters.updater(for: app)
                         // A Tauri app installs its own signed updates, so Update opens the app.
                         if findings.tauriSucceeded, findings.vendorUpdater == nil {
@@ -128,23 +140,20 @@ public actor UpdateChecker {
     }
 
     static func gather(
-        _ findings: inout SourceFindings, app: InstalledApp, rule: AppRule = AppRule(), communityFeed: CommunityFeed? = nil,
-        client: HTTPClient, system: SystemVersion,
-        platform: Platform, matcher: CaskMatcher?, github: GitHubSource
+        _ findings: inout SourceFindings, app: InstalledApp, rule: AppRule, communityFeed: CommunityFeed?,
+        sources: Sources, matcher: CaskMatcher?
     ) async {
         let preferences = SparkleSource.Preferences(maximumMajor: rule.stayOnMajor, includeBeta: rule.followBeta)
         if let feed = app.sparkleFeedURL {
             do {
-                findings.sparkle = .found(try await SparkleSource(client: client, system: system, isARM: platform.isARM)
-                    .check(feed: feed, preferences: preferences, installed: app.version))
+                findings.sparkle = .found(try await sources.sparkle.check(feed: feed, preferences: preferences, installed: app.version))
             } catch {
                 findings.sparkle = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }
         } else if let leads = app.sparkleFeedCandidates?.compactMap({ URL(string: $0) }), !leads.isEmpty {
             // An address compiled into the app is only a lead: the feed has to prove it's the app's own.
             let owner = SparkleSource.Owner(names: [app.name] + app.bundleNames, installed: app.version)
-            if let found = await SparkleSource(client: client, system: system, isARM: platform.isARM)
-                .check(leads: leads, owner: owner, preferences: preferences) {
+            if let found = await sources.sparkle.check(leads: leads, owner: owner, preferences: preferences) {
                 var result = found.result
                 result.release?.feedFoundInApp = true
                 findings.sparkle = .found(result)
@@ -152,20 +161,20 @@ public actor UpdateChecker {
         }
         if let config = app.electronUpdateConfig, !findings.sparkleSucceeded {
             do {
-                findings.electron = .found(try await ElectronSource(client: client, isARM: platform.isARM).check(configFile: config))
+                findings.electron = .found(try await sources.electron.check(configFile: config))
             } catch {
                 findings.electron = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }
         }
         if let endpoints = app.tauriUpdateEndpoints, !endpoints.isEmpty, !findings.sparkleSucceeded, !findings.electronSucceeded {
             do {
-                findings.tauri = .found(try await TauriSource(client: client, isARM: platform.isARM).check(endpoints: endpoints, installed: app.version))
+                findings.tauri = .found(try await sources.tauri.check(endpoints: endpoints, installed: app.version))
             } catch {
                 findings.tauri = .failed(error.errorDescription ?? String(localized: "Feed not reachable"))
             }
         }
         guard let matcher, let match = matcher.match(app) else {
-            await askCommunityFeed(&findings, app: app, feed: communityFeed, client: client, system: system, platform: platform, github: github)
+            await askCommunityFeed(&findings, app: app, feed: communityFeed, sources: sources)
             return
         }
         findings.match = match
@@ -178,27 +187,24 @@ public actor UpdateChecker {
         if match.canRaiseAlert, !findings.sparkleSucceeded, !findings.electronSucceeded, !findings.tauriSucceeded,
            let cask = findings.cask, let repo = HomebrewSource.githubRepository(for: cask) {
             do {
-                findings.github = GitHubSource.release(try await github.latestRelease(of: repo), forCask: cask)
+                findings.github = GitHubSource.release(try await sources.github.latestRelease(of: repo), forCask: cask)
             } catch {
                 // A repository with no releases is normal; a rate limit or an outage is worth a note.
                 if error != .noRelease { findings.githubFailure = error.errorDescription }
             }
         }
         if !match.canRaiseAlert {
-            await askCommunityFeed(&findings, app: app, feed: communityFeed, client: client, system: system, platform: platform, github: github)
+            await askCommunityFeed(&findings, app: app, feed: communityFeed, sources: sources)
         }
     }
 
     /// A feed a contributor listed, for an app that names none and that Homebrew can't match with
     /// confidence. Burnish reads it to spot updates; the install stays with the person.
-    static func askCommunityFeed(
-        _ findings: inout SourceFindings, app: InstalledApp, feed: CommunityFeed?, client: HTTPClient,
-        system: SystemVersion, platform: Platform, github: GitHubSource
-    ) async {
+    static func askCommunityFeed(_ findings: inout SourceFindings, app: InstalledApp, feed: CommunityFeed?, sources: Sources) async {
         guard let feed, app.sparkleFeedURL == nil, app.electronUpdateConfig == nil, !findings.tauriSucceeded else { return }
         if let url = feed.sparkle {
             do {
-                var result = try await SparkleSource(client: client, system: system, isARM: platform.isARM).check(feed: url)
+                var result = try await sources.sparkle.check(feed: url)
                 result.release?.listedByCommunity = true
                 result.release?.addedByUser = feed.addedByUser
                 findings.sparkle = .found(result)
@@ -208,7 +214,7 @@ public actor UpdateChecker {
         } else if let parts = feed.github?.split(separator: "/"), parts.count == 2 {
             let repo = GitHubRepository(owner: String(parts[0]), name: String(parts[1]))
             do {
-                let latest = try await github.latestRelease(of: repo)
+                let latest = try await sources.github.latestRelease(of: repo)
                 guard let version = latest.versionString else { return }
                 var release = Release(source: .github, version: VersionPair(short: version), basis: .shortVersion,
                                       downloadPage: latest.page, releaseNotes: latest.body.map { ReleaseNotes(text: $0, format: .markdown) },

@@ -5,32 +5,30 @@ import Foundation
 /// bundle. This reads it out, the way `TauriDetector` reads a Tauri app's updater. The result is
 /// only a lead: the checker asks the feed and keeps it only if it plainly belongs to the app.
 public enum SparkleFeedDetector {
-    /// Larger executables are left alone.
-    static let maximumSize = 200 * 1024 * 1024
     /// Past this many leads the binary is probably a framework host or a browser, not worth guessing.
     static let maximumCandidates = 4
 
     /// Addresses in the executable that look like an appcast, best first.
     public static func candidateFeeds(executable: URL) -> [String] {
-        guard let size = (try? executable.resourceValues(forKeys: [.fileSizeKey]))?.fileSize, size <= maximumSize,
-              let binary = try? Data(contentsOf: executable, options: .alwaysMapped)
-        else { return [] }
+        guard let binary = BinaryStrings.mapped(executable) else { return [] }
         return candidates(in: binary)
     }
 
     static func candidates(in binary: Data) -> [String] {
         let found = BinaryStrings.httpsURLs(in: binary).filter(looksLikeAppcast)
-        return Array(found.sorted { rank($0) < rank($1) }.prefix(maximumCandidates))
+        let ranked = found.map { ($0, rank($0)) }.sorted { $0.1 < $1.1 }
+        return ranked.prefix(maximumCandidates).map(\.0)
     }
 
-    /// An HTTPS address with a path that smells of an appcast, and none of the usual false
-    /// friends: Sparkle's XML namespace, schema URLs, Apple's own hosts, format strings.
+    /// The usual false friends: Sparkle's XML namespace, schema URLs, Apple's own hosts, format strings.
+    private static let excluded = ["andymatuschak.org", "sparkle-project.org", "w3.org", "schemas.", "apple.com", "github.com/sparkle-project",
+                                   "xmlns", "%@", "%s", "{{", "}}", "$(", "localhost"]
+
+    /// An HTTPS address with a path that smells of an appcast, and none of the `excluded` false friends.
     static func looksLikeAppcast(_ text: String) -> Bool {
         let lower = text.lowercased()
         guard let url = URL(string: text), url.scheme == "https", let host = url.host, !host.isEmpty,
               url.path.count > 1 else { return false }
-        let excluded = ["andymatuschak.org", "sparkle-project.org", "w3.org", "schemas.", "apple.com", "github.com/sparkle-project",
-                        "xmlns", "%@", "%s", "{{", "}}", "$(", "localhost"]
         guard !excluded.contains(where: lower.contains) else { return false }
         let path = url.path.lowercased()
         let file = (path as NSString).lastPathComponent
@@ -48,10 +46,27 @@ public enum SparkleFeedDetector {
     }
 }
 
-/// Printable `https://` addresses inside a binary, in order of appearance, without repeats.
+/// Printable `https://` addresses inside a binary, in order of appearance, without repeats,
+/// and the reads that feed them.
 enum BinaryStrings {
+    /// Executables above this size are left alone: no Sparkle or Tauri app comes close.
+    static let maximumSize = 200 * 1024 * 1024
+
     /// Printable ASCII that can't be part of an address: quotes, brackets, a backslash.
     private static let stopBytes = Set("\"'\\<>`".utf8)
+
+    /// The first `bytes` of a file; empty when it can't be opened.
+    static func head(of file: URL, bytes: Int) -> Data {
+        guard let handle = try? FileHandle(forReadingFrom: file) else { return Data() }
+        defer { try? handle.close() }
+        return (try? handle.read(upToCount: bytes)) ?? Data()
+    }
+
+    /// The whole file, memory-mapped, unless it is larger than `maximumSize`.
+    static func mapped(_ file: URL) -> Data? {
+        guard let size = (try? file.resourceValues(forKeys: [.fileSizeKey]))?.fileSize, size <= maximumSize else { return nil }
+        return try? Data(contentsOf: file, options: .alwaysMapped)
+    }
 
     static func httpsURLs(in binary: Data, maximumLength: Int = 512) -> [String] {
         var found: [String] = []

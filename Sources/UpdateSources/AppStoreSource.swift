@@ -73,7 +73,6 @@ public struct AppStoreSource: Sendable {
 
     static func parse(_ data: Data, asked: Set<String>, minimumIsMacOS: Bool = true) throws -> [String: Release] {
         let payload = try JSONDecoder().decode(Payload.self, from: data)
-        let dates = ISO8601DateFormatter()
         var out: [String: Release] = [:]
         for item in payload.results {
             guard let id = item.bundleId, asked.contains(id), let version = item.version else { continue }
@@ -85,7 +84,7 @@ public struct AppStoreSource: Sendable {
                     ?? item.trackViewUrl.flatMap(URL.init(string:)),
                 releaseNotes: item.releaseNotes.map { ReleaseNotes(text: $0, format: .plainText) },
                 minimumOS: minimumIsMacOS ? item.minimumOsVersion : nil,
-                date: item.currentVersionReleaseDate.flatMap { dates.date(from: $0) },
+                date: item.currentVersionReleaseDate.flatMap(ISO8601.date),
                 appStoreID: item.trackId
             )
         }

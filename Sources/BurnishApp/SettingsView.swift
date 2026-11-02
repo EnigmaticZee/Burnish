@@ -2,7 +2,6 @@ import AppKit
 import BurnishCore
 import Store
 import SwiftUI
-import WidgetUI
 
 enum SettingsTab: String, CaseIterable, Identifiable {
     case general, updates, sources, privacy
@@ -60,7 +59,6 @@ struct SettingsPane: View {
     let tab: SettingsTab
 
     var body: some View {
-        @Bindable var model = model
         Form {
             switch tab {
             case .general: general
@@ -167,14 +165,7 @@ struct SettingsPane: View {
     @ViewBuilder
     private var privacy: some View {
         Section {
-            VStack(alignment: .leading, spacing: 6) {
-                request("Homebrew's app list, once a day", "shippingbox")
-                request("Apple's App Store lookup, with your App Store apps' bundle IDs", "bag")
-                request("Each app's own update feed, its release notes, and the download itself", "arrow.down.circle")
-                request("GitHub, for apps whose downloads live there, and for community fixes and feeds", "chevron.left.forwardslash.chevron.right")
-                request("Burnish's own update feed, about once a day", "bell")
-            }
-            .font(.callout)
+            PrivacyRequests().font(.callout)
         } header: {
             Text("What leaves this Mac")
         } footer: {
@@ -203,16 +194,29 @@ struct SettingsPane: View {
         }
     }
 
+    private func locked(_ key: ManagedSettings.Key) -> Bool { model.lockedSettings.contains(key) }
+
+    private static let version = Bundle.main.shortVersion
+}
+
+/// What leaves this Mac, one line per request: the same list in Settings and on first run.
+struct PrivacyRequests: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            request("Homebrew's app list, once a day", "shippingbox")
+            request("Apple's App Store lookup, with your App Store apps' bundle IDs", "bag")
+            request("Each app's own update feed, its release notes, and the download itself", "arrow.down.circle")
+            request("GitHub, for apps whose downloads live there, and for community fixes and feeds", "chevron.left.forwardslash.chevron.right")
+            request("Burnish's own update feed, about once a day", "bell")
+        }
+    }
+
     private func request(_ text: LocalizedStringKey, _ symbol: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: symbol).foregroundStyle(.secondary).frame(width: 20)
             Text(text).fixedSize(horizontal: false, vertical: true)
         }
     }
-
-    private func locked(_ key: ManagedSettings.Key) -> Bool { model.lockedSettings.contains(key) }
-
-    private static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
 }
 
 /// First run: what Burnish scans and sends, the App Management permission, then the first scan.
@@ -241,15 +245,8 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
             Text("No account, no analytics, nothing about your apps leaves this Mac except what it takes to ask for updates:")
                 .fixedSize(horizontal: false, vertical: true)
-            VStack(alignment: .leading, spacing: 4) {
-                Label("Homebrew's app list, once a day", systemImage: "shippingbox")
-                Label("Apple's App Store lookup, with your App Store apps' bundle IDs", systemImage: "bag")
-                Label("Each app's own update feed, its release notes, and the download itself", systemImage: "arrow.down.circle")
-                Label("GitHub, for apps whose downloads live there, and for community match fixes", systemImage: "chevron.left.forwardslash.chevron.right")
-                Label("Burnish's own update feed, about once a day", systemImage: "bell")
-            }
-            .font(.callout).foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
+            PrivacyRequests()
+                .font(.callout).foregroundStyle(.secondary)
             Spacer()
             HStack {
                 Spacer()
@@ -315,9 +312,14 @@ enum DiagnosticsSaver {
         panel.message = String(localized: "The file names the apps on this Mac. Attach it to a bug report if you like.")
         NSApp.activate(ignoringOtherApps: true)
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        let info = Bundle.main.infoDictionary ?? [:]
-        let text = await Diagnostics.report(engine: model.engine, appVersion: info["CFBundleShortVersionString"] as? String ?? "",
-                                            build: info["CFBundleVersion"] as? String ?? "")
-        try? text.write(to: url, atomically: true, encoding: .utf8)
+        let text = await Diagnostics.report(engine: model.engine, appVersion: Bundle.main.shortVersion, build: Bundle.main.buildNumber)
+        do {
+            try text.write(to: url, atomically: true, encoding: .utf8)
+        } catch {
+            let alert = NSAlert()
+            alert.messageText = String(localized: "Couldn't save the diagnostics file")
+            alert.informativeText = error.localizedDescription
+            alert.runModal()
+        }
     }
 }

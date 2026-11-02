@@ -132,8 +132,9 @@ public struct SystemFileOperations: FileOperating {
             String(localized: "Burnish needs an administrator to update \(appName)."),
         ])
         guard output.succeeded else {
+            // osascript ends every error with its code; a cancelled prompt ends in "(-128)".
             let text = output.errorText
-            if text.contains("-128") { throw CocoaError(.userCancelled) }
+            if text.hasSuffix("(-128)") { throw CocoaError(.userCancelled) }
             let message: String
             if text.hasSuffix("(5)") {
                 message = String(localized: "The copy failed, so the old version was put back")

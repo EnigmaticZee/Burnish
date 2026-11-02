@@ -5,8 +5,7 @@ Usage: scripts/make-cask-fixture.py cask.json
 
 Writes Tests/CaskIndexTests/Fixtures/casks.json: the casks the matcher tests name, plus the first
 cask of each tricky kind (version "latest", no checksum, .pkg, nested container, vendor installer,
-deprecated, disabled, font) so the parser sees every shape. Also writes the much smaller
-Tests/BurnishCoreTests/Fixtures/casks.json with just the apps the end-to-end checker test uses.
+deprecated, disabled, font) so the parser sees every shape, keeping only the keys the parser reads.
 """
 import json
 import sys
@@ -21,17 +20,37 @@ NAMED = [
     "qbittorrent", "qbittorrent@lt20", "c0re100-qbittorrent", "stremio", "stremio@beta",
     "wondershare-uniconverter", "mailbutler", "obsidian", "zoom", "spotify", "vlc", "telegram",
 ]
-# The end-to-end checker test: Chrome, Firefox, AdGuard and Discord with their channels, and PasteNow.
-CORE = [t for t in NAMED if t.split("@")[0] in ("google-chrome", "firefox", "adguard", "discord", "pastenow")]
 # Apps the truth set installs as "not in Homebrew's list": never let a tricky-kind pick add them.
 ABSENT = {"betterdisplay"}
-MATCHER_FIXTURE = "Tests/CaskIndexTests/Fixtures/casks.json"
-CORE_FIXTURE = "Tests/BurnishCoreTests/Fixtures/casks.json"
+FIXTURE = "Tests/CaskIndexTests/Fixtures/casks.json"
+
+
+# The top-level keys Sources/CaskIndex/Cask.swift reads; the rest (language variations, Ruby source
+# checksums, platform lists) is almost half the bytes and never looked at.
+KEEP = [
+    "token",
+    "name",
+    "version",
+    "url",
+    "sha256",
+    "artifacts",
+    "variations",
+    "depends_on",
+    "container",
+    "homepage",
+    "deprecated",
+    "deprecation_reason",
+    "disabled",
+    "disable_reason",
+    "auto_updates",
+    "caveats_rosetta",
+]
 
 
 def write(casks, dst):
+    trimmed = [{k: v for k, v in c.items() if k in KEEP} for c in casks]
     with open(dst, "w") as out:
-        json.dump(casks, out, indent=1, sort_keys=True)
+        json.dump(trimmed, out, indent=1, sort_keys=True)
     print(f"{len(casks)} casks -> {dst}")
 
 
@@ -53,8 +72,7 @@ def main(src):
         match = next((c for c in casks if check(c) and c not in keep and c["token"] not in ABSENT), None)
         if match:
             keep.append(match)
-    write(keep, MATCHER_FIXTURE)
-    write([by_token[t] for t in CORE if t in by_token], CORE_FIXTURE)
+    write(keep, FIXTURE)
 
 
 if __name__ == "__main__":

@@ -330,7 +330,6 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 .step-n { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; font-weight: 800; color: #fff; background: linear-gradient(180deg, #e39a3c, #c8681d); margin-bottom: 16px; }
 .steps h3 { font-size: 1.15rem; margin-bottom: 8px; }
 .steps p { margin: 0; color: var(--ink-2); font-size: 0.97rem; }
-.terminal { max-width: 760px; margin: 26px auto 0; }
 .code { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: #1d1712; overflow-x: auto; }
 .code code { background: none; color: #f6e2c4; white-space: nowrap; }
 .hero-brew { margin-top: 18px; max-width: 470px; }
@@ -349,12 +348,11 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 
 .faq h2 { margin-bottom: 36px; }
 .faq details { max-width: 760px; margin: 0 auto; border-bottom: 1px solid var(--line); }
-.faq summary, .terminal summary { cursor: pointer; list-style: none; padding: 20px 0; font-weight: 650; font-size: 1.08rem; display: flex; justify-content: space-between; gap: 16px; }
-.faq summary::-webkit-details-marker, .terminal summary::-webkit-details-marker { display: none; }
-.faq summary::after, .terminal summary::after { content: "+"; color: var(--brass); font-size: 1.4rem; line-height: 1; transition: transform 0.3s ease; }
-.faq details[open] summary::after, .terminal details[open] summary::after, .terminal[open] summary::after { transform: rotate(45deg); }
+.faq summary { cursor: pointer; list-style: none; padding: 20px 0; font-weight: 650; font-size: 1.08rem; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--brass); font-size: 1.4rem; line-height: 1; transition: transform 0.3s ease; }
+.faq details[open] summary::after { transform: rotate(45deg); }
 .faq details p { margin: 0 0 22px; color: var(--ink-2); }
-.terminal summary { color: var(--ink-2); font-size: 0.98rem; justify-content: center; }
 
 /* Final call */
 

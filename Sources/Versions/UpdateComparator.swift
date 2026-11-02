@@ -23,7 +23,7 @@ public struct VersionPair: Sendable, Hashable, Codable {
 
 /// Which part of the installed app a source compares against.
 public enum ComparisonBasis: Sendable {
-    /// App Store, Homebrew, Electron and GitHub compare display versions.
+    /// App Store, Homebrew, Electron, Tauri and GitHub compare display versions.
     case shortVersion
     /// Sparkle compares `CFBundleVersion`, so Burnish does too for Sparkle sources.
     case bundleVersion
@@ -110,7 +110,7 @@ public enum UpdateComparator {
         // Chromium-based apps put the engine's major first: Brave 155.1.97.57 is Brave 1.97.57.
         if current.components.count >= 4, let engine = current.major, (50...999).contains(engine),
            latest.components.count >= 3,
-           let unprefixed = current.droppingFirstComponent(), unprefixed.leadingNumber == latest.leadingNumber {
+           let unprefixed = current.dropping(1), unprefixed.leadingNumber == latest.leadingNumber {
             if latest == unprefixed { return .same }
             return latest > unprefixed ? .newer(major: false) : .older
         }
@@ -173,7 +173,7 @@ public enum UpdateComparator {
 
     /// A jump in the first number (5.x → 6.x) may be a paid upgrade. Rapid-release apps with
     /// big first numbers (Chrome 155 → 156) and 0.x → 1.0 jumps don't count.
-    public static func isMajorUpgrade(from installed: Version, to latest: Version) -> Bool {
+    private static func isMajorUpgrade(from installed: Version, to latest: Version) -> Bool {
         guard let from = installed.major, let to = latest.major else { return false }
         return to > from && from >= 1 && to < 50
     }
@@ -184,7 +184,8 @@ public enum UpdateComparator {
 }
 
 extension String {
-    var nonEmpty: String? {
+    /// The string without surrounding whitespace, or nil when nothing else is left.
+    public var nonEmpty: String? {
         let t = trimmingWhitespace()
         return t.isEmpty ? nil : t
     }

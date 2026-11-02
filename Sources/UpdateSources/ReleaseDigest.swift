@@ -5,10 +5,8 @@ import Foundation
 /// Lines that fit none are left for the full notes. Nothing is invented, so the summary can
 /// only ever repeat what the developer wrote.
 public struct ReleaseDigest: Sendable, Hashable {
-    public enum Kind: Int, Sendable, CaseIterable, Comparable {
+    public enum Kind: Int, Sendable, CaseIterable {
         case security, new, fix, improvement
-
-        public static func < (a: Kind, b: Kind) -> Bool { a.rawValue < b.rawValue }
     }
 
     public struct Highlight: Sendable, Hashable {
@@ -19,8 +17,6 @@ public struct ReleaseDigest: Sendable, Hashable {
     public let counts: [Kind: Int]
     /// The first line of each kind, security first, at most three.
     public let highlights: [Highlight]
-
-    public var total: Int { counts.values.reduce(0, +) }
 
     /// "1 security fix, 2 shiny new things and 6 squashed bugs".
     public var headline: String {
@@ -68,10 +64,17 @@ public struct ReleaseDigest: Sendable, Hashable {
 
     // MARK: Sorting rules
 
-    static let securityWords = #"\b(security|vulnerab\w*|cve-\d+|exploit\w*)\b"#
-    static let fixWords = #"\b(fix(es|ed)?|bugs?|crash\w*|resolv\w*|issues?|problems?|no longer|correct(ed|s)?|prevent\w*|hang\w*|freez\w*)\b"#
-    static let newWords = #"\b(new|add(ed|s)?|introduc\w*|you can now|now supports?|support for)\b"#
-    static let improvementWords = #"\b(improv\w*|faster|better|performance|speed\w*|optimi[sz]\w*|enhanc\w*|refin\w*|polish\w*|reduc\w*|smoother)\b"#
+    // Compiled once: `make` runs inside a view body, and compiling four patterns afresh for every
+    // line cost more than the rest of the summary put together.
+    static let securityWords = words(#"\b(security|vulnerab\w*|cve-\d+|exploit\w*)\b"#)
+    static let fixWords = words(#"\b(fix(es|ed)?|bugs?|crash\w*|resolv\w*|issues?|problems?|no longer|correct(ed|s)?|prevent\w*|hang\w*|freez\w*)\b"#)
+    static let newWords = words(#"\b(new|add(ed|s)?|introduc\w*|you can now|now supports?|support for)\b"#)
+    static let improvementWords = words(#"\b(improv\w*|faster|better|performance|speed\w*|optimi[sz]\w*|enhanc\w*|refin\w*|polish\w*|reduc\w*|smoother)\b"#)
+
+    /// The patterns above are constants, so a failure here is a typo the first test run catches.
+    private static func words(_ pattern: String) -> NSRegularExpression {
+        try! NSRegularExpression(pattern: pattern, options: .caseInsensitive)
+    }
 
     static func kind(of line: String) -> Kind? {
         if matches(line, securityWords) { return .security }
@@ -90,8 +93,8 @@ public struct ReleaseDigest: Sendable, Hashable {
         return nil
     }
 
-    static func matches(_ line: String, _ pattern: String) -> Bool {
-        line.range(of: pattern, options: [.regularExpression, .caseInsensitive]) != nil
+    static func matches(_ line: String, _ pattern: NSRegularExpression) -> Bool {
+        pattern.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) != nil
     }
 
     static func text(_ runs: [ReleaseNotesDocument.Inline]) -> String {

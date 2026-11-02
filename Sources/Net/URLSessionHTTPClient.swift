@@ -5,14 +5,14 @@ public final class URLSessionHTTPClient: HTTPClient {
     private let session: URLSession
     private let limiter: AsyncLimiter
 
-    public init(limiter: AsyncLimiter = AsyncLimiter(Net.maxInFlight)) {
+    public init() {
         let config = URLSessionConfiguration.ephemeral
         config.httpAdditionalHeaders = ["User-Agent": Net.userAgent]
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         config.httpCookieAcceptPolicy = .never
         config.httpShouldSetCookies = false
         session = URLSession(configuration: config)
-        self.limiter = limiter
+        limiter = AsyncLimiter(Net.maxInFlight)
     }
 
     public func get(_ url: URL, headers: [String: String], timeout: TimeInterval) async throws -> HTTPResponse {
@@ -193,9 +193,9 @@ final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unchecked S
 }
 
 /// Hosts belong to the same family when they share the last two labels (`dl.google.com` ~ `www.google.com`).
-public struct HostFamily: Equatable {
-    public let value: String
-    public init(_ url: URL) {
+struct HostFamily: Equatable {
+    let value: String
+    init(_ url: URL) {
         let labels = (url.host ?? "").lowercased().split(separator: ".")
         value = labels.suffix(2).joined(separator: ".")
     }

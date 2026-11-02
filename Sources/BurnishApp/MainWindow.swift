@@ -77,11 +77,8 @@ struct MainWindow: View {
     /// Notices sit above the list, in its column, never over the sidebar.
     @ViewBuilder
     private var banners: some View {
-        if let offline = model.offlineBanner { Banner(text: offline, symbol: "wifi.slash") }
-        if model.needsAppManagement {
-            Banner(text: String(localized: "Burnish needs App Management to replace apps."), symbol: "lock",
-                   action: (String(localized: "Open Settings"), Permissions.openAppManagement))
-        }
+        OfflineBanner()
+        AppManagementBanner()
         AppStoreBanner()
         if model.intelOnlyCount > 0 {
             Banner(text: String(localized: "\(model.intelOnlyCount) apps only run on Intel chips, through Rosetta, which Apple is retiring for most apps after macOS 27."),
@@ -249,10 +246,28 @@ struct RowActions: View {
         }
         Button("Show Details") {
             NSApp.activate(ignoringOtherApps: true)
-            model.selectedID = result.id
-            model.showDetails = true
+            model.reveal(result)
             openWindow(id: "main")
         }
+        IgnoreActions(result: result)
+        Divider()
+        Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([result.app.url]) }
+        if result.canAddFeed {
+            Button("Add Update Feed…") {
+                NSApp.activate(ignoringOtherApps: true)
+                model.reveal(result, promptForFeed: true)
+                openWindow(id: "main")
+            }
+        }
+    }
+}
+
+/// Stop Ignoring, or Ignore This Version and Ignore App: the same in a row's menu and in the details' More menu.
+struct IgnoreActions: View {
+    @Environment(AppModel.self) private var model
+    let result: AppCheckResult
+
+    var body: some View {
         if case .ignored = result.status {
             Button("Stop Ignoring") { Task { await model.stopIgnoring(result) } }
         } else {
@@ -260,17 +275,6 @@ struct RowActions: View {
                 Button("Ignore This Version") { Task { await model.ignoreVersion(result) } }
             }
             Button("Ignore App") { Task { await model.ignoreApp(result) } }
-        }
-        Divider()
-        Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([result.app.url]) }
-        if result.canAddFeed {
-            Button("Add Update Feed…") {
-                NSApp.activate(ignoringOtherApps: true)
-                model.selectedID = result.id
-                model.showDetails = true
-                model.feedPromptID = result.id
-                openWindow(id: "main")
-            }
         }
     }
 }

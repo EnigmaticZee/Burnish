@@ -56,6 +56,6 @@ let package = Package(
         .testTarget(name: "StoreTests", dependencies: ["Store"]),
         .testTarget(name: "InstallerTests", dependencies: ["Installer", "NetTesting"]),
         .testTarget(name: "SchedulerTests", dependencies: ["Scheduler"]),
-        .testTarget(name: "BurnishCoreTests", dependencies: ["BurnishCore", "NetTesting"], resources: [.copy("Fixtures")]),
+        .testTarget(name: "BurnishCoreTests", dependencies: ["BurnishCore", "NetTesting"]),
     ]
 )

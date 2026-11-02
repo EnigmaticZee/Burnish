@@ -13,7 +13,7 @@ import UpdateSources
 import WidgetKit
 
 /// Per-row install progress (the "Installing" and "Install refused" states).
-enum InstallState: Equatable {
+enum InstallState {
     case running(InstallPhase)
     case done(relaunched: Bool)
     case openedInstaller
@@ -205,14 +205,18 @@ final class AppModel {
         refreshWidget()
     }
 
-    /// Writes what the desktop widget shows and asks WidgetKit to redraw it.
+    /// Writes what the desktop widget shows and asks WidgetKit to redraw it. The snapshot is
+    /// built here; only the file write leaves the main thread.
     private func refreshWidget() {
         let top = outdated.prefix(3).map {
             WidgetSnapshot.Item(name: $0.app.name, installed: $0.app.version.display,
                                 latest: $0.status.candidate?.displayVersion ?? "", appPath: $0.app.url.path)
         }
-        try? WidgetSnapshot(updateCount: outdated.count, top: Array(top), lastCheck: lastCheck).save()
-        WidgetCenter.shared.reloadAllTimelines()
+        let snapshot = WidgetSnapshot(updateCount: outdated.count, top: Array(top), lastCheck: lastCheck)
+        Task.detached {
+            try? snapshot.save()
+            await MainActor.run { WidgetCenter.shared.reloadAllTimelines() }
+        }
     }
 
     private func persistResults() async {
@@ -221,9 +225,10 @@ final class AppModel {
         await engine.store.save(report, BurnishEngine.lastReportKey)
     }
 
+    /// The caches stay loaded: a full check releases them, and one app's recheck is usually
+    /// followed by another install or recheck that would otherwise re-read the cask index.
     func recheck(_ result: AppCheckResult) async {
         if let fresh = await engine.recheck(result.app, settings: settings) { replace(fresh) }
-        await engine.releaseCaches()
     }
 
     // MARK: Derived lists
@@ -339,11 +344,18 @@ final class AppModel {
 
     // MARK: Automatic updates
 
-    func autoUpdateDecision(for result: AppCheckResult) -> AutoUpdatePolicy.Decision {
+    /// Whether the app is open right now. Walks every running application, so views ask once
+    /// and pass the answer in rather than asking on every render.
+    func isRunning(_ result: AppCheckResult) -> Bool {
+        let url = result.app.url.standardizedFileURL
+        return NSWorkspace.shared.runningApplications.contains { $0.bundleURL?.standardizedFileURL == url }
+    }
+
+    func autoUpdateDecision(for result: AppCheckResult, isRunning: Bool? = nil) -> AutoUpdatePolicy.Decision {
         AutoUpdatePolicy.decide(
             result, settings: settings, rule: appRules.rule(for: result.app.bundleID),
             firstSeen: result.status.candidate.flatMap { history.firstSeen(version: $0.displayVersion, for: result.app.bundleID) },
-            isRunning: NSWorkspace.shared.runningApplications.contains { $0.bundleURL?.standardizedFileURL == result.app.url.standardizedFileURL }
+            isRunning: isRunning ?? self.isRunning(result)
         )
     }
 
@@ -477,10 +489,9 @@ final class AppModel {
 
     /// A ready-made issue for a download Burnish couldn't open, with the file facts the installer kept.
     func reportInstall(_ result: AppCheckResult, refusal: InstallRefusal) {
-        let info = Bundle.main.infoDictionary ?? [:]
         let os = ProcessInfo.processInfo.operatingSystemVersion
         let system = "macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion), \(isAppleSilicon ? "Apple silicon" : "Intel")"
-        let burnish = "\(info["CFBundleShortVersionString"] ?? "") (\(info["CFBundleVersion"] ?? ""))"
+        let burnish = "\(Bundle.main.shortVersion) (\(Bundle.main.buildNumber))"
         NSWorkspace.shared.open(InstallReport.url(for: result, refusal: refusal, burnish: burnish, system: system))
     }
 
@@ -525,6 +536,16 @@ final class AppModel {
 
     func markOnboardingDone() {
         settings.hasCompletedOnboarding = true
+    }
+
+    // MARK: Showing an app
+
+    /// Points the main window at this app's details; the caller brings the window up. With
+    /// `promptForFeed`, the details open straight onto Add Update Feed.
+    func reveal(_ result: AppCheckResult, promptForFeed: Bool = false) {
+        selectedID = result.id
+        showDetails = true
+        if promptForFeed { feedPromptID = result.id }
     }
 }
 

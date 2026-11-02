@@ -73,9 +73,7 @@ public struct TauriSource: Sendable {
         if let platforms = payload.platforms, !keys.contains(where: { platforms[$0] != nil }) { return nil }
         var version = payload.version
         if version.hasPrefix("v") { version.removeFirst() }
-        let dates = ISO8601DateFormatter()
-        dates.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let date = payload.pub_date.flatMap { dates.date(from: $0) ?? ISO8601DateFormatter().date(from: $0) }
+        let date = payload.pub_date.flatMap(ISO8601.date)
         return Release(
             source: .tauri, version: VersionPair(short: version), basis: .shortVersion,
             releaseNotes: payload.notes.map { ReleaseNotes(text: $0, format: .plainText) },

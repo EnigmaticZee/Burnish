@@ -15,8 +15,6 @@ public struct UpdatesWidgetView: View {
         self.size = size
     }
 
-    /// Brass, from the app icon.
-
     public var body: some View {
         if let snapshot {
             HStack(alignment: .top, spacing: 16) {

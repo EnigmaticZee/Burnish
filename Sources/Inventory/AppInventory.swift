@@ -30,6 +30,7 @@ public struct AppInventory: Sendable {
     /// Apps that resolve into `/System` (Safari) are skipped; they update with macOS.
     public func scan(roots: [URL]) -> InventoryResult {
         let caskroom = CaskroomScanner(roots: caskrooms).scan()
+        let casks = caskroom.index()
         var seen = Set<String>()
         var apps: [InstalledApp] = []
         for bundle in roots.flatMap(Self.findBundles) {
@@ -37,7 +38,7 @@ public struct AppInventory: Sendable {
             guard !resolved.path.hasPrefix("/System/"), seen.insert(resolved.path).inserted else { continue }
             guard var app = readApp(at: bundle) else { continue }
             guard !excludedBundleIDs.contains(app.bundleID) else { continue }
-            app.caskroomToken = caskroom.token(forAppNamed: app.fileName, version: app.version.short)
+            app.caskroomToken = casks.token(forAppNamed: app.fileName, version: app.version.short)
             apps.append(app)
         }
         apps.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -88,29 +89,32 @@ public struct AppInventory: Sendable {
         let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
         let isAppStore = isWrapped || fm.fileExists(atPath: receipt.path)
         let hasElectronFeed = fm.fileExists(atPath: electron.path)
-        // Only apps with no other update feed are worth reading for an updater address.
         var tauri: [String]?
         var sparkleCandidates: [String]?
         var architectures: [String]?
         if !isWrapped, let executable = (plist["CFBundleExecutable"] as? String)?.nonEmpty {
             let binary = contents.appendingPathComponent("MacOS/\(executable)")
-            let found = MachOArchitectures.of(binary)
+            // Only apps with no other update feed are worth reading for an updater address.
+            let wantsUpdater = !isAppStore && feed == nil && !hasElectronFeed
+            let hasSparkle = wantsUpdater && fm.fileExists(atPath: contents.appendingPathComponent("Frameworks/Sparkle.framework").path)
+            let probesTauri = wantsUpdater && !hasSparkle
+            // One read of the executable's head serves the architecture check and the Tauri probe.
+            let head = BinaryStrings.head(of: binary, bytes: probesTauri ? TauriDetector.headSize : MachOArchitectures.headSize)
+            let found = MachOArchitectures.parse(head)
             architectures = found.isEmpty ? nil : found
-            if !isAppStore, feed == nil, !hasElectronFeed {
-                if fm.fileExists(atPath: contents.appendingPathComponent("Frameworks/Sparkle.framework").path) {
-                    let leads = SparkleFeedDetector.candidateFeeds(executable: binary)
-                    sparkleCandidates = leads.isEmpty ? nil : leads
-                } else {
-                    let endpoints = TauriDetector.updateEndpoints(executable: binary)
-                    tauri = endpoints.isEmpty ? nil : endpoints
-                }
+            if hasSparkle {
+                let leads = SparkleFeedDetector.candidateFeeds(executable: binary)
+                sparkleCandidates = leads.isEmpty ? nil : leads
+            } else if probesTauri {
+                let endpoints = TauriDetector.updateEndpoints(executable: binary, head: head)
+                tauri = endpoints.isEmpty ? nil : endpoints
             }
         }
 
         return InstalledApp(
             bundleID: bundleID,
             name: url.deletingPathExtension().lastPathComponent,
-            bundleNames: Array(NSOrderedSet(array: names)) as? [String] ?? names,
+            bundleNames: names.count == 2 && names[0] == names[1] ? [names[0]] : names,
             url: url,
             version: VersionPair(short: short, build: build),
             signature: signatureReader.signature(of: url),
@@ -136,12 +140,5 @@ public struct InventoryResult: Sendable {
 extension URL {
     var isDirectory: Bool {
         (try? resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory ?? false
-    }
-}
-
-extension String {
-    var nonEmpty: String? {
-        let t = trimmingCharacters(in: .whitespacesAndNewlines)
-        return t.isEmpty ? nil : t
     }
 }

@@ -45,7 +45,7 @@ public enum InstallOutcome: Sendable, Equatable {
 
 /// Why an install didn't happen, in words a person can act on, plus the page to get it by hand.
 public struct InstallRefusal: Error, Sendable, Equatable, LocalizedError {
-    public enum Rule: String, Sendable, Codable {
+    public enum Rule: String, Sendable {
         /// Rule 1: the download didn't come from the app's feed or Homebrew over HTTPS.
         case trustedOrigin
         /// Rule 2: Sparkle EdDSA signature.

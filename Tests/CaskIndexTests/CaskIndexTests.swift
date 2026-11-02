@@ -172,12 +172,12 @@ func app(
     }
 
     @Test func forkWithSameNamesLosesToExactVersion() throws {
-        let m = try #require(matcher.match(app("qbittorrent.app", "org.qbittorrent.qBittorrent", "5.2.3", names: ["qBittorrent"])))
+        let m = try #require(matcher.match(app("qbittorrent.app", "org.qbittorrent.qBittorrent", try sampleVersion("qbittorrent"), names: ["qBittorrent"])))
         #expect(m.token == "qbittorrent")
     }
 
     @Test func exactVersionPicksChannel() throws {
-        let m = try #require(matcher.match(app("Stremio.app", "com.westbridge.stremio5-mac", "5.1.30", names: ["Stremio"])))
+        let m = try #require(matcher.match(app("Stremio.app", "com.westbridge.stremio5-mac", try sampleVersion("stremio@beta"), names: ["Stremio"])))
         #expect(m.token == "stremio@beta")
         #expect(m.confidence == .medium)
     }

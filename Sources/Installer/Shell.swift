@@ -39,6 +39,8 @@ public enum Shell {
                 try process.run()
             } catch {
                 process.terminationHandler = nil
+                out.fileHandleForReading.readabilityHandler = nil
+                err.fileHandleForReading.readabilityHandler = nil
                 continuation.resume(throwing: error)
             }
         }

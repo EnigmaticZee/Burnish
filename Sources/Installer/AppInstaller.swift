@@ -47,7 +47,7 @@ public struct InstallerEnvironment: Sendable {
         self.system = system
     }
 
-    public static var runsOnAppleSilicon: Bool {
+    static var runsOnAppleSilicon: Bool {
         #if arch(arm64)
         true
         #else
@@ -78,6 +78,9 @@ public struct AppInstaller: Sendable {
         env = environment
     }
 
+    /// Reads bundles the way the inventory does, through the environment's signature reader.
+    private var reader: AppInventory { AppInventory(signatureReader: env.signatures, caskrooms: []) }
+
     public func install(
         _ request: InstallRequest,
         progress: @escaping @Sendable (InstallPhase) -> Void = { _ in },
@@ -94,7 +97,7 @@ public struct AppInstaller: Sendable {
         if snapshot.isAppStore { return refuse(.manualOnly, String(localized: "App Store apps update in the App Store")) }
         if snapshot.isManagedByHomebrew { return refuse(.manualOnly, String(localized: "Managed by Homebrew: update it with brew upgrade")) }
         // The check may be days old, and the app may have updated itself since. Decide from what's on disk now.
-        guard var app = AppInventory(signatureReader: env.signatures, caskrooms: []).readApp(at: snapshot.url),
+        guard var app = reader.readApp(at: snapshot.url),
               app.bundleID == snapshot.bundleID else {
             return refuse(.changedSinceCheck, String(localized: "\(snapshot.name) has moved or changed since Burnish checked it. Check again."))
         }
@@ -149,12 +152,18 @@ public struct AppInstaller: Sendable {
             }
         }
         if let expected = release.sha256 {
-            guard (try? DownloadVerifier.sha256Hex(of: file)) == expected.lowercased() else {
+            guard let actual = try? DownloadVerifier.sha256Hex(of: file) else {
+                return refuse(.checksum, String(localized: "The download couldn't be read to check its checksum"))
+            }
+            guard actual == expected.lowercased() else {
                 return refuse(.checksum, String(localized: "The download doesn't match its published checksum"))
             }
         }
         if let expected = release.sha512 {
-            guard (try? DownloadVerifier.sha512Base64(of: file)) == expected else {
+            guard let actual = try? DownloadVerifier.sha512Base64(of: file) else {
+                return refuse(.checksum, String(localized: "The download couldn't be read to check its checksum"))
+            }
+            guard actual == expected else {
                 return refuse(.checksum, String(localized: "The download doesn't match its published checksum"))
             }
         }
@@ -169,11 +178,10 @@ public struct AppInstaller: Sendable {
         let openedAs: ArchiveKind
         do {
             openedAs = try await env.unpacker.open(file, detected: kind, into: staging)
-        } catch .licenseAgreement {
-            return refuse(.manualOnly, Unpacker.Failure.licenseAgreement.errorDescription!)
         } catch {
-            return refuse(.unpack, error.errorDescription ?? String(localized: "The download couldn't be opened"),
-                          evidence: ArchiveEvidence.describe(file, name: name, readAs: kind))
+            let message = error.errorDescription ?? String(localized: "The download couldn't be opened")
+            if error == .licenseAgreement { return refuse(.manualOnly, message) }
+            return refuse(.unpack, message, evidence: ArchiveEvidence.describe(file, name: name, readAs: kind))
         }
         if openedAs != kind {
             log.notice("Opened \(name, privacy: .public) as \(String(describing: openedAs), privacy: .public) after reading it as \(String(describing: kind), privacy: .public)")
@@ -205,7 +213,7 @@ public struct AppInstaller: Sendable {
         guard await env.gatekeeper.assess(newApp) else {
             return refuse(.sameDeveloper, String(localized: "macOS Gatekeeper didn't accept the new copy (it may not be notarised)"))
         }
-        guard let newInfo = AppInventory(signatureReader: env.signatures, caskrooms: []).readApp(at: newApp),
+        guard let newInfo = reader.readApp(at: newApp),
               newInfo.bundleID == app.bundleID else {
             return refuse(.sameDeveloper, String(localized: "The new copy has a different bundle ID"))
         }
@@ -257,14 +265,13 @@ public struct AppInstaller: Sendable {
             log.notice("Refused restore of \(snapshot.bundleID, privacy: .public) [\(rule.rawValue, privacy: .public)]: \(message, privacy: .public)")
             return .refused(InstallRefusal(rule, message, downloadPage: nil))
         }
-        let reader = AppInventory(signatureReader: env.signatures, caskrooms: [])
         guard let app = reader.readApp(at: snapshot.url), app.bundleID == snapshot.bundleID else {
             return refuse(.changedSinceCheck, String(localized: "\(snapshot.name) has moved or changed since Burnish checked it. Check again."))
         }
         guard app.signature.canBeAutoUpdated, let teamID = app.teamID, Self.isTeamID(teamID) else {
             return refuse(.unsignedInstalledApp, String(localized: "Burnish only replaces apps signed by their developer, and this copy isn't"))
         }
-        guard FileManager.default.fileExists(atPath: previous.path), let earlier = reader.readApp(at: previous) else {
+        guard let earlier = reader.readApp(at: previous) else {
             return refuse(.previousCopy, String(localized: "The earlier version is no longer in the Trash"))
         }
         guard earlier.bundleID == app.bundleID else {
@@ -377,7 +384,7 @@ public struct AppInstaller: Sendable {
             return refuse(.package, String(localized: "The installer package isn't signed by the same developer as the installed app"))
         }
         // The job folder is cleaned up on return, so keep the package somewhere Installer can read it.
-        let packages = env.workDirectory.appendingPathComponent("Packages", isDirectory: true)
+        let packages = Self.packagesFolder(in: env.workDirectory)
         let kept = packages.appendingPathComponent(Self.safePackageName(name))
         do {
             try FileManager.default.createDirectory(at: packages, withIntermediateDirectories: true)
@@ -387,6 +394,26 @@ public struct AppInstaller: Sendable {
         }
         await env.packageOpener.open(kept)
         return .openedInInstaller(kept)
+    }
+
+    /// Where handed-off packages wait for Installer: `<workDirectory>/Packages`.
+    static func packagesFolder(in workDirectory: URL) -> URL {
+        workDirectory.appendingPathComponent("Packages", isDirectory: true)
+    }
+
+    /// Removes handed-off packages older than `age`. Installer has long finished with them by
+    /// then, and they would otherwise sit in Burnish's folder for good. A missing folder is fine.
+    public static func prunePackages(in workDirectory: URL, olderThan age: TimeInterval = 24 * 3600) {
+        let fm = FileManager.default
+        guard let items = try? fm.contentsOfDirectory(
+            at: packagesFolder(in: workDirectory), includingPropertiesForKeys: [.contentModificationDateKey]
+        ) else { return }
+        let now = Date()
+        for item in items {
+            guard let kept = (try? item.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate,
+                  now.timeIntervalSince(kept) > age else { continue }
+            try? fm.removeItem(at: item)
+        }
     }
 
     // MARK: Helpers
@@ -423,14 +450,12 @@ public struct AppInstaller: Sendable {
         walk(staging, depth: 0)
         bundles = bundles.filter { $0.resolvingSymlinksInPath().standardizedFileURL.path.hasPrefix(root + "/") }
 
-        let reader = AppInventory(signatureReader: env.signatures, caskrooms: [])
         let infos = bundles.compactMap { url in reader.readApp(at: url).map { (url, $0) } }
+        let names = Set([app.fileName.lowercased()] + expectedNames.map { $0.lowercased() })
         let matching = infos.filter { $0.1.bundleID == app.bundleID }
         if !matching.isEmpty {
-            let preferred = Set([app.fileName.lowercased()] + expectedNames.map { $0.lowercased() })
-            return .found((matching.first { preferred.contains($0.0.lastPathComponent.lowercased()) } ?? matching[0]).0)
+            return .found((matching.first { names.contains($0.0.lastPathComponent.lowercased()) } ?? matching[0]).0)
         }
-        let names = Set([app.fileName.lowercased()] + expectedNames.map { $0.lowercased() })
         if let lookalike = infos.first(where: { names.contains($0.0.lastPathComponent.lowercased()) }) ?? (infos.count == 1 ? infos.first : nil) {
             return .wrongBundleID(lookalike.1.bundleID)
         }
@@ -494,7 +519,7 @@ public struct AppInstaller: Sendable {
     }
 
     /// Signed by an Apple-issued certificate (Developer ID or App Store) for this Team ID.
-    public static func requirement(teamID: String) -> String {
+    static func requirement(teamID: String) -> String {
         "anchor apple generic and certificate leaf[subject.OU] = \"\(teamID)\""
     }
 }

@@ -48,7 +48,7 @@ final class SelfUpdater {
 
     /// "Updated to Burnish 0.2.0" once, after Sparkle has replaced the app.
     static func versionJustUpdatedTo() -> String? {
-        let current = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        let current = Bundle.main.shortVersion
         let defaults = UserDefaults.standard
         let previous = defaults.string(forKey: "lastRunVersion")
         defaults.set(current, forKey: "lastRunVersion")

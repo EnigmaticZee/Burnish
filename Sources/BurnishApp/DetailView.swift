@@ -14,11 +14,15 @@ struct DetailView: View {
     @State private var showingPicker = false
     @State private var showingFeedSheet = false
     @State private var confirmingPutBack = false
+    /// Whether the app is open, asked once per app rather than on every render.
+    @State private var isRunning = false
 
     var body: some View {
+        // Asked once per render: it looks on disk for the earlier copy.
+        let restorable = model.restorableVersion(result)
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                header
+                header(restorable: restorable)
                 confirmation
                 feedOffer
                 facts
@@ -27,12 +31,12 @@ struct DetailView: View {
                 notes
                 ReleaseNotesSection(result: result)
                 RulesSection(result: result)
-                HistorySection(result: result, putBack: model.restorableVersion(result).map { _ in { confirmingPutBack = true } })
+                HistorySection(result: result, restorable: restorable) { confirmingPutBack = true }
             }
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .alert(putBackTitle, isPresented: $confirmingPutBack) {
+        .alert(putBackTitle(restorable), isPresented: $confirmingPutBack) {
             Button("Put Back") { Task { await model.restore(result) } }
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -47,6 +51,7 @@ struct DetailView: View {
         .sheet(isPresented: $showingFeedSheet) { AddFeedSheet(result: result) }
         .onAppear { openFeedPromptIfAsked() }
         .onChange(of: model.feedPromptID) { _, _ in openFeedPromptIfAsked() }
+        .task(id: result.id) { isRunning = model.isRunning(result) }
     }
 
     private func openFeedPromptIfAsked() {
@@ -55,7 +60,7 @@ struct DetailView: View {
         showingFeedSheet = true
     }
 
-    private var header: some View {
+    private func header(restorable: String?) -> some View {
         HStack(alignment: .top, spacing: 14) {
             AppIconView(url: result.app.url, size: 64)
             VStack(alignment: .leading, spacing: 4) {
@@ -63,7 +68,7 @@ struct DetailView: View {
                 Text(result.app.bundleID).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
                 HStack(spacing: 8) {
                     if result.status.isOutdated { UpdateControl(result: result, compact: false) }
-                    actionsMenu
+                    actionsMenu(restorable: restorable)
                 }
                 .padding(.top, 4)
                 RefusalNote(result: result)
@@ -72,17 +77,10 @@ struct DetailView: View {
         }
     }
 
-    private var actionsMenu: some View {
+    private func actionsMenu(restorable: String?) -> some View {
         Menu("More") {
-            if case .ignored = result.status {
-                Button("Stop Ignoring") { Task { await model.stopIgnoring(result) } }
-            } else {
-                if result.status.candidate != nil {
-                    Button("Ignore This Version") { Task { await model.ignoreVersion(result) } }
-                }
-                Button("Ignore App") { Task { await model.ignoreApp(result) } }
-            }
-            if let version = model.restorableVersion(result) {
+            IgnoreActions(result: result)
+            if let version = restorable {
                 Button("Put Back \(version)…") { confirmingPutBack = true }
             }
             Divider()
@@ -131,8 +129,8 @@ struct DetailView: View {
         }
     }
 
-    private var putBackTitle: String {
-        String(localized: "Put back \(result.app.name) \(model.restorableVersion(result) ?? "")?")
+    private func putBackTitle(_ restorable: String?) -> String {
+        String(localized: "Put back \(result.app.name) \(restorable ?? "")?")
     }
 
     @ViewBuilder
@@ -234,8 +232,7 @@ struct DetailView: View {
 
     @ViewBuilder
     private var notes: some View {
-        let lines = result.notes + (result.cask?.isUnmaintained == true && !result.notes.contains(String(localized: "No longer maintained in Homebrew"))
-                                    ? [String(localized: "No longer maintained in Homebrew")] : [])
+        let lines = result.notes
         if !lines.isEmpty || result.app.isManagedByHomebrew {
             VStack(alignment: .leading, spacing: 6) {
                 if let token = result.app.caskroomToken {
@@ -278,7 +275,7 @@ struct DetailView: View {
         let rule = model.appRules.rule(for: result.app.bundleID)
         guard result.status.isOutdated, rule.updates == .automatic || (rule.updates == .followSettings && model.settings.autoUpdate)
         else { return nil }
-        switch model.autoUpdateDecision(for: result) {
+        switch model.autoUpdateDecision(for: result, isRunning: isRunning) {
         case .install: return String(localized: "Installs on its own after the next check")
         case .wait(let until): return String(localized: "Installs on its own from \(until.formatted(date: .abbreviated, time: .omitted))")
         case .skip(let why): return String(localized: "Waits for you: \(why.lowercasedFirst)")
@@ -343,7 +340,9 @@ struct DetailView: View {
 struct ReleaseNotesSection: View {
     @Environment(AppModel.self) private var model
     let result: AppCheckResult
-    @State private var fetched: ReleaseNotesDocument?
+    /// Parsed once per app and version, not on every render.
+    @State private var document: ReleaseNotesDocument?
+    @State private var digest: ReleaseDigest?
     @State private var loading = false
     @State private var showFull = false
 
@@ -351,8 +350,7 @@ struct ReleaseNotesSection: View {
         if let release = result.status.candidate?.release {
             VStack(alignment: .leading, spacing: 10) {
                 Text("What's New").font(.headline)
-                if let doc = fetched ?? release.releaseNotes.flatMap(ReleaseNotesDocument.from), !doc.isEmpty {
-                    let digest = ReleaseDigest.make(doc)
+                if let doc = document {
                     if let digest { QuickRead(digest: digest) }
                     DisclosureGroup(isExpanded: $showFull) {
                         ReleaseNotesView(document: doc).padding(.top, 6)
@@ -374,17 +372,27 @@ struct ReleaseNotesSection: View {
                         .font(.callout)
                 }
             }
-            .task(id: result.status.candidate?.displayVersion) { await fetchIfNeeded(release) }
+            // Keyed on the app as well as the version: two apps both on "2.0" must not share notes.
+            .task(id: [result.id, release.version.display]) { await load(release) }
         }
     }
 
-    private func fetchIfNeeded(_ release: Release) async {
-        fetched = nil
+    /// Parses the notes the source carried, or fetches the notes a Sparkle feed only linked to.
+    private func load(_ release: Release) async {
+        document = nil
+        digest = nil
         showFull = false
-        guard release.source == .sparkle, release.releaseNotes?.text == nil, let link = release.releaseNotes?.link else { return }
-        loading = true
-        fetched = await model.engine.releaseNotes(at: link)
-        loading = false
+        var parsed = release.releaseNotes.flatMap(ReleaseNotesDocument.from)
+        if parsed == nil, release.source == .sparkle, release.releaseNotes?.text == nil, let link = release.releaseNotes?.link {
+            loading = true
+            parsed = await model.engine.releaseNotes(at: link)
+            loading = false
+            // The person moved on to another app while the notes were on their way.
+            if Task.isCancelled { return }
+        }
+        guard let parsed, !parsed.isEmpty else { return }
+        document = parsed
+        digest = ReleaseDigest.make(parsed)
     }
 }
 
@@ -432,6 +440,8 @@ struct QuickRead: View {
 /// "What you missed": every version between the installed one and the newest, with its notes.
 struct MissedVersions: View {
     let missed: [MissedRelease]
+    /// Each version's notes, parsed once for the list rather than on every render.
+    @State private var documents: [String: ReleaseNotesDocument] = [:]
 
     var body: some View {
         DisclosureGroup {
@@ -444,7 +454,7 @@ struct MissedVersions: View {
                                 Text(date.formatted(date: .abbreviated, time: .omitted)).font(.caption).foregroundStyle(.secondary)
                             }
                         }
-                        if let doc = release.notes.flatMap(ReleaseNotesDocument.from), !doc.isEmpty {
+                        if let doc = documents[release.id] {
                             ReleaseNotesView(document: doc)
                         } else if let link = release.notes?.link {
                             Link("Read the notes", destination: link).font(.callout)
@@ -457,6 +467,13 @@ struct MissedVersions: View {
             .padding(.top, 6)
         } label: {
             Text("You also skipped \(missed.count) versions").font(.callout.weight(.medium))
+        }
+        .task(id: missed) {
+            var parsed: [String: ReleaseNotesDocument] = [:]
+            for release in missed {
+                if let doc = release.notes.flatMap(ReleaseNotesDocument.from), !doc.isEmpty { parsed[release.id] = doc }
+            }
+            documents = parsed
         }
     }
 }
@@ -550,8 +567,9 @@ struct CaskPicker: View {
 struct HistorySection: View {
     @Environment(AppModel.self) private var model
     let result: AppCheckResult
-    /// Offered when the latest update's earlier version can still be put back.
-    let putBack: (() -> Void)?
+    /// The version the latest update replaced, while it can still be put back; nil otherwise.
+    let restorable: String?
+    let putBack: () -> Void
 
     var body: some View {
         let events = model.history.events(for: result.app.bundleID)
@@ -560,7 +578,7 @@ struct HistorySection: View {
                 HStack {
                     Text("History").font(.headline)
                     Spacer()
-                    if let putBack, let version = model.restorableVersion(result) {
+                    if let version = restorable {
                         Button("Put Back \(version)…", action: putBack).controlSize(.small)
                     }
                 }

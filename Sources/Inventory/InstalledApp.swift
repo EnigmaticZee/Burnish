@@ -8,7 +8,7 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
     public let bundleID: String
     /// What Finder shows: the file name without `.app`.
     public let name: String
-    /// `CFBundleName` and `CFBundleDisplayName`, used as matching hints.
+    /// `CFBundleDisplayName` then `CFBundleName`, used as matching hints.
     public let bundleNames: [String]
     public let url: URL
     public let version: VersionPair

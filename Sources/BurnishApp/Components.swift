@@ -1,6 +1,5 @@
 import AppKit
 import BurnishCore
-import CaskIndex
 import Installer
 import SwiftUI
 import UpdateSources
@@ -197,7 +196,7 @@ struct BrassBarStyle: ProgressViewStyle {
         }
         .frame(height: 6)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(configuration.label.map { _ in Text("Progress") } ?? Text("Progress"))
+        .accessibilityLabel(Text("Progress"))
         .accessibilityValue(Text(verbatim: "\(Int((configuration.fractionCompleted ?? 0) * 100))%"))
     }
 }
@@ -207,9 +206,17 @@ extension ProgressViewStyle where Self == BrassBarStyle {
 }
 
 extension Date {
+    /// "just now", "5 minutes ago", "1 day ago".
     var relativeDescription: String {
         let interval = Date().timeIntervalSince(self)
         if interval < 60 { return String(localized: "just now") }
-        return RelativeDateTimeFormatter().localizedString(for: self, relativeTo: Date())
+        return formatted(.relative(presentation: .numeric))
     }
+}
+
+extension Bundle {
+    /// `CFBundleShortVersionString`, or empty outside a built app.
+    var shortVersion: String { object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "" }
+    /// `CFBundleVersion`, or empty outside a built app.
+    var buildNumber: String { object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "" }
 }

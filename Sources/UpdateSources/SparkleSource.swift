@@ -38,7 +38,7 @@ public struct SparkleSource: Sendable {
     let isARM: Bool
     let language: String?
 
-    public init(client: HTTPClient, system: SystemVersion = .current, isARM: Bool = Platform.currentIsARM, language: String? = Locale.current.language.languageCode?.identifier) {
+    public init(client: HTTPClient, system: SystemVersion = .current, isARM: Bool = Platform.current.isARM, language: String? = Locale.current.language.languageCode?.identifier) {
         self.client = client
         self.system = system
         self.isARM = isARM
@@ -206,8 +206,4 @@ public struct SparkleSource: Sendable {
             minimumAutoupdateVersion: item.minimumAutoupdateVersion
         )
     }
-}
-
-extension Platform {
-    public static var currentIsARM: Bool { Platform.current.isARM }
 }

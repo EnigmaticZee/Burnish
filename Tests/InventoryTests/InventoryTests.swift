@@ -10,6 +10,13 @@ struct FakeSignatures: SignatureReading {
     }
 }
 
+/// A stand-in Mach-O: a zero header followed by NUL-terminated strings, enough for the string readers.
+func fakeBinary(_ parts: [String]) -> Data {
+    var data = Data(repeating: 0, count: 64)
+    for part in parts { data.append(Data(part.utf8)); data.append(0) }
+    return data
+}
+
 final class TempDir {
     let url: URL
     init() throws {
@@ -221,14 +228,8 @@ func makeApp(_ name: String, in dir: URL, plist: [String: Any], receipt: Bool = 
 }
 
 @Suite struct TauriDetection {
-    func binary(_ parts: [String]) -> Data {
-        var data = Data(repeating: 0, count: 64)
-        for part in parts { data.append(Data(part.utf8)); data.append(0) }
-        return data
-    }
-
     @Test func findsTheUpdaterEndpointsAndNothingElse() {
-        let data = binary([
+        let data = fakeBinary([
             "https://docs.rs/serde/latest/serde/", "tauri", "tauri://localhost",
             "https://releases.example.com/{{target}}/{{arch}}/{{current_version}}",
             "https://cdn.example.com/app/latest.json", "https://example.com/privacy",
@@ -246,15 +247,15 @@ func makeApp(_ name: String, in dir: URL, plist: [String: Any], receipt: Bool = 
         let endpoint = "https://releases.example.com/{{target}}/{{arch}}/{{current_version}}"
 
         let tauriApp = dir.appendingPathComponent("tauri")
-        try binary(["/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit", "tauri", endpoint]).write(to: tauriApp)
+        try fakeBinary(["/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit", "tauri", endpoint]).write(to: tauriApp)
         #expect(TauriDetector.updateEndpoints(executable: tauriApp) == [endpoint])
 
         let noWebKit = dir.appendingPathComponent("plain")
-        try binary(["tauri", endpoint]).write(to: noWebKit)
+        try fakeBinary(["tauri", endpoint]).write(to: noWebKit)
         #expect(TauriDetector.updateEndpoints(executable: noWebKit).isEmpty, "no WebKit, no full read")
 
         let webKitOnly = dir.appendingPathComponent("webkit")
-        try binary(["/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit", endpoint]).write(to: webKitOnly)
+        try fakeBinary(["/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit", endpoint]).write(to: webKitOnly)
         #expect(TauriDetector.updateEndpoints(executable: webKitOnly).isEmpty, "a WebKit app that isn't Tauri")
     }
 }

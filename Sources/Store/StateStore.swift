@@ -33,12 +33,20 @@ public actor StateStore {
     }
 
     public func load<Value>(_ key: StoreKey<Value>) -> Value? {
-        let url = url(for: key)
-        guard let data = try? Data(contentsOf: url) else { return nil }
+        let data: Data
+        do {
+            data = try Data(contentsOf: url(for: key))
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile {
+            // Nothing stored yet: the usual case on first launch.
+            return nil
+        } catch {
+            log.error("Couldn't read \(key.file, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
         do {
             return try Self.decoder.decode(Value.self, from: data)
         } catch {
-            log.error("Couldn't read \(key.file, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            log.error("Couldn't decode \(key.file, privacy: .public): \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }

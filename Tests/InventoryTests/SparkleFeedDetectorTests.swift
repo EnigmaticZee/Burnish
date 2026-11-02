@@ -3,14 +3,8 @@ import Testing
 @testable import Inventory
 
 @Suite struct SparkleFeedDetection {
-    func binary(_ parts: [String]) -> Data {
-        var data = Data(repeating: 0, count: 64)
-        for part in parts { data.append(Data(part.utf8)); data.append(0) }
-        return data
-    }
-
     @Test func keepsOnlyAddressesThatLookLikeAppcasts() {
-        let data = binary([
+        let data = fakeBinary([
             "http://www.andymatuschak.org/xml-namespaces/sparkle",
             "https://www.w3.org/2005/Atom",
             "https://developer.apple.com/documentation/",
@@ -29,7 +23,7 @@ import Testing
     }
 
     @Test func stopsAtFourLeads() {
-        let data = binary((1...9).map { "https://example.com/feeds/\($0)/appcast.xml" })
+        let data = fakeBinary((1...9).map { "https://example.com/feeds/\($0)/appcast.xml" })
         #expect(SparkleFeedDetector.candidates(in: data).count == 4)
     }
 
@@ -38,7 +32,7 @@ import Testing
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: dir) }
         let executable = dir.appendingPathComponent("Tool")
-        try binary(["https://updates.example.com/appcast.xml"]).write(to: executable)
+        try fakeBinary(["https://updates.example.com/appcast.xml"]).write(to: executable)
         #expect(SparkleFeedDetector.candidateFeeds(executable: executable) == ["https://updates.example.com/appcast.xml"])
         #expect(SparkleFeedDetector.candidateFeeds(executable: dir.appendingPathComponent("missing")).isEmpty)
     }

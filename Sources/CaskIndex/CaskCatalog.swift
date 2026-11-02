@@ -9,6 +9,8 @@ public final class CaskCatalog: Sendable {
     let byHintID: [String: [Int]]
     let byAppName: [String: [Int]]
     let byName: [String: [Int]]
+    /// Each cask's `names` normalised once, so `search` doesn't fold every name on every keystroke.
+    private let normalizedNames: [[String]]
 
     public init(casks: [Cask]) {
         self.casks = casks
@@ -17,12 +19,16 @@ public final class CaskCatalog: Sendable {
         var byHintID: [String: [Int]] = [:]
         var byAppName: [String: [Int]] = [:]
         var byName: [String: [Int]] = [:]
+        var normalizedNames: [[String]] = []
+        normalizedNames.reserveCapacity(casks.count)
         for (index, cask) in casks.enumerated() {
             byToken[cask.token] = index
             for id in Set(cask.quitBundleIDs.flatMap { $0 }.map { $0.lowercased() }) { byQuitID[id, default: []].append(index) }
             for id in cask.hintBundleIDs { byHintID[id, default: []].append(index) }
             for app in Set((cask.appNames + cask.uninstallAppNames).map { $0.lowercased() }) { byAppName[app, default: []].append(index) }
-            for name in Set((cask.names + [cask.baseToken]).map(Self.normalize).filter { !$0.isEmpty }) {
+            let names = cask.names.map(Self.normalize)
+            normalizedNames.append(names)
+            for name in Set((names + [Self.normalize(cask.baseToken)]).filter { !$0.isEmpty }) {
                 byName[name, default: []].append(index)
             }
         }
@@ -31,6 +37,7 @@ public final class CaskCatalog: Sendable {
         self.byHintID = byHintID
         self.byAppName = byAppName
         self.byName = byName
+        self.normalizedNames = normalizedNames
     }
 
     public var count: Int { casks.count }
@@ -44,18 +51,19 @@ public final class CaskCatalog: Sendable {
         let q = query.lowercased().trimmingCharacters(in: .whitespaces)
         guard !q.isEmpty else { return [] }
         let normalized = Self.normalize(q)
-        func rank(_ cask: Cask) -> Int? {
+        func rank(_ index: Int) -> Int? {
+            let cask = casks[index]
             if cask.token == q { return 0 }
             if cask.token.hasPrefix(q) { return 1 }
-            if cask.names.contains(where: { Self.normalize($0) == normalized }) { return 1 }
+            if normalizedNames[index].contains(normalized) { return 1 }
             if cask.names.contains(where: { $0.lowercased().contains(q) }) { return 2 }
             if cask.token.contains(q) { return 3 }
             if cask.appNames.contains(where: { $0.lowercased().contains(q) }) { return 3 }
             return nil
         }
         var ranked: [(cask: Cask, rank: Int)] = []
-        for cask in casks {
-            if let r = rank(cask) { ranked.append((cask, r)) }
+        for index in casks.indices {
+            if let r = rank(index) { ranked.append((casks[index], r)) }
         }
         ranked.sort { a, b in a.rank != b.rank ? a.rank < b.rank : a.cask.token < b.cask.token }
         return Array(ranked.prefix(limit).map(\.cask))
