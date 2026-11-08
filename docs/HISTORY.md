@@ -1,5 +1,39 @@
 # Version history
 
+## 0.5.1-beta — 2026-11-08
+A nameplate on the desk, and Homebrew at the door.
+
++ Install Burnish with Homebrew: `brew install --cask enigmaticzee/tap/burnish`.
++ Burnish is made by Polite Owl, part of Observant Systems, and Settings now says so.
++ Scanning does less work: each app's program file is read once, not three times.
++ Fixes for a settings file read at a bad moment, a cancelled password prompt, an Electron app
+  with a space in its update address, and installer packages that never left.
+
+- **Fixed: a settings file that couldn't be read was treated as empty, then written over.** If a
+  file in Burnish's folder, your ignore rules say, or an app's history, couldn't be read for a
+  moment, Burnish took that as "nothing saved yet" and the next change wrote a fresh file over it.
+  Only a file that genuinely isn't there counts as empty now; any other trouble is left alone and
+  noted in the log.
+- **Fixed: a cancelled password prompt was recognised by the wrong clue.** When an update needed
+  admin rights and you cancelled, Burnish knew by the digits "-128" appearing anywhere in the
+  system's reply, so a real failure whose message happened to contain them would have been shown
+  as a cancellation, with no explanation. Burnish now reads the code the way macOS writes it.
+- **Fixed: a check could stop on an Electron app with a space in its update address.** An app
+  whose update settings name a storage bucket with a space in it brought the whole check down.
+  Burnish now marks that feed as unreadable and carries on with the rest.
+- **Install Burnish with Homebrew.** `brew install --cask enigmaticzee/tap/burnish` puts the same
+  notarised app in Applications, and Burnish keeps updating itself from there, so `brew upgrade`
+  leaves it alone.
+- **Made by Polite Owl.** Burnish is published by Polite Owl, part of Observant Systems, and the
+  Settings window says so under the version number. The front desk has a nameplate.
+- **Scanning reads each app once.** Working out what an app is took up to three reads of its
+  program file; it's one now, and matching apps installed with Homebrew to their names takes one
+  pass instead of one per app. The detail pane also stops re-reading release notes and checking the
+  disk every time it redraws.
+- **Installer packages don't pile up.** A `.pkg` that Burnish hands to Apple's Installer is kept
+  for a day so Installer can read it, then removed. They used to stay in Burnish's folder for good.
+- **Save Diagnostics says so when the file couldn't be written.** It used to fail quietly.
+
 ## 0.5.0-beta — 2026-11-01
 Opens like any other app.
 
