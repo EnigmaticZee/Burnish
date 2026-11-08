@@ -44,7 +44,7 @@
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Burnish asks an app to quit before updating it, and never force-quits.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2026 Polite Owl, an Observant Systems company. Free and open source under the MIT License.</string>
+	<string>© 2026 Zee, trading as Polite Owl (part of Observant Systems). Free and open source under the MIT License.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>SUAutomaticallyUpdate</key>

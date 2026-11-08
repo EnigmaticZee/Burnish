@@ -100,7 +100,7 @@ struct SettingsPane: View {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Burnish \(Self.version)")
-                    Text("Made by Polite Owl, an Observant Systems company")
+                    Text("Made by Polite Owl, part of Observant Systems")
                 }
                 .foregroundStyle(.secondary)
                 Spacer()
