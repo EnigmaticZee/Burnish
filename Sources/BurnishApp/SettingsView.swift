@@ -97,8 +97,12 @@ struct SettingsPane: View {
             Toggle("Open Burnish at login", isOn: $model.settings.launchAtLogin)
             Toggle("Keep Burnish up to date automatically", isOn: Bindable(SelfUpdater.shared).automaticallyChecks)
         } footer: {
-            HStack {
-                Text("Burnish \(Self.version)").foregroundStyle(.secondary)
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Burnish \(Self.version)")
+                    Text("Made by Polite Owl, an Observant Systems company")
+                }
+                .foregroundStyle(.secondary)
                 Spacer()
                 Button("What's New") { WhatsNew.open() }
             }

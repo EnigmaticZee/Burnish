@@ -99,7 +99,7 @@ One Swift package, one target per module:
 
 ## The website
 
-`site/` is the homepage at <https://enigmaticzee.github.io/Burnish/>: one hand-written page, a
+`site/` is the homepage at <https://www.getburnish.app/>: one hand-written page, a
 stylesheet and a small script, with no frameworks and nothing loaded from anywhere else (it keeps
 the app's privacy promise). `scripts/build-site.py` fills its "What's new" from the newest
 published release's entry in `docs/HISTORY.md`, so the page never announces a version whose

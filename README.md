@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/EnigmaticZee/Burnish/releases/latest/download/Burnish.dmg"><b>Download Burnish for Mac</b></a>
-  &nbsp;·&nbsp; <a href="https://enigmaticzee.github.io/Burnish/">Website</a>
+  &nbsp;·&nbsp; <a href="https://www.getburnish.app/">Website</a>
   &nbsp;·&nbsp; free &nbsp;·&nbsp; macOS 14+ &nbsp;·&nbsp; Apple silicon &amp; Intel
 </p>
 
@@ -200,5 +200,5 @@ SwiftUI's macros ship with Xcode, so have Xcode installed; the scripts find it o
 ---
 
 <p align="center">
-  Made by <b>Zee</b> · <a href="LICENSE">MIT License</a> · Updates by <a href="https://sparkle-project.org">Sparkle</a>
+  Made by <b>Polite Owl</b>, an Observant Systems company · <a href="LICENSE">MIT License</a> · Updates by <a href="https://sparkle-project.org">Sparkle</a>
 </p>
