@@ -77,8 +77,7 @@ def ledger_block(path):
 
     return (f'          <p class="ledger">Checked on every build: <b>{d["apps"]} apps</b>, <b>{d["falseAlerts"]} false alerts</b>, '
             f'{d["updatesFound"]} of {d["updatesExpected"]} real updates found. Last run {day(d["date"])}, against '
-            f'Homebrew\'s list from {day(d["homebrewSnapshot"])}. '
-            f'<a href="{REPO}/blob/main/Tests/BurnishCoreTests/FalseAlertTests.swift">How it\'s measured →</a></p>')
+            f'Homebrew\'s list from {day(d["homebrewSnapshot"])}.</p>')
 
 
 def build(version, out, ledger=None):
@@ -97,7 +96,6 @@ def build(version, out, ledger=None):
         "RELEASE_ITEMS": "\n".join(f"          <li>{notes.inline(item)}</li>" for item in items),
         "RELEASE_EXTRA": "\n".join(f'        <p class="release-extra">{notes.inline(p)}</p>' for p in extra),
         "DOWNLOAD_URL": DOWNLOAD,
-        "REPO": REPO,
         "LEDGER": ledger_block(ledger),
     }
     page = (SITE / "index.html").read_text(encoding="utf-8")

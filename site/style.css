@@ -138,7 +138,6 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
   background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
 }
 .btn-primary:hover::after { animation: sweep 0.9s ease; }
-.btn-ghost { color: var(--ink); background: var(--card); border: 1px solid var(--card-line); }
 
 /* The animated menu bar scene */
 
@@ -321,7 +320,6 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 .release-items li::before { content: ""; position: absolute; left: 4px; top: 0.62em; width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, var(--brass-hi), var(--copper)); }
 .release-items strong { color: var(--ink); }
 .release-extra { color: var(--ink-2); margin: 22px 0 0; }
-.release-all { display: inline-block; margin-top: 24px; font-weight: 650; }
 
 /* Install */
 
@@ -388,7 +386,6 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 }
 @media (max-width: 640px) {
   body { font-size: 16px; }
-  .nav nav a:not(.nav-github) { display: none; }
   .hero { padding: 36px 16px 40px; }
   section { padding: 0 16px; }
   .grid, .steps, .promise-list, .privacy-list { grid-template-columns: 1fr; }
@@ -418,7 +415,6 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 .new-pill:hover span[aria-hidden]:last-child { transform: translateX(4px); }
 .btn svg { transition: transform 0.35s cubic-bezier(.3, 1.5, .5, 1); }
 .btn-primary:hover svg { transform: translateY(2px); }
-.btn-ghost:hover { border-color: var(--brass); }
 .seal-line { display: inline-flex; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 0.92rem; color: var(--ink-2); }
 .seal-line .seal { width: 20px; height: 20px; fill: none; stroke: var(--brass); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; overflow: visible; transition: transform 0.45s cubic-bezier(.3, 1.6, .5, 1), filter 0.4s; }
 .seal-line .seal .tick { stroke-dasharray: 14; stroke-dashoffset: 14; transition: stroke-dashoffset 0.6s ease 0.5s; }
@@ -436,8 +432,6 @@ code { font: 0.88em ui-monospace, "SF Mono", Menlo, monospace; background: var(-
 .promise-list li:hover svg { transform: scale(1.15) rotate(-6deg); }
 .release-version { display: inline-block; transition: transform 0.3s cubic-bezier(.3, 1.6, .5, 1); }
 .release:hover .release-version { transform: rotate(-3deg) scale(1.05); }
-.release-all { transition: transform 0.3s cubic-bezier(.3, 1.4, .5, 1); }
-.release-all:hover { transform: translateX(4px); text-decoration: none; }
 .full-notes[open] .release-extra, .faq details[open] p { animation: unfold 0.35s ease; }
 .steps li { transition: transform 0.35s cubic-bezier(.2, .9, .3, 1), border-color 0.3s, box-shadow 0.35s; }
 .steps li:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--brass) 45%, transparent); box-shadow: 0 18px 40px -26px rgba(120, 70, 20, 0.5); }
