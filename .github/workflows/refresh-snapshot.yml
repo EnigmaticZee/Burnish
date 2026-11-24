@@ -40,7 +40,9 @@ jobs:
         if: steps.cut.outputs.changed == 'yes'
         continue-on-error: true
         run: |
-          scripts/test.sh > "$RUNNER_TEMP/tests.log" 2>&1; status=$?
+          # The step's shell stops at the first failing command, so the result is caught, not left to $?.
+          status=0
+          scripts/test.sh > "$RUNNER_TEMP/tests.log" 2>&1 || status=$?
           grep -E "✘|✔ Test run|error:" "$RUNNER_TEMP/tests.log" || true
           exit $status
       - name: Commit the new sample
