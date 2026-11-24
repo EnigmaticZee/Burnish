@@ -929,6 +929,49 @@ actor Counter {
         #expect(Self.contains(try await Self.open(nested, in: h).staging, "Fixture.app"), "an app inside a folder on the image comes out too")
     }
 
+    /// Whether macOS has `image` attached right now, mounted or not.
+    static func isAttached(_ image: URL) throws -> Bool {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
+        p.arguments = ["info", "-plist"]
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        p.standardError = FileHandle.nullDevice
+        try p.run()
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        p.waitUntilExit()
+        let plist = try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+        let wanted = image.resolvingSymlinksInPath().path
+        return (plist?["images"] as? [[String: Any]] ?? []).contains { entry in
+            (entry["image-path"] as? String).map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path } == wanted
+        }
+    }
+
+    @Test func anImageLeftAttachedWithNothingMountedIsLetGo() async throws {
+        // What a refused attach leaves behind since macOS 27.2: the image attached, nothing mounted,
+        // and every further try refused until it's let go.
+        let h = try Harness()
+        let image = try Self.diskImage(of: try Self.source(in: h), format: "UDZO", fileSystem: "APFS", in: h)
+        // hdiutil's own answer doesn't matter here, only where it leaves the image: a refusal that
+        // leaves it attached is the very state this test is about.
+        for _ in 0..<6 where try !Self.isAttached(image) {
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
+            p.arguments = ["attach", "-nomount", "-nobrowse", "-readonly", image.path]
+            p.standardOutput = FileHandle.nullDevice
+            p.standardError = FileHandle.nullDevice
+            try p.run()
+            p.waitUntilExit()
+            if try !Self.isAttached(image) { try await Task.sleep(for: .seconds(0.5)) }
+        }
+        try #require(try Self.isAttached(image), "the image is attached with nothing mounted")
+
+        await Unpacker().detachLeftovers(of: image)
+        #expect(try !Self.isAttached(image), "the next try starts clean")
+        #expect(Self.contains(try await Self.open(image, in: h).staging, "Fixture.app"), "and the image opens afterwards")
+        #expect(try !Self.isAttached(image), "nothing stays attached once it has been read")
+    }
+
     @Test func zipsAndTarballs() async throws {
         let h = try Harness()
         let flat = try Self.source(in: h), nested = try Self.source(in: h, nested: true)

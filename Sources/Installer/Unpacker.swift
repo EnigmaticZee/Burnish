@@ -95,12 +95,17 @@ public struct Unpacker: Sendable {
         await detach(mountPoint)
     }
 
-    /// `hdiutil attach` answers "Resource temporarily unavailable" when another image is being
-    /// attached at the same moment; a short wait and another go is all it needs.
+    /// `hdiutil attach` answers "Resource temporarily unavailable" while macOS is busy with other
+    /// images, and since macOS 27.2 a refused APFS image stays attached with nothing mounted, which
+    /// makes every further try fail the same way. So each one starts clean, letting go of whatever
+    /// the last left behind; after that a short wait and another go is all it needs.
     private func attach(_ image: URL, at mountPoint: URL) async throws(Failure) -> Shell.Output {
         var output: Shell.Output?
         for delay in [0.0, 0.5, 1, 2, 3] {
-            if delay > 0 { try? await Task.sleep(for: .seconds(delay)) }
+            if delay > 0 {
+                await detachLeftovers(of: image)
+                try? await Task.sleep(for: .seconds(delay))
+            }
             do {
                 output = try await Shell.run("/usr/bin/hdiutil", [
                     "attach", "-nobrowse", "-readonly", "-noautoopen", "-plist", "-mountpoint", mountPoint.path, image.path,
@@ -110,8 +115,27 @@ public struct Unpacker: Sendable {
             }
             if let output, output.succeeded || !output.errorText.contains("temporarily unavailable") { return output }
         }
+        await detachLeftovers(of: image)
         guard let output else { throw .tool("hdiutil attach: no answer") }
         return output
+    }
+
+    /// Lets go of `image` when a refused attach left it attached without a mount point. Only the
+    /// file Burnish itself downloaded is ever named here, so nothing else's image is touched.
+    func detachLeftovers(of image: URL) async {
+        guard let info = try? await Shell.run("/usr/bin/hdiutil", ["info", "-plist"]), info.succeeded,
+              let plist = try? PropertyListSerialization.propertyList(from: info.stdout, format: nil) as? [String: Any],
+              let images = plist["images"] as? [[String: Any]] else { return }
+        let wanted = image.resolvingSymlinksInPath().path
+        for entry in images {
+            guard let path = entry["image-path"] as? String,
+                  URL(fileURLWithPath: path).resolvingSymlinksInPath().path == wanted else { continue }
+            let devices = (entry["system-entities"] as? [[String: Any]] ?? []).compactMap { $0["dev-entry"] as? String }
+            // Whole disks only ("/dev/disk7", not "/dev/disk7s1"): detaching one takes its slices along.
+            for device in devices where device.dropFirst("/dev/disk".count).allSatisfy(\.isNumber) {
+                _ = try? await Shell.run("/usr/bin/hdiutil", ["detach", device, "-quiet"])
+            }
+        }
     }
 
     private func detach(_ mountPoint: URL) async {
