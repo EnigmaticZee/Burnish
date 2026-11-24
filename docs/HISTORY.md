@@ -5,6 +5,7 @@ One fix, for macOS 27.2.
 
 + On macOS 27.2, an update that comes as a disk image could be refused while your Mac was busy
   with other disk images. It opens now.
++ A refused update never changed anything on your Mac; it just didn't happen.
 + Burnish no longer leaves that disk image attached behind the scenes.
 
 - **Fixed: on macOS 27.2, some updates were refused with "The download couldn't be opened".** When
