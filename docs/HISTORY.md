@@ -1,5 +1,21 @@
 # Version history
 
+## 0.5.2-beta — 2026-11-24
+One fix, for macOS 27.2.
+
++ On macOS 27.2, an update that comes as a disk image could be refused while your Mac was busy
+  with other disk images. It opens now.
++ Burnish no longer leaves that disk image attached behind the scenes.
+
+- **Fixed: on macOS 27.2, some updates were refused with "The download couldn't be opened".** When
+  macOS is busy with other disk images, it can turn away an image in Apple's newer APFS format and
+  still keep hold of it, and after that every further try was turned away too, so Burnish gave up
+  on the update. The download had already passed its checks and nothing on your Mac was changed;
+  the update simply didn't happen. Burnish now lets go of the image before each new try, and the
+  second one goes through.
+- **Fixed: the refused image stayed attached.** It didn't show in Finder, but macOS kept hold of it
+  until the next restart. Burnish now detaches it whether the update goes through or not.
+
 ## 0.5.1-beta — 2026-11-08
 A nameplate on the desk, and Homebrew at the door.
 
